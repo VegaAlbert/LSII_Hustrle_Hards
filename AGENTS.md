@@ -27,6 +27,8 @@ Before opening a PR, run what CI runs (`.github/workflows/main.yml`): frontend `
 
 * `ENV_PROTUBE_STORE_DIR`: absolute path of the video store, **ending with a separator** (`/` or `\`). Always needed.
 * `prod` profile uses PostgreSQL: `ENV_PROTUBE_DB_HOST`, `ENV_PROTUBE_DB`, `ENV_PROTUBE_DB_USER`, `ENV_PROTUBE_DB_PASS`.
+* `ENV_PROTUBE_LOAD_INITIAL_DATA` (`prod`, default `false`; `true` in `compose.yaml`): import the video store on
+  startup. `dev` always imports it.
 * `dev` profile uses in-memory H2 with initial data: everything is lost on restart. H2 is not allowed in the final
   delivery (NFR-01).
 * Never commit secrets, personal paths or local files: `.mcp.json`, `tooling/videoGrabber/vars.py` changes,

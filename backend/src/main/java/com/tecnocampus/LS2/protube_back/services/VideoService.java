@@ -1,14 +1,31 @@
 package com.tecnocampus.LS2.protube_back.services;
 
+import com.tecnocampus.LS2.protube_back.controller.dto.PageResponse;
+import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
+import com.tecnocampus.LS2.protube_back.repository.VideoRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VideoService {
 
-    public List<String> getVideos() {
+    // Newest first; the id breaks ties so pages never repeat or skip videos with the same date
+    static final Sort NEWEST_FIRST = Sort.by(Sort.Order.desc("publishedAt"), Sort.Order.desc("id"));
 
-        return List.of("video1", "video2");
+    private final VideoRepository videoRepository;
+
+    public VideoService(VideoRepository videoRepository) {
+        this.videoRepository = videoRepository;
+    }
+
+    /**
+     * US-04: one page of the video list, newest first.
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<VideoSummaryResponse> getVideos(int page, int size) {
+        return PageResponse.from(videoRepository.findAll(PageRequest.of(page, size, NEWEST_FIRST))
+                .map(VideoSummaryResponse::from));
     }
 }
