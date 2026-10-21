@@ -45,9 +45,10 @@ python3 main.py --store=/absolute/path/to/videos --id=10 --videos=../../resource
 | `ENV_PROTUBE_STORE_DIR`            | always                  | Absolute path of the video store folder. **End it with a path separator** (`/` or `\`) — it is used as a `file:` prefix to serve `/media/**`. |
 | `ENV_PROTUBE_GOOGLE_CLIENT_ID`     | Google OAuth login      | Google OAuth client id                                                                           |
 | `ENV_PROTUBE_GOOGLE_CLIENT_SECRET` | Google OAuth login      | Google OAuth client secret                                                                       |
-| `ENV_PROTUBE_DB_USER`              | `prod` profile          | Database user (use `sa` with the default H2 datasource)                                          |
-| `ENV_PROTUBE_DB_PWD`               | `prod` profile          | Database password (empty with the default H2 datasource)                                         |
-| `ENV_PROTUBE_DB`                   | `prod` + PostgreSQL     | PostgreSQL database name (see [Using PostgreSQL](#using-postgresql))                              |
+| `ENV_PROTUBE_DB_HOST`              | `prod` profile          | PostgreSQL host (e.g. `localhost`, or the service name inside Docker Compose)                    |
+| `ENV_PROTUBE_DB`                   | `prod` profile          | PostgreSQL database name (see [Using PostgreSQL](#using-postgresql))                              |
+| `ENV_PROTUBE_DB_USER`              | `prod` profile          | Database user                                                                                    |
+| `ENV_PROTUBE_DB_PASS`              | `prod` profile          | Database password                                                                                |
 
 Never commit real secrets. Set them in your shell, your OS, or your (local, uncommitted) IDE run configuration.
 
@@ -166,8 +167,7 @@ java -jar target/protube-back-0.0.1-SNAPSHOT.jar
 ```
 
 (IntelliJ: the **Create jar** run configuration runs `package` with the `prod` profile.) Remember that
-`ENV_PROTUBE_STORE_DIR`, `ENV_PROTUBE_DB_USER` and `ENV_PROTUBE_DB_PWD` must be set in the environment where the jar
-runs.
+`ENV_PROTUBE_STORE_DIR` and the four `ENV_PROTUBE_DB_*` variables must be set in the environment where the jar runs.
 
 To only preview the production frontend bundle, without the backend: `cd frontend && npm run build:prod && npm run preview`.
 
@@ -197,18 +197,21 @@ with the video grabber (section 1).
 
 ### Using PostgreSQL
 
-The `prod` profile still points to an in-memory H2 database, which is only a placeholder — the MVP requires a real
-database (NFR-01 in [REQUIREMENT.md](./REQUIREMENT.md)). The PostgreSQL driver is already a dependency. To switch:
+The `prod` profile already points to PostgreSQL (`jdbc:postgresql://${ENV_PROTUBE_DB_HOST}:5432/${ENV_PROTUBE_DB}`
+in `application.properties`); the MVP requires a real database (NFR-01 in [REQUIREMENT.md](./REQUIREMENT.md)). To
+run it locally:
 
-1. Start a PostgreSQL server (e.g. `docker run -d --name protube-db -p 5432:5432 -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=protube postgres:16`).
-2. In `backend/src/main/resources/application.properties`, in the `prod` section, uncomment the PostgreSQL
-   `spring.datasource.url` line and remove the H2 one.
-3. Set `ENV_PROTUBE_DB` (e.g. `protube`), `ENV_PROTUBE_DB_USER` (e.g. `postgres`) and `ENV_PROTUBE_DB_PWD`.
+1. Start PostgreSQL, e.g. with the `db` service of `compose.yaml` (`docker compose up -d db`), which reads
+   `ENV_PROTUBE_DB`, `ENV_PROTUBE_DB_USER` and `ENV_PROTUBE_DB_PASS`.
+2. Set `ENV_PROTUBE_DB_HOST=localhost`, `ENV_PROTUBE_DB` (e.g. `protube`), `ENV_PROTUBE_DB_USER` (e.g. `postgres`) and
+   `ENV_PROTUBE_DB_PASS`.
+3. Run the backend with the `prod` profile (`mvn -Pprod spring-boot:run`).
 
 ## 6. Workflow reminders
 
-* `main` is protected: work in a branch and open a Pull Request; it needs at least one approval and all Copilot
-  review comments resolved before merging.
+* `main` and `develop` are protected by a ruleset: work in a `task/<issue>-short-name` branch from `develop` and open
+  a Pull Request into `develop`; it needs one approval, all Copilot review comments resolved and green CI, and is
+  squash-merged. Only release and hotfix PRs go into `main`. Full conventions: [AGENTS.md](./AGENTS.md).
 * Use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) and reference the task.
 * If AI generated part of a change, mark it in the commit message and reference the prompt from `prompts/` that was
   used (see [prompts/README.md](./prompts/README.md)).
