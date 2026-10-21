@@ -49,6 +49,7 @@ python3 main.py --store=/absolute/path/to/videos --id=10 --videos=../../resource
 | `ENV_PROTUBE_DB`                   | `prod` profile          | PostgreSQL database name (see [Using PostgreSQL](#using-postgresql))                              |
 | `ENV_PROTUBE_DB_USER`              | `prod` profile          | Database user                                                                                    |
 | `ENV_PROTUBE_DB_PASS`              | `prod` profile          | Database password                                                                                |
+| `ENV_PROTUBE_LOAD_INITIAL_DATA`    | `prod` profile, optional | `true` imports the video store into the database on startup (default `false`; `dev` always imports) |
 
 Never commit real secrets. Set them in your shell, your OS, or your (local, uncommitted) IDE run configuration.
 
@@ -144,7 +145,8 @@ single origin (http://localhost:8080). The Maven `prod` profile:
 
 1. Downloads Node/npm into `backend/target/`, runs `npm install` and `npm run build:prod` in `frontend/`.
 2. Copies `frontend/dist/` into the jar's `static/` folder.
-3. Activates the Spring `prod` profile (`pro_tube.load_initial_data=false`, `ddl-auto=update`).
+3. Activates the Spring `prod` profile (`ddl-auto=update`; the video store is only imported when
+   `ENV_PROTUBE_LOAD_INITIAL_DATA=true`).
 
 `frontend/.env.production` leaves `VITE_API_DOMAIN`/`VITE_MEDIA_DOMAIN` empty, so the built SPA calls the API with
 relative URLs (`/api`, `/media`) on the same host.
@@ -188,6 +190,7 @@ a `.env` file in the repo root:
 |---|---|---|
 | `ENV_PROTUBE_DB` / `ENV_PROTUBE_DB_USER` / `ENV_PROTUBE_DB_PASS` | `protube` | PostgreSQL database and credentials |
 | `PROTUBE_STORE_DIR` | `./videos` | Host folder with the video store, mounted into the backend |
+| `ENV_PROTUBE_LOAD_INITIAL_DATA` | `true` | Import the video store into PostgreSQL on startup (already imported videos are skipped) |
 | `PROTUBE_FRONTEND_PORT` / `PROTUBE_BACKEND_PORT` / `PROTUBE_DB_PORT` | `80` / `8080` / `5432` | Host ports |
 | `ENV_PROTUBE_GOOGLE_CLIENT_ID` / `ENV_PROTUBE_GOOGLE_CLIENT_SECRET` | empty | Google OAuth credentials |
 

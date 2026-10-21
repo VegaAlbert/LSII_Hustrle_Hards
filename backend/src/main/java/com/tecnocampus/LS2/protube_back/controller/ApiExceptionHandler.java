@@ -3,6 +3,7 @@ package com.tecnocampus.LS2.protube_back.controller;
 import com.tecnocampus.LS2.protube_back.controller.dto.ErrorResponse;
 import com.tecnocampus.LS2.protube_back.services.InvalidCredentialsException;
 import com.tecnocampus.LS2.protube_back.services.UserAlreadyExistsException;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -10,6 +11,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Map;
 import java.util.Objects;
@@ -31,6 +34,29 @@ public class ApiExceptionHandler {
                         (first, second) -> first));
 
         return ResponseEntity.badRequest().body(new ErrorResponse("Invalid data", fieldErrors));
+    }
+
+    // Constraints on @RequestParam values, e.g. GET /api/videos?size=100
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponse> handleParameterValidation(HandlerMethodValidationException e) {
+        Map<String, String> fieldErrors = e.getAllValidationResults().stream()
+                .collect(Collectors.toMap(
+                        result -> Objects.requireNonNullElse(result.getMethodParameter().getParameterName(), "parameter"),
+                        result -> result.getResolvableErrors().stream()
+                                .map(MessageSourceResolvable::getDefaultMessage)
+                                .filter(Objects::nonNull)
+                                .findFirst()
+                                .orElse("Invalid value"),
+                        (first, second) -> first));
+
+        return ResponseEntity.badRequest().body(new ErrorResponse("Invalid parameters", fieldErrors));
+    }
+
+    // A @RequestParam that cannot be converted, e.g. GET /api/videos?page=abc
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse("Invalid parameters", Map.of(e.getName(), "Invalid value")));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

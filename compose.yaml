@@ -32,6 +32,8 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       # Trailing slash required: MvcConfig maps /media/** to file:${pro_tube.store.dir}
       ENV_PROTUBE_STORE_DIR: /data/videos/
+      # Import the videos of the store into PostgreSQL on startup (already imported ones are skipped)
+      ENV_PROTUBE_LOAD_INITIAL_DATA: ${ENV_PROTUBE_LOAD_INITIAL_DATA:-true}
       ENV_PROTUBE_DB_HOST: db
       ENV_PROTUBE_DB: ${ENV_PROTUBE_DB:-protube}
       ENV_PROTUBE_DB_USER: ${ENV_PROTUBE_DB_USER:-protube}
