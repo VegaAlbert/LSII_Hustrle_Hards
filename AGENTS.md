@@ -31,7 +31,9 @@ Before opening a PR, run what CI runs (`.github/workflows/main.yml`): frontend `
   startup. `dev` always imports it.
 * `dev` profile uses in-memory H2 with initial data: everything is lost on restart. H2 is not allowed in the final
   delivery (NFR-01).
-* Never commit secrets, personal paths or local files: `.mcp.json`, `tooling/videoGrabber/vars.py` changes,
+* Personal values live outside the repo: root `.env` (Docker, from `.env.example`), user env var
+  `ENV_PROTUBE_STORE_DIR` (IntelliJ) and `tooling/videoGrabber/vars_local.py` (videoGrabber paths).
+* Never commit secrets, personal paths or local files: `.mcp.json`, `.env`, `vars_local.py`, `tooling/videoGrabber/vars.py` changes,
   `.idea/`, personal values in the shared `.run/` configurations.
 
 ## Architecture
