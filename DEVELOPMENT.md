@@ -171,6 +171,30 @@ java -jar target/protube-back-0.0.1-SNAPSHOT.jar
 
 To only preview the production frontend bundle, without the backend: `cd frontend && npm run build:prod && npm run preview`.
 
+### Run with Docker Compose (delivery, NFR-03)
+
+The delivered application runs as three containers defined in [`compose.yaml`](./compose.yaml): `db`
+(PostgreSQL 16), `backend` (Spring Boot, Spring `prod` profile) and `frontend` (nginx serving the built SPA and
+proxying `/api` and `/media` to the backend). Only Docker is needed:
+
+```bash
+docker compose up --build
+```
+
+Then open http://localhost. Every variable has a default, so no `.env` file is required; to override them, create
+a `.env` file in the repo root:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `ENV_PROTUBE_DB` / `ENV_PROTUBE_DB_USER` / `ENV_PROTUBE_DB_PASS` | `protube` | PostgreSQL database and credentials |
+| `PROTUBE_STORE_DIR` | `./videos` | Host folder with the video store, mounted into the backend |
+| `PROTUBE_FRONTEND_PORT` / `PROTUBE_BACKEND_PORT` / `PROTUBE_DB_PORT` | `80` / `8080` / `5432` | Host ports |
+| `ENV_PROTUBE_GOOGLE_CLIENT_ID` / `ENV_PROTUBE_GOOGLE_CLIENT_SECRET` | empty | Google OAuth credentials |
+
+Database data lives in the `postgres_data` volume and survives `docker compose down`; use `docker compose down -v`
+to wipe it. If `PROTUBE_STORE_DIR` is empty the app still starts, but there are no videos to serve — generate them
+with the video grabber (section 1).
+
 ### Using PostgreSQL
 
 The `prod` profile already points to PostgreSQL (`jdbc:postgresql://${ENV_PROTUBE_DB_HOST}:5432/${ENV_PROTUBE_DB}`
@@ -202,4 +226,8 @@ run it locally:
   points to the folder containing the `.mp4`/`.webp` files.
 * **Frontend can't reach the API in dev**: make sure the backend is running on port 8080, or adjust
   `VITE_API_DOMAIN` in `.env.development.local`.
-* **Port already in use**: change `server.port` (backend) or run `npm run dev -- --port 5174` (frontend).
+* **Port already in use**: change `server.port` (backend) or run `npm run dev -- --port 5174` (frontend). With Docker
+  Compose, set `PROTUBE_FRONTEND_PORT` / `PROTUBE_BACKEND_PORT` / `PROTUBE_DB_PORT` in the root `.env`.
+* **Docker backend keeps restarting with `role "..." does not exist`**: the `postgres_data` volume was initialised
+  earlier with other credentials (PostgreSQL only applies `POSTGRES_USER`/`POSTGRES_PASSWORD` on first start). Reuse
+  the old credentials in `.env`, or wipe the volume with `docker compose down -v`.
