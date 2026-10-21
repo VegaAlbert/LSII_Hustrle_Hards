@@ -37,6 +37,9 @@ python3 main.py --store=/absolute/path/to/videos --id=10 --videos=../../resource
 * `--id` is your group id (used to pick the set of videos).
 * `--recreate` wipes and regenerates an existing store folder (without it, the script exits if the folder exists).
 * Use `python` instead of `python3` on Windows if that's how Python is installed.
+* `vars.py` uses `yt-dlp`, `ffmpeg` and `ffprobe` from your PATH. If yours live elsewhere, create
+  `tooling/videoGrabber/vars_local.py` (gitignored) with your paths, e.g. `FFMPEG_BIN = "C:/tools/ffmpeg.exe"`.
+  Never edit `vars.py` with personal paths.
 
 ## 2. Environment variables
 
@@ -51,16 +54,17 @@ python3 main.py --store=/absolute/path/to/videos --id=10 --videos=../../resource
 | `ENV_PROTUBE_DB_PASS`              | `prod` profile          | Database password                                                                                |
 | `ENV_PROTUBE_LOAD_INITIAL_DATA`    | `prod` profile, optional | `true` imports the video store into the database on startup (default `false`; `dev` always imports) |
 
-Never commit real secrets. Set them in your shell, your OS, or your (local, uncommitted) IDE run configuration.
-
-```bash
-# Linux / macOS
-export ENV_PROTUBE_STORE_DIR=/home/me/protube/videos/
-```
+Never commit real secrets or personal paths. The shared run configurations in `.run/` do **not** set
+`ENV_PROTUBE_STORE_DIR`: set it once as a user environment variable on your machine and restart IntelliJ.
 
 ```powershell
-# Windows PowerShell (current session)
-$env:ENV_PROTUBE_STORE_DIR = "D:\code\videos\"
+# Windows (permanent, for your user)
+[Environment]::SetEnvironmentVariable("ENV_PROTUBE_STORE_DIR", "C:\path\to\protube-videos\", "User")
+```
+
+```bash
+# Linux / macOS (add it to ~/.bashrc or ~/.zshrc)
+export ENV_PROTUBE_STORE_DIR=/home/me/protube/videos/
 ```
 
 ## 3. Development mode
@@ -81,8 +85,8 @@ mvn spring-boot:run
 * Starts on **http://localhost:8080** with the `dev` profile (active by default through the Maven `dev` profile).
 * `dev` uses an in-memory H2 database and loads initial data (`pro_tube.load_initial_data=true`). All data is lost
   on restart.
-* From IntelliJ you can instead use the shared **ProtubeBackApplication** run configuration (`.run/`) — edit its
-  environment variables to point to your own store folder.
+* From IntelliJ you can instead use the shared **ProtubeBackApplication** run configuration (`.run/`); it reads
+  `ENV_PROTUBE_STORE_DIR` from your environment (section 2). Do not commit personal values in `.run/`.
 * CORS is open for `/api/**` and `/auth/**`, so the Vite dev server can call the API directly.
 
 ### Frontend
@@ -183,8 +187,9 @@ proxying `/api` and `/media` to the backend). Only Docker is needed:
 docker compose up --build
 ```
 
-Then open http://localhost. Every variable has a default, so no `.env` file is required; to override them, create
-a `.env` file in the repo root:
+Then open http://localhost. Every variable has a default; to point Docker to your video store (or override anything
+else), copy [`.env.example`](./.env.example) to `.env` in the repo root (it is gitignored) and set
+`PROTUBE_STORE_DIR` to your store folder:
 
 | Variable | Default | Purpose |
 |---|---|---|

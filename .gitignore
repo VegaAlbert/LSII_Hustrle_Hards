@@ -1,15 +1,16 @@
 ### IDE ###
 .vscode/
 .idea/
-.agents/GEMINI.md
-.agents/GEMINI.md
+
+### AI agents (personal) ###
 /.agents
+.mcp.json
+
+### Maven wrapper (generated in CI) ###
 backend/.mvn/wrapper/maven-wrapper.properties
 backend/mvnw
 backend/mvnw.cmd
-/.agents
+
+### Local config and data ###
+.env
 /videos
-.agents/GEMINI.md
-.agents/GEMINI.md
-.agents/GEMINI.md
-.agents/GEMINI.md
