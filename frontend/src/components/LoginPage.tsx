@@ -94,7 +94,7 @@ const LoginPage = ({ onSuccess }: Props) => {
     <div className="auth-page">
       <aside className="auth-brand">
         <div className="auth-brand-content">
-          <img src="/protube-imago-removebg-preview.png" className="auth-brand-logo" alt="" />
+          <img src="/protube-logo.svg" className="auth-brand-logo" alt="" />
           <h2>Your videos, your community.</h2>
           <p>Join ProTube to upload your own videos and talk about them with other students.</p>
           <ul className="auth-features">
@@ -107,7 +107,7 @@ const LoginPage = ({ onSuccess }: Props) => {
 
       <main className="auth-form-panel">
         <div className="auth-card">
-          <img src="/protube-imago-removebg-preview.png" className="auth-card-logo" alt="ProTube" />
+          <img src="/protube-logo.svg" className="auth-card-logo" alt="ProTube" />
           <h1>{isRegister ? 'Create account' : 'Log in'}</h1>
           <p className="auth-subtitle">
             {isRegister ? 'It only takes a minute to get started.' : 'Welcome back! Please enter your details.'}

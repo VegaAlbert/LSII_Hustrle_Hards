@@ -23,7 +23,7 @@ const NavBar = ({ onHome, onLogin, onSettings, showLogin = true }: Props) => {
   return (
     <nav className="pt-navbar">
       <button type="button" className="pt-brand" onClick={onHome}>
-        <img src="/protube-imago-removebg-preview.png" alt="" />
+        <img src="/protube-logo.svg" alt="" />
         <span>ProTube</span>
       </button>
 

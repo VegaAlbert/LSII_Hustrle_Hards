@@ -8,8 +8,9 @@ Bootstrap has no equivalent.
 ## Brand
 
 * **Logo (PT monogram):** a capital "P" rotated 180° (vertical stem on the right, bowl at the bottom-left; not a
-  normal "P", a "b" or a "q") whose stem rises into a capital "T" with a horizontal crossbar on top. Until the
-  monogram asset is committed, the current logo image stays in use.
+  normal "P", a "b" or a "q") whose stem rises into a capital "T" with a horizontal crossbar on top. The asset is
+  [`frontend/public/protube-logo.svg`](../frontend/public/protube-logo.svg) (brand red on a transparent
+  background), also used as the favicon.
 * **Wordmark:** "ProTube", with "Pro" in the primary text colour and "Tube" in the brand red.
 * **Personality:** modern, clean and friendly; made by students, finished like a professional product.
 
