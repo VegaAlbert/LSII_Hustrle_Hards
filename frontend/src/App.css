@@ -8,15 +8,225 @@
   background-color: #212529;
 }
 
+/* ===== Video detail page (US-05) ===== */
+
+:root {
+  /* Colours of the ProTube logo */
+  --pt-indigo: #4a2bff;
+  --pt-sky: #2f8cff;
+  --pt-gradient: linear-gradient(135deg, var(--pt-indigo), var(--pt-sky));
+  --pt-ink: #1b1d29;
+  --pt-muted: #6b7080;
+  --pt-surface: #f6f7fb;
+  --pt-border: #e6e8f0;
+}
+
+.video-detail {
+  max-width: 1040px;
+  margin: 0 auto;
+  color: var(--pt-ink);
+}
+
+/* Player with a soft glow in the brand colours */
+.video-frame {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #000;
+  box-shadow:
+    0 24px 48px -24px rgba(74, 43, 255, 0.55),
+    0 12px 32px -18px rgba(47, 140, 255, 0.45);
+}
+
 .video-player {
+  display: block;
+  width: 100%;
   max-height: 70vh;
-  background-color: #000;
+  background: #000;
+}
+
+.video-detail-title {
+  margin: 1.5rem 0 1rem;
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.video-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.video-author {
+  font-weight: 600;
+}
+
+.video-facts {
+  color: var(--pt-muted);
+  font-size: 0.875rem;
+}
+
+/* Avatars: initial on a gradient whose hue comes from the name */
+.avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--avatar-hue, 245) 75% 55%),
+    hsl(calc(var(--avatar-hue, 245) + 40) 80% 60%)
+  );
+}
+
+.avatar-md {
+  width: 44px;
+  height: 44px;
+  font-size: 1.1rem;
+}
+
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  font-size: 0.9rem;
+}
+
+/* Description card */
+.description-card {
+  position: relative;
+  padding: 1.25rem 1.5rem;
+  border-radius: 16px;
+  background: radial-gradient(circle at top right, rgba(47, 140, 255, 0.12), transparent 55%), var(--pt-surface);
+  border: 1px solid var(--pt-border);
+}
+
+.section-label {
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--pt-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* Keep the line breaks of descriptions and comments */
-.video-description,
+.expandable-text,
 .comment-text {
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.expandable-text.is-collapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Two classes so it wins over Bootstrap's .btn-link, which is loaded after this file */
+.btn.expandable-toggle {
+  font-weight: 600;
+  color: var(--pt-indigo);
+  text-decoration: none;
+}
+
+.btn.expandable-toggle:hover,
+.btn.expandable-toggle:focus-visible {
+  text-decoration: underline;
+}
+
+/* Comments */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.count-pill {
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: var(--pt-gradient);
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.comments-empty {
+  padding: 1.5rem;
+  border: 1px dashed var(--pt-border);
+  border-radius: 16px;
+  color: var(--pt-muted);
+  text-align: center;
+}
+
+.comment {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--pt-border);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.comment:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -16px rgba(27, 29, 41, 0.35);
+}
+
+.comment-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.comment-author {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.comment-time {
+  color: var(--pt-muted);
+  font-size: 0.8rem;
+}
+
+.comment-likes {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--pt-surface);
+  color: var(--pt-muted);
+  font-size: 0.8rem;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comment {
+    transition: none;
+  }
+
+  .comment:hover {
+    transform: none;
+  }
 }
 
 /* Long titles are cut after two lines so every card keeps the same height */
