@@ -117,7 +117,7 @@ describe('App', () => {
       renderAt('/?q=cats');
       await screen.findByRole('list', { name: 'Results for "cats"' });
 
-      await user.click(screen.getByRole('button', { name: 'Pro Tube' }));
+      await user.click(screen.getByRole('button', { name: 'ProTube' }));
 
       expect(await screen.findByRole('list', { name: 'Videos' })).toBeInTheDocument();
       expect(screen.getByRole('combobox', { name: 'Search videos' })).toHaveValue('');
