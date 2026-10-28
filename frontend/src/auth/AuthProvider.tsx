@@ -4,6 +4,9 @@ import * as authApi from './authApi';
 import { AuthContext, type AuthContextValue } from './authContext';
 import { clearSession, getTokenExpiration, isTokenExpired, loadSession, saveSession, type Session } from './session';
 
+// Largest delay setTimeout accepts (2^31 - 1 ms)
+const MAX_TIMEOUT_MS = 2_147_483_647;
+
 function initialSession(): Session | null {
   const stored = loadSession();
   return stored && !isTokenExpired(stored.token) ? stored : null;
@@ -60,7 +63,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!token) return;
     const expiration = getTokenExpiration(token);
     if (expiration === null) return;
-    const timer = setTimeout(logout, expiration - Date.now());
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      const remaining = expiration - Date.now();
+      if (remaining <= 0) {
+        logout();
+        return;
+      }
+      // setTimeout fires at once for delays above ~24.8 days, so long waits are split into chunks
+      timer = setTimeout(schedule, Math.min(remaining, MAX_TIMEOUT_MS));
+    };
+    schedule();
     return () => clearTimeout(timer);
   }, [token, logout]);
 
