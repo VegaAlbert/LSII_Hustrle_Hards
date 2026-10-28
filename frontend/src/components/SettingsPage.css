@@ -1,9 +1,9 @@
 .settings-page {
   min-height: calc(100vh - var(--pt-navbar-height));
   padding: 2.5rem 1rem 4rem;
-  background: #f5f6fb;
+  background: var(--pt-bg-body);
   text-align: left;
-  color: var(--pt-text);
+  color: var(--pt-text-primary);
 }
 
 .settings-layout {
@@ -32,12 +32,12 @@
   font-weight: 500;
   white-space: nowrap;
   text-decoration: none;
-  color: var(--pt-muted);
+  color: var(--pt-text-secondary);
 }
 
 .settings-nav a:hover {
   color: var(--pt-primary);
-  background: rgba(69, 39, 232, 0.08);
+  background: rgba(var(--pt-primary-rgb), 0.08);
 }
 
 .settings-content {
@@ -51,10 +51,10 @@
   gap: 0.6rem;
   padding: 0.75rem 1rem;
   margin-bottom: 1.25rem;
-  border: 1px solid rgba(69, 39, 232, 0.2);
+  border: 1px solid rgba(var(--pt-primary-rgb), 0.2);
   border-radius: 12px;
   font-size: 0.92rem;
-  background: rgba(69, 39, 232, 0.06);
+  background: rgba(var(--pt-primary-rgb), 0.06);
 }
 
 .settings-notice strong {
@@ -64,14 +64,14 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #fff;
-  background: linear-gradient(90deg, var(--pt-primary) 0%, var(--pt-accent) 100%);
+  background: var(--pt-primary);
 }
 
 .settings-section {
   margin-bottom: 1.25rem;
   border: 1px solid var(--pt-border);
-  border-radius: 16px;
-  background: #fff;
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
   scroll-margin-top: calc(var(--pt-navbar-height) + 1rem);
 }
 
@@ -88,7 +88,7 @@
 .settings-section > header p {
   margin: 0;
   font-size: 0.9rem;
-  color: var(--pt-muted);
+  color: var(--pt-text-secondary);
 }
 
 .settings-row {
@@ -113,19 +113,19 @@
 }
 
 .settings-row-text small {
-  color: var(--pt-muted);
+  color: var(--pt-text-secondary);
 }
 
 .settings-row-control .form-select {
   min-width: 180px;
   border-color: var(--pt-border);
-  border-radius: 10px;
+  border-radius: var(--pt-radius-md);
 }
 
 .settings-row-control .form-select:focus,
 .form-switch .settings-switch:focus {
   border-color: var(--pt-primary);
-  box-shadow: 0 0 0 0.2rem rgba(69, 39, 232, 0.15);
+  box-shadow: 0 0 0 0.2rem rgba(var(--pt-primary-rgb), 0.15);
 }
 
 .settings-switch {
@@ -142,8 +142,8 @@
 .settings-segmented {
   display: inline-flex;
   padding: 3px;
-  border-radius: 10px;
-  background: #eceef5;
+  border-radius: var(--pt-radius-md);
+  background: var(--pt-bg-body);
 }
 
 .settings-segmented label {
@@ -151,7 +151,7 @@
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--pt-muted);
+  color: var(--pt-text-secondary);
   cursor: pointer;
   transition:
     background 0.15s ease,
@@ -160,8 +160,8 @@
 
 .settings-segmented label.active {
   color: var(--pt-primary);
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(28, 29, 43, 0.12);
+  background: var(--pt-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .settings-segmented label:has(input:focus-visible) {
@@ -184,17 +184,21 @@
 
 .settings-actions .btn-light {
   border: 1px solid var(--pt-border);
-  border-radius: 10px;
+  border-radius: var(--pt-radius-pill);
   font-weight: 500;
 }
 
 .settings-save {
   padding: 0.5rem 1.4rem;
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--pt-radius-pill);
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(90deg, var(--pt-primary) 0%, var(--pt-accent) 100%);
+  background: var(--pt-primary);
+}
+
+.settings-save:hover:not(:disabled) {
+  background: var(--pt-primary-hover);
 }
 
 .settings-save:disabled {

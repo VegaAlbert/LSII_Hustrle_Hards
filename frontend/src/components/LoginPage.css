@@ -1,15 +1,14 @@
 /* Brand colours come from theme.css */
 .auth-page {
   --auth-primary: var(--pt-primary);
-  --auth-primary-dark: var(--pt-primary-dark);
-  --auth-accent: var(--pt-accent);
-  --auth-text: var(--pt-text);
-  --auth-muted: var(--pt-muted);
+  --auth-primary-pressed: var(--pt-primary-pressed);
+  --auth-text: var(--pt-text-primary);
+  --auth-muted: var(--pt-text-secondary);
   --auth-border: var(--pt-border);
 
   display: flex;
   min-height: calc(100vh - var(--pt-navbar-height)); /* full height below the navbar */
-  background: #f5f6fb;
+  background: var(--pt-bg-body);
   text-align: left;
 }
 
@@ -23,7 +22,7 @@
   padding: 4rem;
   overflow: hidden;
   color: #fff;
-  background: linear-gradient(135deg, var(--auth-primary-dark) 0%, var(--auth-primary) 45%, var(--auth-accent) 100%);
+  background: linear-gradient(135deg, var(--auth-primary-pressed) 0%, var(--auth-primary) 100%);
 }
 
 .auth-brand::before,
@@ -59,8 +58,8 @@
   height: 72px;
   padding: 12px;
   margin-bottom: 2rem;
-  border-radius: 20px;
-  background: #fff;
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
 }
 
@@ -117,11 +116,10 @@
   width: 100%;
   max-width: 420px;
   padding: 2.5rem 2rem;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow:
-    0 1px 3px rgba(28, 29, 43, 0.06),
-    0 12px 32px rgba(28, 29, 43, 0.08);
+  border: 1px solid var(--pt-border);
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+  box-shadow: var(--pt-shadow);
   animation: auth-fade-in 0.35s ease-out;
 }
 
@@ -147,12 +145,12 @@
 
 .auth-card .form-floating > .form-control {
   border-color: var(--auth-border);
-  border-radius: 10px;
+  border-radius: var(--pt-radius-md);
 }
 
 .auth-card .form-floating > .form-control:focus {
   border-color: var(--auth-primary);
-  box-shadow: 0 0 0 0.2rem rgba(69, 39, 232, 0.15);
+  box-shadow: 0 0 0 0.2rem rgba(var(--pt-primary-rgb), 0.15);
 }
 
 .auth-card .form-floating > .form-control.is-invalid:focus {
@@ -186,7 +184,7 @@
 
 .auth-password-toggle:hover,
 .auth-password-toggle:focus-visible {
-  background: rgba(69, 39, 232, 0.08);
+  background: rgba(var(--pt-primary-rgb), 0.08);
 }
 
 .auth-hint {
@@ -200,11 +198,11 @@
   padding: 0.8rem;
   margin-top: 0.5rem;
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--pt-radius-pill);
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(90deg, var(--auth-primary) 0%, var(--auth-accent) 100%);
-  box-shadow: 0 6px 18px rgba(69, 39, 232, 0.28);
+  background: var(--auth-primary);
+  box-shadow: 0 6px 18px rgba(var(--pt-primary-rgb), 0.28);
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease,
@@ -213,11 +211,13 @@
 
 .auth-submit:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(69, 39, 232, 0.34);
+  background: var(--pt-primary-hover);
+  box-shadow: 0 10px 24px rgba(var(--pt-primary-rgb), 0.34);
 }
 
 .auth-submit:disabled {
-  opacity: 0.75;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .auth-switch {
@@ -237,7 +237,7 @@
 }
 
 .auth-card .alert {
-  border-radius: 10px;
+  border-radius: var(--pt-radius-md);
   font-size: 0.92rem;
 }
 

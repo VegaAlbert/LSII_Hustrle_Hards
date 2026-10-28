@@ -1,10 +1,132 @@
-/* ProTube brand colours, taken from the logo gradient */
+/* ProTube design tokens: see docs/DESIGN_SYSTEM.md. Dark is the default theme */
 :root {
-  --pt-primary: #4527e8;
-  --pt-primary-dark: #3519c9;
-  --pt-accent: #3a8dee;
-  --pt-text: #1c1d2b;
-  --pt-muted: #6b6f80;
-  --pt-border: #dfe1ea;
-  --pt-navbar-height: 60px;
+  --pt-bg-body: #212529;
+  --pt-surface: #2b3035;
+  --pt-border: #343a40;
+  --pt-text-primary: #f8f9fa;
+  --pt-text-secondary: #adb5bd;
+
+  --pt-primary: #e63946;
+  --pt-primary-rgb: 230, 57, 70;
+  --pt-primary-hover: #d62828;
+  --pt-primary-pressed: #b71c1c;
+  --pt-success: #2ec4b6;
+  --pt-warning: #ffb703;
+  --pt-danger: #e63946;
+  --pt-info: #4cc9f0;
+
+  --pt-font-family: Inter, system-ui, -apple-system, sans-serif;
+  --pt-radius-sm: 4px;
+  --pt-radius-md: 8px;
+  --pt-radius-lg: 12px;
+  --pt-radius-pill: 9999px;
+  --pt-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  --pt-focus-ring: 0 0 0 0.2rem rgba(var(--pt-primary-rgb), 0.35);
+  --pt-navbar-height: 64px;
+}
+
+/* Light variant: only the neutral tokens change */
+[data-bs-theme='light'] {
+  --pt-bg-body: #f8f9fa;
+  --pt-surface: #ffffff;
+  --pt-border: #dee2e6;
+  --pt-text-primary: #212529;
+  --pt-text-secondary: #6c757d;
+  --pt-shadow: 0 12px 32px rgba(33, 37, 41, 0.12);
+}
+
+/* Bootstrap reads its own variables: point them to the ProTube tokens */
+:root,
+[data-bs-theme] {
+  --bs-body-font-family: var(--pt-font-family);
+  --bs-body-font-size: 0.875rem;
+  --bs-body-line-height: 1.43;
+  --bs-body-bg: var(--pt-bg-body);
+  --bs-body-color: var(--pt-text-primary);
+  --bs-secondary-color: var(--pt-text-secondary);
+  --bs-tertiary-bg: var(--pt-surface);
+  --bs-border-color: var(--pt-border);
+  --bs-primary: var(--pt-primary);
+  --bs-primary-rgb: var(--pt-primary-rgb);
+  --bs-link-color: var(--pt-primary);
+  --bs-link-color-rgb: var(--pt-primary-rgb);
+  --bs-link-hover-color: var(--pt-primary-hover);
+  --bs-link-hover-color-rgb: 214, 40, 40;
+  --bs-card-bg: var(--pt-surface);
+  --bs-border-radius: var(--pt-radius-md);
+  --bs-focus-ring-color: rgba(var(--pt-primary-rgb), 0.35);
+}
+
+body {
+  background: var(--pt-bg-body);
+  color: var(--pt-text-primary);
+}
+
+.text-muted {
+  color: var(--pt-text-secondary) !important;
+}
+
+.card {
+  --bs-card-bg: var(--pt-surface);
+  --bs-card-border-color: var(--pt-border);
+}
+
+.form-control,
+.form-select {
+  background-color: var(--pt-surface);
+  border-color: var(--pt-border);
+  color: var(--pt-text-primary);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: var(--pt-primary);
+  box-shadow: var(--pt-focus-ring);
+}
+
+.form-check-input:checked {
+  border-color: var(--pt-primary);
+  background-color: var(--pt-primary);
+}
+
+.list-group {
+  --bs-list-group-bg: var(--pt-surface);
+  --bs-list-group-border-color: var(--pt-border);
+}
+
+/* Buttons: primary, secondary and ghost from the design system */
+.btn-primary {
+  --bs-btn-bg: var(--pt-primary);
+  --bs-btn-border-color: var(--pt-primary);
+  --bs-btn-hover-bg: var(--pt-primary-hover);
+  --bs-btn-hover-border-color: var(--pt-primary-hover);
+  --bs-btn-active-bg: var(--pt-primary-pressed);
+  --bs-btn-active-border-color: var(--pt-primary-pressed);
+  --bs-btn-disabled-bg: var(--pt-primary);
+  --bs-btn-disabled-border-color: var(--pt-primary);
+  --bs-btn-focus-shadow-rgb: var(--pt-primary-rgb);
+}
+
+.btn-light {
+  --bs-btn-bg: var(--pt-surface);
+  --bs-btn-border-color: var(--pt-border);
+  --bs-btn-color: var(--pt-text-primary);
+  --bs-btn-hover-bg: var(--pt-border);
+  --bs-btn-hover-border-color: var(--pt-border);
+  --bs-btn-hover-color: var(--pt-text-primary);
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--pt-text-secondary);
+  --bs-btn-border-color: var(--pt-border);
+  --bs-btn-hover-bg: var(--pt-surface);
+  --bs-btn-hover-border-color: var(--pt-border);
+  --bs-btn-hover-color: var(--pt-text-primary);
+}
+
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
