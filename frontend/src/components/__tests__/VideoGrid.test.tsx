@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import VideoGrid from '../VideoGrid';
 import { fetchVideos, type Page, type VideoSummary } from '../../videos/videosApi';
 
@@ -33,7 +34,7 @@ describe('VideoGrid', () => {
   it('shows a loading message while the first page is requested', async () => {
     mockedFetchVideos.mockResolvedValueOnce(page([video(1)], 0, 1));
 
-    render(<VideoGrid />);
+    render(<VideoGrid />, { wrapper: MemoryRouter });
 
     expect(screen.getByRole('status')).toHaveTextContent('Loading videos...');
     expect(await screen.findByRole('list', { name: 'Videos' })).toBeInTheDocument();
@@ -43,7 +44,7 @@ describe('VideoGrid', () => {
   it('shows the first page of videos', async () => {
     mockedFetchVideos.mockResolvedValueOnce(page([video(1), video(2)], 0, 1));
 
-    render(<VideoGrid />);
+    render(<VideoGrid />, { wrapper: MemoryRouter });
 
     const list = await screen.findByRole('list', { name: 'Videos' });
     expect(list.children).toHaveLength(2);
@@ -55,7 +56,7 @@ describe('VideoGrid', () => {
   it('hides "Load more" when there are no more pages', async () => {
     mockedFetchVideos.mockResolvedValueOnce(page([video(1)], 0, 1));
 
-    render(<VideoGrid />);
+    render(<VideoGrid />, { wrapper: MemoryRouter });
 
     await screen.findByRole('list', { name: 'Videos' });
     expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument();
@@ -67,7 +68,7 @@ describe('VideoGrid', () => {
       .mockResolvedValueOnce(page([video(1), video(2)], 0, 2))
       .mockResolvedValueOnce(page([video(3)], 1, 2));
 
-    render(<VideoGrid />);
+    render(<VideoGrid />, { wrapper: MemoryRouter });
     await user.click(await screen.findByRole('button', { name: 'Load more' }));
 
     expect(await screen.findByRole('img', { name: 'Video 3' })).toBeInTheDocument();
@@ -80,7 +81,7 @@ describe('VideoGrid', () => {
   it('shows a message when there are no videos', async () => {
     mockedFetchVideos.mockResolvedValueOnce(page([], 0, 0));
 
-    render(<VideoGrid />);
+    render(<VideoGrid />, { wrapper: MemoryRouter });
 
     expect(await screen.findByText('No videos available yet.')).toBeInTheDocument();
     expect(screen.queryByRole('list', { name: 'Videos' })).not.toBeInTheDocument();
@@ -90,7 +91,7 @@ describe('VideoGrid', () => {
     const user = userEvent.setup();
     mockedFetchVideos.mockRejectedValueOnce(new Error('Network Error')).mockResolvedValueOnce(page([video(1)], 0, 1));
 
-    render(<VideoGrid />);
+    render(<VideoGrid />, { wrapper: MemoryRouter });
     expect(await screen.findByRole('alert')).toHaveTextContent('Could not load the videos.');
     await user.click(screen.getByRole('button', { name: 'Retry' }));
 
@@ -107,7 +108,7 @@ describe('VideoGrid', () => {
       .mockRejectedValueOnce(new Error('Network Error'))
       .mockResolvedValueOnce(page([video(2)], 1, 2));
 
-    render(<VideoGrid />);
+    render(<VideoGrid />, { wrapper: MemoryRouter });
     await user.click(await screen.findByRole('button', { name: 'Load more' }));
 
     expect(await screen.findByRole('alert')).toBeInTheDocument();

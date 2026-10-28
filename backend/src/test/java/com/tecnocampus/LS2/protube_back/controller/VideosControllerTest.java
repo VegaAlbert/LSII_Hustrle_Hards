@@ -1,7 +1,9 @@
 package com.tecnocampus.LS2.protube_back.controller;
 
+import com.tecnocampus.LS2.protube_back.domain.Comment;
 import com.tecnocampus.LS2.protube_back.domain.Video;
 import com.tecnocampus.LS2.protube_back.repository.VideoRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,9 @@ class VideosControllerTest {
 
     @Autowired
     VideoRepository videoRepository;
+
+    @Autowired
+    EntityManager entityManager;
 
     @BeforeEach
     void setUp() {
@@ -111,5 +116,50 @@ class VideosControllerTest {
         mockMvc.perform(get("/api/videos").param("page", "abc"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors.page").value("Invalid value"));
+    }
+
+    @Test
+    void returnsTheDetailOfAVideoWithItsCommentsNewestFirst() throws Exception {
+        Video video = new Video("10", "Detail", "Long description", "Channel", 75, 1920, 1080,
+                Instant.ofEpochSecond(1700000000L), "10.mp4", "10.webp");
+        video.addComment(new Comment("ann", "Older", 1, Instant.ofEpochSecond(1700000100L)));
+        video.addComment(new Comment("bob", "Newer", 5, Instant.ofEpochSecond(1700000200L)));
+        Long id = videoRepository.saveAndFlush(video).getId();
+        // Read from the database again, as a real request would, so @OrderBy is applied
+        entityManager.clear();
+
+        mockMvc.perform(get("/api/videos/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.title").value("Detail"))
+                .andExpect(jsonPath("$.description").value("Long description"))
+                .andExpect(jsonPath("$.author").value("Channel"))
+                .andExpect(jsonPath("$.durationSeconds").value(75))
+                .andExpect(jsonPath("$.videoUrl").value("/media/10.mp4"))
+                .andExpect(jsonPath("$.thumbnailUrl").value("/media/10.webp"))
+                // ISO-8601 string, not a number, so the frontend can parse it with new Date()
+                .andExpect(jsonPath("$.publishedAt").value("2023-11-14T22:13:20Z"))
+                .andExpect(jsonPath("$.comments[0].publishedAt").value("2023-11-14T22:16:40Z"))
+                .andExpect(jsonPath("$.comments", hasSize(2)))
+                .andExpect(jsonPath("$.comments[0].author").value("bob"))
+                .andExpect(jsonPath("$.comments[0].text").value("Newer"))
+                .andExpect(jsonPath("$.comments[0].likeCount").value(5))
+                .andExpect(jsonPath("$.comments[1].text").value("Older"))
+                .andExpect(jsonPath("$.storeId").doesNotExist())
+                .andExpect(jsonPath("$.videoFile").doesNotExist());
+    }
+
+    @Test
+    void answersNotFoundForAnUnknownVideo() throws Exception {
+        mockMvc.perform(get("/api/videos/{id}", 999999))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Video 999999 not found"));
+    }
+
+    @Test
+    void rejectsANonNumericVideoId() throws Exception {
+        mockMvc.perform(get("/api/videos/abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.id").value("Invalid value"));
     }
 }

@@ -1,7 +1,10 @@
 package com.tecnocampus.LS2.protube_back.services;
 
+import com.tecnocampus.LS2.protube_back.controller.dto.CommentResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.PageResponse;
+import com.tecnocampus.LS2.protube_back.controller.dto.VideoDetailResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
+import com.tecnocampus.LS2.protube_back.domain.Comment;
 import com.tecnocampus.LS2.protube_back.domain.Video;
 import com.tecnocampus.LS2.protube_back.repository.VideoRepository;
 import org.junit.jupiter.api.Test;
@@ -14,8 +17,10 @@ import org.springframework.data.domain.PageRequest;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,5 +47,33 @@ class VideoServiceTest {
         assertEquals(3, response.totalPages());
         assertEquals(List.of(new VideoSummaryResponse(null, "Title", "Author", 90, "/media/3.webp")),
                 response.content());
+    }
+
+    @Test
+    void getVideoReturnsTheDetailWithItsComments() {
+        Video video = new Video("3", "Title", "Description", "Author", 90, 1280, 720,
+                Instant.ofEpochSecond(1700000000), "3.mp4", "3.webp");
+        video.addComment(new Comment("bob", "Nice", 2, Instant.ofEpochSecond(1700000001)));
+        when(videoRepository.findById(7L)).thenReturn(Optional.of(video));
+
+        VideoDetailResponse response = videoService.getVideo(7L);
+
+        assertEquals("Title", response.title());
+        assertEquals("Description", response.description());
+        assertEquals("Author", response.author());
+        assertEquals(90, response.durationSeconds());
+        assertEquals(Instant.ofEpochSecond(1700000000), response.publishedAt());
+        assertEquals("/media/3.mp4", response.videoUrl());
+        assertEquals("/media/3.webp", response.thumbnailUrl());
+        assertEquals(List.of(new CommentResponse(null, "bob", "Nice", 2, Instant.ofEpochSecond(1700000001))),
+                response.comments());
+    }
+
+    @Test
+    void getVideoThrowsWhenTheVideoDoesNotExist() {
+        when(videoRepository.findById(99L)).thenReturn(Optional.empty());
+
+        VideoNotFoundException e = assertThrows(VideoNotFoundException.class, () -> videoService.getVideo(99L));
+        assertEquals("Video 99 not found", e.getMessage());
     }
 }

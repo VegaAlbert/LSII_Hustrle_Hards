@@ -1,7 +1,9 @@
 package com.tecnocampus.LS2.protube_back.services;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tecnocampus.LS2.protube_back.domain.Comment;
 import com.tecnocampus.LS2.protube_back.domain.Video;
 import com.tecnocampus.LS2.protube_back.repository.VideoRepository;
 import org.slf4j.Logger;
@@ -99,8 +101,23 @@ public class VideoStoreImporter {
     private static Video toVideo(StoreVideo json, String videoFile, String thumbnailFile) {
         String description = json.meta() == null ? null : json.meta().description();
         int durationSeconds = json.duration() == null ? 0 : (int) Math.round(json.duration());
-        return new Video(json.id(), json.title(), description, json.user(), durationSeconds,
+        Video video = new Video(json.id(), json.title(), description, json.user(), durationSeconds,
                 json.width(), json.height(), Instant.ofEpochSecond(json.timestamp()), videoFile, thumbnailFile);
+
+        if (json.meta() != null && json.meta().comments() != null) {
+            json.meta().comments().stream()
+                    // A comment without text or author cannot be shown: skip it
+                    .filter(comment -> !isBlank(comment.text()) && !isBlank(comment.author()))
+                    .map(VideoStoreImporter::toComment)
+                    .forEach(video::addComment);
+        }
+        return video;
+    }
+
+    private static Comment toComment(StoreComment json) {
+        int likeCount = json.likeCount() == null ? 0 : json.likeCount();
+        Instant publishedAt = json.timestamp() == null ? null : Instant.ofEpochSecond(json.timestamp());
+        return new Comment(json.author(), json.text(), likeCount, publishedAt);
     }
 
     private static boolean isBlank(String value) {
@@ -108,7 +125,7 @@ public class VideoStoreImporter {
     }
 
     /**
-     * Fields of the store json used by this story; the rest (tags, categories, comments...) are ignored.
+     * Fields of the store json that are imported; the rest (tags, categories, view count...) are ignored.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     record StoreVideo(String id, Integer width, Integer height, Double duration, String title, String user,
@@ -116,6 +133,10 @@ public class VideoStoreImporter {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    record Meta(String description) {
+    record Meta(String description, List<StoreComment> comments) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    record StoreComment(String text, String author, Long timestamp, @JsonProperty("like_count") Integer likeCount) {
     }
 }

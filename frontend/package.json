@@ -24,7 +24,8 @@
     "globals": "^16.3.0",
     "prettier": "^3.6.2",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.18.5"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",

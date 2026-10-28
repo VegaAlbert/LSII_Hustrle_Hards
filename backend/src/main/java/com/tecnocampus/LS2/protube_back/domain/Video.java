@@ -1,18 +1,24 @@
 package com.tecnocampus.LS2.protube_back.domain;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import org.hibernate.Length;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A video of the catalog. Its media files ({@code videoFile}, {@code thumbnailFile}) live in the video store and are
- * served under {@code /media/**}. Tags, categories and comments are added by US-07 / US-09.
+ * served under {@code /media/**}. Tags and categories are added by US-07.
  */
 @Entity
 @Table(name = "videos")
@@ -50,6 +56,11 @@ public class Video {
 
     @Column(nullable = false)
     private String thumbnailFile;
+
+    // Saved and deleted together with the video; newest first, the id breaks ties
+    @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("publishedAt DESC, id DESC")
+    private List<Comment> comments = new ArrayList<>();
 
     protected Video() {
         // Required by JPA
@@ -111,5 +122,14 @@ public class Video {
 
     public String getThumbnailFile() {
         return thumbnailFile;
+    }
+
+    public List<Comment> getComments() {
+        return Collections.unmodifiableList(comments);
+    }
+
+    public void addComment(Comment comment) {
+        comment.setVideo(this);
+        comments.add(comment);
     }
 }

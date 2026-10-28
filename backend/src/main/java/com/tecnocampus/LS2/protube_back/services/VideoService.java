@@ -1,6 +1,7 @@
 package com.tecnocampus.LS2.protube_back.services;
 
 import com.tecnocampus.LS2.protube_back.controller.dto.PageResponse;
+import com.tecnocampus.LS2.protube_back.controller.dto.VideoDetailResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
 import com.tecnocampus.LS2.protube_back.repository.VideoRepository;
 import org.springframework.data.domain.PageRequest;
@@ -27,5 +28,15 @@ public class VideoService {
     public PageResponse<VideoSummaryResponse> getVideos(int page, int size) {
         return PageResponse.from(videoRepository.findAll(PageRequest.of(page, size, NEWEST_FIRST))
                 .map(VideoSummaryResponse::from));
+    }
+
+    /**
+     * US-05: one video with its comments. Read in a transaction so the lazy comments can be loaded.
+     */
+    @Transactional(readOnly = true)
+    public VideoDetailResponse getVideo(Long id) {
+        return videoRepository.findById(id)
+                .map(VideoDetailResponse::from)
+                .orElseThrow(() -> new VideoNotFoundException(id));
     }
 }
