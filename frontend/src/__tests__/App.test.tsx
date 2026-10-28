@@ -82,4 +82,36 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
   });
+
+  describe('search', () => {
+    it('searches videos from the home page', async () => {
+      const user = userEvent.setup();
+      renderAt('/');
+      await screen.findByRole('list', { name: 'Videos' });
+
+      await user.type(screen.getByRole('combobox', { name: 'Search videos' }), 'video{Enter}');
+
+      expect(await screen.findByRole('list', { name: 'Results for "video"' })).toBeInTheDocument();
+      expect(mockedFetchVideos).toHaveBeenCalledWith(0, 12, 'video');
+    });
+
+    it('opens the search written in the URL', async () => {
+      renderAt('/?q=cats');
+
+      expect(await screen.findByRole('list', { name: 'Results for "cats"' })).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Search videos' })).toHaveValue('cats');
+      expect(mockedFetchVideos).toHaveBeenCalledWith(0, 12, 'cats');
+    });
+
+    it('clears the search when going home from the navbar', async () => {
+      const user = userEvent.setup();
+      renderAt('/?q=cats');
+      await screen.findByRole('list', { name: 'Results for "cats"' });
+
+      await user.click(screen.getByRole('button', { name: 'Pro Tube' }));
+
+      expect(await screen.findByRole('list', { name: 'Videos' })).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Search videos' })).toHaveValue('');
+    });
+  });
 });

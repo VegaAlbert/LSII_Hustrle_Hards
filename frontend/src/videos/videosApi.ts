@@ -44,8 +44,13 @@ export type VideoDetail = {
   comments: VideoComment[];
 };
 
-export async function fetchVideos(page: number, size: number): Promise<Page<VideoSummary>> {
-  const response = await axios.get<Page<VideoSummary>>(`${getEnv().API_BASE_URL}/videos`, { params: { page, size } });
+/**
+ * One page of the video list. With a non-blank `query`, only the matching videos, most relevant first (US-08).
+ */
+export async function fetchVideos(page: number, size: number, query = ''): Promise<Page<VideoSummary>> {
+  const q = query.trim();
+  const params = q ? { q, page, size } : { page, size };
+  const response = await axios.get<Page<VideoSummary>>(`${getEnv().API_BASE_URL}/videos`, { params });
   return response.data;
 }
 

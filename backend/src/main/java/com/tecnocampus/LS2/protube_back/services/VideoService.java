@@ -39,4 +39,25 @@ public class VideoService {
                 .map(VideoDetailResponse::from)
                 .orElseThrow(() -> new VideoNotFoundException(id));
     }
+
+    /**
+     * US-08: one page of the videos matching {@code query}, most relevant first. A blank query is not an error: it
+     * returns the whole list, as {@link #getVideos(int, int)} (team decision for the empty search).
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<VideoSummaryResponse> searchVideos(String query, int page, int size) {
+        if (query == null || query.isBlank()) {
+            return getVideos(page, size);
+        }
+
+        // The ORDER BY of the query already ranks the results, so the page request is unsorted
+        String text = escapeLike(query.trim());
+        return PageResponse.from(videoRepository.search(text, text + "%", "%" + text + "%", PageRequest.of(page, size))
+                .map(VideoSummaryResponse::from));
+    }
+
+    // Makes %, _ and \ typed by the user match literally instead of acting as LIKE wildcards
+    static String escapeLike(String text) {
+        return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    }
 }

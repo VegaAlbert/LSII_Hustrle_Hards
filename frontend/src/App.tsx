@@ -3,7 +3,7 @@ import './App.css';
 import { AuthProvider } from './auth/AuthProvider';
 import Layout from './components/Layout';
 import LoginPage from './components/LoginPage';
-import VideoGrid from './components/VideoGrid';
+import HomePage from './pages/HomePage';
 import NotFoundPage from './pages/NotFoundPage';
 import VideoDetailPage from './pages/VideoDetailPage';
 
@@ -18,7 +18,7 @@ const LoginRoute = () => {
 export const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Layout />}>
-      <Route index element={<VideoGrid />} />
+      <Route index element={<HomePage />} />
       <Route path="login" element={<LoginRoute />} />
       <Route path="videos/:id" element={<VideoDetailPage />} />
       <Route path="*" element={<NotFoundPage />} />
