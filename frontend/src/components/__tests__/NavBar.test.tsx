@@ -2,13 +2,13 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import NavBar from '../NavBar';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 
-const renderNavBar = (user: AuthContextValue['user']) => {
+const renderNavBar = (user: AuthContextValue['user'], showLogin?: boolean) => {
   const auth: AuthContextValue = { user, login: jest.fn(), register: jest.fn(), logout: jest.fn() };
   const onHome = jest.fn();
   const onLogin = jest.fn();
   render(
     <AuthContext.Provider value={auth}>
-      <NavBar onHome={onHome} onLogin={onLogin} />
+      <NavBar onHome={onHome} onLogin={onLogin} showLogin={showLogin} />
     </AuthContext.Provider>
   );
   return { auth, onHome, onLogin };
@@ -23,10 +23,16 @@ describe('NavBar', () => {
     expect(onLogin).toHaveBeenCalled();
   });
 
+  it('hides the login button while the login page is open', () => {
+    renderNavBar(null, false);
+
+    expect(screen.queryByRole('button', { name: 'Log in' })).not.toBeInTheDocument();
+  });
+
   it('goes home when clicking the brand', () => {
     const { onHome } = renderNavBar(null);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Pro Tube' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ProTube' }));
 
     expect(onHome).toHaveBeenCalled();
   });
@@ -39,6 +45,7 @@ describe('NavBar', () => {
     expect(screen.queryByText('Logout')).not.toBeInTheDocument();
 
     fireEvent.click(avatar);
+    expect(screen.getByText('alice@mail.com')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Logout' }));
 
     expect(auth.logout).toHaveBeenCalled();

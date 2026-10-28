@@ -128,6 +128,23 @@ describe('AuthProvider', () => {
     expect(screen.getByTestId('user')).toHaveTextContent('anonymous');
   });
 
+  it('keeps the session for tokens that expire after the maximum setTimeout delay', async () => {
+    jest.useFakeTimers();
+    const day = 24 * 60 * 60 * 1000;
+    saveSession({ token: tokenExpiringIn(30 * day), user });
+    renderWithProvider();
+
+    await act(async () => {
+      jest.advanceTimersByTime(25 * day);
+    });
+    expect(screen.getByTestId('user')).toHaveTextContent('alice');
+
+    await act(async () => {
+      jest.advanceTimersByTime(6 * day);
+    });
+    expect(screen.getByTestId('user')).toHaveTextContent('anonymous');
+  });
+
   it('fails when used outside the provider', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
 

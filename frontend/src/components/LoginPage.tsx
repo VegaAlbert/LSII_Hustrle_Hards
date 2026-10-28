@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../auth/authContext';
 import { toApiError } from '../auth/authApi';
+import './LoginPage.css';
 
 type Mode = 'login' | 'register';
 type FieldErrors = Record<string, string>;
@@ -52,6 +53,7 @@ const LoginPage = ({ onSuccess }: Props) => {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const isRegister = mode === 'register';
 
@@ -89,73 +91,102 @@ const LoginPage = ({ onSuccess }: Props) => {
   const inputClass = (field: string) => `form-control${fieldErrors[field] ? ' is-invalid' : ''}`;
 
   return (
-    <div className="container py-5" style={{ maxWidth: 420 }}>
-      <h2 className="mb-4">{isRegister ? 'Create account' : 'Log in'}</h2>
-
-      {formError && (
-        <div className="alert alert-danger" role="alert">
-          {formError}
+    <div className="auth-page">
+      <aside className="auth-brand">
+        <div className="auth-brand-content">
+          <img src="/protube-imago-removebg-preview.png" className="auth-brand-logo" alt="" />
+          <h2>Your videos, your community.</h2>
+          <p>Join ProTube to upload your own videos and talk about them with other students.</p>
+          <ul className="auth-features">
+            <li>Watch videos from the whole community</li>
+            <li>Upload and share your own content</li>
+            <li>Comment and join the conversation</li>
+          </ul>
         </div>
-      )}
+      </aside>
 
-      <form onSubmit={handleSubmit} noValidate>
-        <div className="mb-3">
-          <label htmlFor="username" className="form-label">
-            Username
-          </label>
-          <input
-            id="username"
-            className={inputClass('username')}
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username"
-          />
-          <div className="invalid-feedback">{fieldErrors.username}</div>
+      <main className="auth-form-panel">
+        <div className="auth-card">
+          <img src="/protube-imago-removebg-preview.png" className="auth-card-logo" alt="ProTube" />
+          <h1>{isRegister ? 'Create account' : 'Log in'}</h1>
+          <p className="auth-subtitle">
+            {isRegister ? 'It only takes a minute to get started.' : 'Welcome back! Please enter your details.'}
+          </p>
+
+          {formError && (
+            <div className="alert alert-danger" role="alert">
+              {formError}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="form-floating mb-3">
+              <input
+                id="username"
+                className={inputClass('username')}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                placeholder="Username"
+              />
+              <label htmlFor="username">Username</label>
+              <div className="invalid-feedback">{fieldErrors.username}</div>
+            </div>
+
+            {isRegister && (
+              <div className="form-floating mb-3">
+                <input
+                  id="email"
+                  type="email"
+                  className={inputClass('email')}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  placeholder="Email"
+                />
+                <label htmlFor="email">Email</label>
+                <div className="invalid-feedback">{fieldErrors.email}</div>
+              </div>
+            )}
+
+            <div className="form-floating auth-password mb-3">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                className={inputClass('password')}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete={isRegister ? 'new-password' : 'current-password'}
+                placeholder="Password"
+              />
+              <label htmlFor="password">Password</label>
+              <button
+                type="button"
+                className="auth-password-toggle"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((shown) => !shown)}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+              <div className="invalid-feedback">{fieldErrors.password}</div>
+              {isRegister && !fieldErrors.password && <div className="auth-hint">At least 8 characters.</div>}
+            </div>
+
+            <button type="submit" className="auth-submit" disabled={submitting}>
+              {submitting && <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" />}
+              {isRegister ? 'Register' : 'Login'}
+            </button>
+          </form>
+
+          <p className="auth-switch">
+            {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <button type="button" className="btn btn-link p-0 align-baseline" onClick={switchMode}>
+              {isRegister ? 'Log in' : 'Register'}
+            </button>
+          </p>
         </div>
-
-        {isRegister && (
-          <div className="mb-3">
-            <label htmlFor="email" className="form-label">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              className={inputClass('email')}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-            />
-            <div className="invalid-feedback">{fieldErrors.email}</div>
-          </div>
-        )}
-
-        <div className="mb-3">
-          <label htmlFor="password" className="form-label">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            className={inputClass('password')}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete={isRegister ? 'new-password' : 'current-password'}
-          />
-          <div className="invalid-feedback">{fieldErrors.password}</div>
-        </div>
-
-        <button type="submit" className="btn btn-primary w-100" disabled={submitting}>
-          {isRegister ? 'Register' : 'Login'}
-        </button>
-      </form>
-
-      <p className="mt-3 text-center">
-        {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
-        <button type="button" className="btn btn-link p-0 align-baseline" onClick={switchMode}>
-          {isRegister ? 'Log in' : 'Register'}
-        </button>
-      </p>
+      </main>
     </div>
   );
 };

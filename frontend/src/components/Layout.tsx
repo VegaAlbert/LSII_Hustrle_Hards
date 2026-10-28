@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import NavBar from './NavBar';
 
 /**
@@ -6,10 +6,11 @@ import NavBar from './NavBar';
  */
 const Layout = () => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   return (
     <div className="App">
-      <NavBar onHome={() => navigate('/')} onLogin={() => navigate('/login')} />
+      <NavBar onHome={() => navigate('/')} onLogin={() => navigate('/login')} showLogin={pathname !== '/login'} />
       <main className="container py-4">
         <Outlet />
       </main>

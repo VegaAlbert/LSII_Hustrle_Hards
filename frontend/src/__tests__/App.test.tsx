@@ -73,7 +73,7 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Log in' })).toBeInTheDocument();
     expect(screen.queryByRole('list', { name: 'Videos' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Pro Tube' }));
+    await user.click(screen.getByRole('button', { name: 'ProTube' }));
     expect(await screen.findByRole('list', { name: 'Videos' })).toBeInTheDocument();
   });
 

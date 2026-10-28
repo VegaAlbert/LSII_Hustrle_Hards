@@ -1,0 +1,10 @@
+/* ProTube brand colours, taken from the logo gradient */
+:root {
+  --pt-primary: #4527e8;
+  --pt-primary-dark: #3519c9;
+  --pt-accent: #3a8dee;
+  --pt-text: #1c1d2b;
+  --pt-muted: #6b6f80;
+  --pt-border: #dfe1ea;
+  --pt-navbar-height: 60px;
+}
