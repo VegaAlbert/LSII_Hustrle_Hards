@@ -43,6 +43,8 @@ const SearchBar = ({ initialQuery = '', onSearch }: Props) => {
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Escape') {
+      // Browsers clear a search input on Escape: with the list open, Escape only closes the list
+      if (listVisible) event.preventDefault();
       setOpen(false);
       setActiveIndex(-1);
       return;
@@ -105,7 +107,7 @@ const SearchBar = ({ initialQuery = '', onSearch }: Props) => {
                 id={optionId(video)}
                 role="option"
                 aria-selected={index === activeIndex}
-                className={`list-group-item list-group-item-action${index === activeIndex ? ' active' : ''}`}
+                className={`list-group-item list-group-item-action text-start${index === activeIndex ? ' active' : ''}`}
                 style={{ cursor: 'pointer' }}
                 // Keeps the focus in the input, so its blur does not close the list before the click
                 onMouseDown={(event) => event.preventDefault()}

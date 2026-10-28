@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import SearchBar from '../SearchBar';
 import { fetchVideos, type Page, type VideoSummary } from '../../videos/videosApi';
@@ -140,6 +140,22 @@ describe('SearchBar', () => {
 
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
       expect(onSearch).not.toHaveBeenCalled();
+    });
+
+    it('keeps the typed text when Escape closes the list', async () => {
+      const user = userEvent.setup();
+      render(<SearchBar onSearch={onSearch} />);
+      const box = screen.getByRole('combobox', { name: 'Search videos' });
+
+      await user.type(box, 'cats');
+      await screen.findByRole('listbox');
+      // Real browsers clear a search input on Escape, jsdom does not: fireEvent returns false when the component
+      // cancels that default action
+      const notCancelled = fireEvent.keyDown(box, { key: 'Escape' });
+
+      expect(notCancelled).toBe(false);
+      expect(box).toHaveValue('cats');
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     });
 
     it('closes the list when the search box loses the focus', async () => {
