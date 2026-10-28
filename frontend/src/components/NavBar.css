@@ -1,0 +1,124 @@
+.pt-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--pt-navbar-height);
+  padding: 0 1.5rem;
+  border-bottom: 1px solid var(--pt-border);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(180%) blur(8px);
+}
+
+.pt-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--pt-text);
+}
+
+.pt-brand img {
+  width: 34px;
+  height: 34px;
+}
+
+.pt-brand span {
+  background: linear-gradient(90deg, var(--pt-primary) 0%, var(--pt-accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.pt-login-btn {
+  padding: 0.5rem 1.25rem;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(90deg, var(--pt-primary) 0%, var(--pt-accent) 100%);
+  box-shadow: 0 4px 12px rgba(69, 39, 232, 0.25);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.pt-login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(69, 39, 232, 0.32);
+}
+
+.pt-user {
+  position: relative;
+}
+
+.pt-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--pt-primary) 0%, var(--pt-accent) 100%);
+  box-shadow: 0 0 0 2px rgba(69, 39, 232, 0.2);
+}
+
+.pt-avatar:hover,
+.pt-avatar[aria-expanded='true'] {
+  box-shadow: 0 0 0 3px rgba(69, 39, 232, 0.35);
+}
+
+.pt-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 200px;
+  padding: 0.5rem;
+  margin: 0;
+  list-style: none;
+  border: 1px solid var(--pt-border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(28, 29, 43, 0.12);
+  text-align: left;
+}
+
+.pt-menu-header {
+  padding: 0.5rem 0.75rem 0.75rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid var(--pt-border);
+}
+
+.pt-menu-header strong {
+  display: block;
+  color: var(--pt-text);
+}
+
+.pt-menu-header small {
+  color: var(--pt-muted);
+}
+
+.pt-menu-item {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-radius: 8px;
+  text-align: left;
+  color: var(--pt-text);
+  background: none;
+}
+
+.pt-menu-item:hover,
+.pt-menu-item:focus-visible {
+  background: rgba(69, 39, 232, 0.08);
+}
