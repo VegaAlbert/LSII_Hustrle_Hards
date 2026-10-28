@@ -1,6 +1,9 @@
 import { useVideoList } from '../videos/useVideoList';
 import VideoCard from './VideoCard';
 
+// Placeholders shown while the first page loads; fixed ids because they never change
+const SKELETON_IDS = Array.from({ length: 8 }, (_, index) => `skeleton-${index}`);
+
 type Props = {
   // US-08: when not empty, only the videos matching it, most relevant first
   query?: string;
@@ -21,7 +24,7 @@ const VideoGrid = ({ query = '' }: Props) => {
       {videos.length > 0 && (
         <ul
           aria-label={query ? `Results for "${query}"` : 'Videos'}
-          className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 list-unstyled"
+          className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4 list-unstyled video-grid"
         >
           {videos.map((video) => (
             <li key={video.id} className="col">
@@ -31,9 +34,23 @@ const VideoGrid = ({ query = '' }: Props) => {
         </ul>
       )}
 
+      {status === 'loading' && videos.length === 0 && (
+        <ul className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4 list-unstyled" aria-hidden="true">
+          {SKELETON_IDS.map((id) => (
+            <li key={id} className="col">
+              <div className="video-card-skeleton">
+                <div className="skeleton-thumbnail" />
+                <div className="skeleton-line" />
+                <div className="skeleton-line is-short" />
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <div className="d-flex flex-column align-items-center gap-2 my-4">
         {status === 'loading' && (
-          <p role="status" className="text-muted mb-0">
+          <p role="status" className={videos.length === 0 ? 'visually-hidden' : 'text-muted mb-0'}>
             Loading videos...
           </p>
         )}

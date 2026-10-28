@@ -28,7 +28,17 @@ describe('App', () => {
     mockedFetchVideos.mockReset();
     mockedFetchVideo.mockReset();
     mockedFetchVideos.mockResolvedValue({
-      content: [{ id: 1, title: 'Video 1', author: 'Author', durationSeconds: 60, thumbnailUrl: '/media/1.webp' }],
+      content: [
+        {
+          id: 1,
+          title: 'Video 1',
+          author: 'Author',
+          durationSeconds: 60,
+          publishedAt: '2024-01-01T00:00:00Z',
+          thumbnailUrl: '/media/1.webp',
+          videoUrl: '/media/1.mp4',
+        },
+      ],
       page: 0,
       size: 12,
       totalElements: 1,

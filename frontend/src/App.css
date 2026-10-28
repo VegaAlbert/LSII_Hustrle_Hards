@@ -2,13 +2,6 @@
   text-align: center;
 }
 
-.video-card-thumbnail {
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: var(--pt-radius-md);
-  background-color: var(--pt-surface);
-}
-
 /* ===== Video detail page (US-05) ===== */
 
 .video-detail {
@@ -214,8 +207,82 @@
   }
 }
 
+/* ===== Home grid (US-04) ===== */
+
+.video-card {
+  position: relative;
+  text-align: left;
+}
+
+/* Thumbnail and hover preview share the same 16:9 box */
+.video-card-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+  transition: border-radius 0.2s ease;
+}
+
+.video-card.is-previewing .video-card-media {
+  border-radius: var(--pt-radius-md);
+}
+
+.video-card-thumbnail,
+.video-card-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-card-preview {
+  background: #000;
+}
+
+.video-card-progress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.video-card-progress span {
+  display: block;
+  height: 100%;
+  background: var(--pt-primary);
+}
+
+/* Duration overlay on thumbnails: 11 / 14px bold */
+.video-card-duration {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  border-radius: var(--pt-radius-sm);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 0.875rem;
+  letter-spacing: 0.02em;
+}
+
+.video-card.is-previewing .video-card-duration {
+  bottom: 0.75rem;
+}
+
+.video-card-body {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+}
+
 /* Long titles are cut after two lines so every card keeps the same height */
 .video-card-title {
+  margin-bottom: 0.25rem;
   font-size: 1rem;
   font-weight: 500;
   line-height: 1.375;
@@ -225,13 +292,68 @@
   overflow: hidden;
 }
 
-/* Duration overlay on thumbnails: 11 / 14px bold */
-.video-card-duration {
+.video-card-title a {
+  color: var(--pt-text-primary);
+  text-decoration: none;
+}
+
+.video-card:hover .video-card-title a,
+.video-card-title a:focus-visible {
+  color: var(--pt-primary);
+}
+
+/* The stretched link covers the whole card: draw its focus ring around the thumbnail */
+.video-card-title a:focus-visible {
+  outline: none;
+}
+
+.video-card:has(a:focus-visible) .video-card-media {
+  box-shadow: 0 0 0 3px rgba(var(--pt-primary-rgb), 0.6);
+}
+
+.video-card-meta {
+  margin: 0;
+  color: var(--pt-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+/* Loading placeholders */
+.video-card-skeleton .skeleton-thumbnail,
+.video-card-skeleton .skeleton-line {
+  background: var(--pt-surface);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.video-card-skeleton .skeleton-thumbnail {
+  aspect-ratio: 16 / 9;
+  margin-bottom: 0.75rem;
+  border-radius: var(--pt-radius-lg);
+}
+
+.video-card-skeleton .skeleton-line {
+  height: 0.75rem;
+  margin-bottom: 0.5rem;
   border-radius: var(--pt-radius-sm);
-  background: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  line-height: 0.875rem;
-  letter-spacing: 0.02em;
+}
+
+.video-card-skeleton .skeleton-line.is-short {
+  width: 60%;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-card-media {
+    transition: none;
+  }
+
+  .video-card-skeleton .skeleton-thumbnail,
+  .video-card-skeleton .skeleton-line {
+    animation: none;
+  }
 }

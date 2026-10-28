@@ -52,8 +52,8 @@ class VideoServiceTest {
         assertEquals(2, response.size());
         assertEquals(5, response.totalElements());
         assertEquals(3, response.totalPages());
-        assertEquals(List.of(new VideoSummaryResponse(null, "Title", "Author", 90, "/media/3.webp")),
-                response.content());
+        assertEquals(List.of(new VideoSummaryResponse(null, "Title", "Author", 90, Instant.ofEpochSecond(1700000000),
+                "/media/3.webp", "/media/3.mp4")), response.content());
     }
 
     @Test

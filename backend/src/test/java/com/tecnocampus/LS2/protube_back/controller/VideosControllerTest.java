@@ -59,6 +59,8 @@ class VideosControllerTest {
                 .andExpect(jsonPath("$.content[0].author").value("Author 4"))
                 .andExpect(jsonPath("$.content[0].durationSeconds").value(64))
                 .andExpect(jsonPath("$.content[0].thumbnailUrl").value("/media/4.webp"))
+                .andExpect(jsonPath("$.content[0].videoUrl").value("/media/4.mp4"))
+                .andExpect(jsonPath("$.content[0].publishedAt").value("2023-11-18T22:13:20Z"))
                 .andExpect(jsonPath("$.content[0].id").isNumber())
                 .andExpect(jsonPath("$.content[1].title").value("Video 3"))
                 .andExpect(jsonPath("$.page").value(0))
