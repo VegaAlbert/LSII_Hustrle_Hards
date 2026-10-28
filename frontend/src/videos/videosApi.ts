@@ -6,8 +6,11 @@ export type VideoSummary = {
   title: string;
   author: string | null;
   durationSeconds: number;
-  // Path under /media, e.g. /media/0.webp
+  // ISO date
+  publishedAt: string;
+  // Paths under /media, e.g. /media/0.webp and /media/0.mp4 (the video is played as a preview on hover)
   thumbnailUrl: string;
+  videoUrl: string;
 };
 
 export type Page<T> = {
