@@ -7,34 +7,39 @@ Bootstrap has no equivalent.
 
 ## Brand
 
-* **Logo (PT monogram):** a capital "P" rotated 180° (vertical stem on the right, bowl at the bottom-left; not a
-  normal "P", a "b" or a "q") whose stem rises into a capital "T" with a horizontal crossbar on top. The asset is
-  [`frontend/public/protube-logo.svg`](../frontend/public/protube-logo.svg) (brand red on a transparent
-  background), also used as the favicon.
-* **Wordmark:** "ProTube", with "Pro" in the primary text colour and "Tube" in the brand red.
-* **Personality:** modern, clean and friendly; made by students, finished like a professional product.
+- **Logo (PT monogram):** a capital "P" rotated 180° (vertical stem on the right, bowl at the bottom-left; not a
+  normal "P", a "b" or a "q") whose stem rises into a capital "T" with a horizontal crossbar on top. Stem
+  thickness is 12% of the canvas and the corner radius is half the stem, so every end is round. Assets in
+  `frontend/public/`:
+  - `protube-logo.svg`: standalone icon, brand red on a transparent background (login page).
+  - `protube-logo-mark.svg`: white monogram on a red 36px square with 8px radius (navbar lockup).
+  - `protube-favicon.svg`: thicker strokes (14%) so it stays readable at 32px.
+- **Wordmark:** "ProTube" next to the mark, with "Pro" in the primary text colour and "Tube" in the brand red.
+- **Clear space and size:** keep a free margin of one T-crossbar height around the logo. Minimum 24px for the
+  icon and 120px wide for the full lockup.
+- **Personality:** modern, clean and friendly; made by students, finished like a professional product.
 
 ## Colours
 
 Dark is the default theme (`data-bs-theme="dark"` on `<html>`). The light variant only redefines the neutral tokens.
 
-| Token | Dark | Light | Use |
-|---|---|---|---|
-| `--pt-bg-body` | `#212529` | `#F8F9FA` | Page background |
-| `--pt-surface` | `#2B3035` | `#FFFFFF` | Cards, panels, menus, inputs |
-| `--pt-border` | `#343A40` | `#DEE2E6` | Dividers, card and input borders |
-| `--pt-text-primary` | `#F8F9FA` | `#212529` | Titles and body text |
-| `--pt-text-secondary` | `#ADB5BD` | `#6C757D` | Metadata, hints, timestamps |
+| Token                 | Dark      | Light     | Use                              |
+| --------------------- | --------- | --------- | -------------------------------- |
+| `--pt-bg-body`        | `#212529` | `#F8F9FA` | Page background                  |
+| `--pt-surface`        | `#2B3035` | `#FFFFFF` | Cards, panels, menus, inputs     |
+| `--pt-border`         | `#343A40` | `#DEE2E6` | Dividers, card and input borders |
+| `--pt-text-primary`   | `#F8F9FA` | `#212529` | Titles and body text             |
+| `--pt-text-secondary` | `#ADB5BD` | `#6C757D` | Metadata, hints, timestamps      |
 
-| Token | Value | Use |
-|---|---|---|
-| `--pt-primary` | `#E63946` | Brand red: primary buttons, links, focus, active states |
-| `--pt-primary-hover` | `#D62828` | Hover of primary elements |
-| `--pt-primary-pressed` | `#B71C1C` | Pressed state |
-| `--pt-success` | `#2EC4B6` | Validation, success messages |
-| `--pt-warning` | `#FFB703` | Warnings |
-| `--pt-danger` | `#E63946` | Errors and destructive actions |
-| `--pt-info` | `#4CC9F0` | Informative labels |
+| Token                  | Value     | Use                                                     |
+| ---------------------- | --------- | ------------------------------------------------------- |
+| `--pt-primary`         | `#E63946` | Brand red: primary buttons, links, focus, active states |
+| `--pt-primary-hover`   | `#D62828` | Hover of primary elements                               |
+| `--pt-primary-pressed` | `#B71C1C` | Pressed state                                           |
+| `--pt-success`         | `#2EC4B6` | Validation, success messages                            |
+| `--pt-warning`         | `#FFB703` | Warnings                                                |
+| `--pt-danger`          | `#DC3545` | Errors and destructive actions                          |
+| `--pt-info`            | `#4CC9F0` | Informative labels                                      |
 
 `--pt-primary-rgb` (`230, 57, 70`) is there for translucent tints, e.g. `rgba(var(--pt-primary-rgb), 0.12)`.
 
@@ -45,38 +50,39 @@ is only for buttons and badges with bold or large text.
 
 Font stack: `Inter, system-ui, -apple-system, sans-serif`.
 
-| Style | Size / line height | Weight | Letter spacing |
-|---|---|---|---|
-| H1 / display | 32 / 40px | 700 | -0.02em |
-| H2 | 24 / 32px | 600 | -0.01em |
-| H3 | 20 / 28px | 600 | -0.005em |
-| H4 / subtitle | 16 / 24px | 500 | — |
-| Body | 14 / 20px | 400 | — |
-| Metadata / small | 12 / 16px | 400 | — (colour `--pt-text-secondary`) |
-| Video title | 16 / 22px | 500 | — (two lines max with `-webkit-line-clamp: 2`) |
+| Style            | Size / line height | Weight | Letter spacing                                     |
+| ---------------- | ------------------ | ------ | -------------------------------------------------- |
+| H1 / display     | 32 / 40px          | 700    | -0.02em                                            |
+| H2               | 24 / 32px          | 600    | -0.01em                                            |
+| H3               | 20 / 28px          | 600    | -0.005em                                           |
+| H4 / subtitle    | 16 / 24px          | 500    | —                                                  |
+| Body             | 14 / 20px          | 400    | —                                                  |
+| Metadata / small | 12 / 16px          | 400    | — (colour `--pt-text-secondary`)                   |
+| Video title      | 16 / 22px          | 500    | — (two lines max with `-webkit-line-clamp: 2`)     |
+| Duration badge   | 11 / 14px          | 700    | 0.02em (white on a dark overlay, `--pt-radius-sm`) |
 
 ## Spacing, radius and grid
 
-* Spacing in multiples of 4px: 4, 8, 16, 24, 32, 48 (Bootstrap spacers `1`–`5` cover most of them).
-* Radius tokens: `--pt-radius-sm` 4px (badges, tags, compact inputs), `--pt-radius-md` 8px (thumbnails, cards,
+- Spacing in multiples of 4px: 4, 8, 16, 24, 32, 48 (Bootstrap spacers `1`–`5` cover most of them).
+- Radius tokens: `--pt-radius-sm` 4px (badges, tags, compact inputs), `--pt-radius-md` 8px (thumbnails, cards,
   panels), `--pt-radius-lg` 12px (modals, player, menus), `--pt-radius-pill` (primary call-to-action buttons,
   filter pills).
-* Bootstrap 12-column grid and breakpoints: `sm` 576px, `md` 768px, `lg` 992px, `xl` 1200px, `xxl` 1400px.
+- Bootstrap 12-column grid and breakpoints: `sm` 576px, `md` 768px, `lg` 992px, `xl` 1200px, `xxl` 1400px.
 
 ## Components
 
-* **Navbar:** sticky, height `--pt-navbar-height` (64px), background `--pt-bg-body` with a `--pt-border` bottom
+- **Navbar:** sticky, height `--pt-navbar-height` (64px), background `--pt-bg-body` with a `--pt-border` bottom
   border. Logo on the left, search in the middle, user menu on the right (Log in button, or the user initial avatar
   with Settings and Logout).
-* **Video card:** 16:9 thumbnail with `object-fit: cover` and `--pt-radius-md`, duration badge at the bottom-right,
+- **Video card:** 16:9 thumbnail with `object-fit: cover` and `--pt-radius-md`, duration badge at the bottom-right,
   title (two lines max) and author below.
-* **Video player page:** 16:9 player in a `--pt-radius-lg` frame, title, author, description and the comment list.
-* **Buttons:**
-  * Primary: background `--pt-primary`, white text, hover `--pt-primary-hover`, 2px light red focus ring.
-  * Secondary: background `--pt-surface`, border `--pt-border`, text `--pt-text-primary`.
-  * Ghost: transparent, border `--pt-border`, text `--pt-text-secondary`, hover background `--pt-surface`.
-  * Disabled: 50% opacity and `cursor: not-allowed`.
-* **Icons:** Bootstrap Icons style, rounded line icons, 20 or 24px.
+- **Video player page:** 16:9 player in a `--pt-radius-lg` frame, title, author, description and the comment list.
+- **Buttons:**
+  - Primary: background `--pt-primary`, white text, hover `--pt-primary-hover`, 2px light red focus ring.
+  - Secondary: background `--pt-surface`, border `--pt-border`, text `--pt-text-primary`.
+  - Ghost: transparent, border `--pt-border`, text `--pt-text-secondary`, hover background `--pt-surface`.
+  - Disabled: 50% opacity and `cursor: not-allowed`.
+- **Icons:** Bootstrap Icons style, rounded line icons, 20 or 24px.
 
 ## Out of scope for the MVP
 

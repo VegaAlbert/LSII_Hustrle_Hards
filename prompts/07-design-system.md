@@ -63,6 +63,7 @@ Apply the ProTube style guide exported from Stitch to the frontend, following `A
 
 * The style guide returned by Stitch was in Catalan and was translated when written to `docs/DESIGN_SYSTEM.md`.
 * The light variant's secondary text colour (`#6C757D`) is not in the Stitch guide: it is Bootstrap's default.
-* The PT monogram SVG (`frontend/public/protube-logo.svg`) was provided by the team and added as is, not generated
-  with these prompts.
+* The PT monogram SVGs in `frontend/public/` (icon, navbar mark, favicon) are taken from the Stitch spec sheet
+  generated with prompt 1 (sections "Brand & Logo Identity" and "Global App Navbar Spec"), not redrawn.
+* Stitch's spec sheet uses Tailwind and Material Symbols; only its values were taken, the code stays on Bootstrap.
 * The theme setting of the settings page is still a placeholder, so the light variant is defined but not reachable.

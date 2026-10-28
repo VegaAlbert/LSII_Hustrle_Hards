@@ -22,9 +22,11 @@ const NavBar = ({ onHome, onLogin, onSettings, showLogin = true }: Props) => {
 
   return (
     <nav className="pt-navbar">
-      <button type="button" className="pt-brand" onClick={onHome}>
-        <img src="/protube-logo.svg" alt="" />
-        <span>ProTube</span>
+      <button type="button" className="pt-brand" aria-label="ProTube" onClick={onHome}>
+        <img src="/protube-logo-mark.svg" alt="" />
+        <span>
+          Pro<span className="pt-brand-accent">Tube</span>
+        </span>
       </button>
 
       <div className="pt-nav-actions">

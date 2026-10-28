@@ -224,3 +224,14 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Duration overlay on thumbnails: 11 / 14px bold */
+.video-card-duration {
+  border-radius: var(--pt-radius-sm);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 0.875rem;
+  letter-spacing: 0.02em;
+}

@@ -11,7 +11,7 @@ const VideoCard = ({ video }: Props) => (
     <div className="position-relative">
       <img src={toMediaUrl(video.thumbnailUrl)} alt={video.title} className="card-img-top video-card-thumbnail" />
       <time
-        className="badge bg-dark position-absolute bottom-0 end-0 m-2"
+        className="badge video-card-duration position-absolute bottom-0 end-0 m-2"
         dateTime={`PT${Math.round(video.durationSeconds)}S`}
       >
         {formatDuration(video.durationSeconds)}
