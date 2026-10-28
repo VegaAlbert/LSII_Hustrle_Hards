@@ -6,12 +6,13 @@ const renderNavBar = (user: AuthContextValue['user'], showLogin?: boolean) => {
   const auth: AuthContextValue = { user, login: jest.fn(), register: jest.fn(), logout: jest.fn() };
   const onHome = jest.fn();
   const onLogin = jest.fn();
+  const onSettings = jest.fn();
   render(
     <AuthContext.Provider value={auth}>
-      <NavBar onHome={onHome} onLogin={onLogin} showLogin={showLogin} />
+      <NavBar onHome={onHome} onLogin={onLogin} onSettings={onSettings} showLogin={showLogin} />
     </AuthContext.Provider>
   );
-  return { auth, onHome, onLogin };
+  return { auth, onHome, onLogin, onSettings };
 };
 
 describe('NavBar', () => {
@@ -27,6 +28,14 @@ describe('NavBar', () => {
     renderNavBar(null, false);
 
     expect(screen.queryByRole('button', { name: 'Log in' })).not.toBeInTheDocument();
+  });
+
+  it('opens the settings page from the gear button', () => {
+    const { onSettings } = renderNavBar(null);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+
+    expect(onSettings).toHaveBeenCalled();
   });
 
   it('goes home when clicking the brand', () => {

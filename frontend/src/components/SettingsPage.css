@@ -1,0 +1,222 @@
+.settings-page {
+  min-height: calc(100vh - var(--pt-navbar-height));
+  padding: 2.5rem 1rem 4rem;
+  background: #f5f6fb;
+  text-align: left;
+  color: var(--pt-text);
+}
+
+.settings-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.settings-nav h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.settings-nav nav {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+}
+
+.settings-nav a {
+  padding: 0.5rem 0.85rem;
+  border-radius: 8px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--pt-muted);
+}
+
+.settings-nav a:hover {
+  color: var(--pt-primary);
+  background: rgba(69, 39, 232, 0.08);
+}
+
+.settings-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(69, 39, 232, 0.2);
+  border-radius: 12px;
+  font-size: 0.92rem;
+  background: rgba(69, 39, 232, 0.06);
+}
+
+.settings-notice strong {
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(90deg, var(--pt-primary) 0%, var(--pt-accent) 100%);
+}
+
+.settings-section {
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--pt-border);
+  border-radius: 16px;
+  background: #fff;
+  scroll-margin-top: calc(var(--pt-navbar-height) + 1rem);
+}
+
+.settings-section > header {
+  padding: 1.25rem 1.5rem 0.75rem;
+}
+
+.settings-section h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.settings-section > header p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--pt-muted);
+}
+
+.settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--pt-border);
+}
+
+.settings-row-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.settings-row-text label,
+.settings-row-text span {
+  font-weight: 600;
+}
+
+.settings-row-text small {
+  color: var(--pt-muted);
+}
+
+.settings-row-control .form-select {
+  min-width: 180px;
+  border-color: var(--pt-border);
+  border-radius: 10px;
+}
+
+.settings-row-control .form-select:focus,
+.form-switch .settings-switch:focus {
+  border-color: var(--pt-primary);
+  box-shadow: 0 0 0 0.2rem rgba(69, 39, 232, 0.15);
+}
+
+.settings-switch {
+  width: 2.75rem !important;
+  height: 1.5rem;
+  cursor: pointer;
+}
+
+.form-switch .settings-switch:checked {
+  border-color: var(--pt-primary);
+  background-color: var(--pt-primary);
+}
+
+.settings-segmented {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: #eceef5;
+}
+
+.settings-segmented label {
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--pt-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.settings-segmented label.active {
+  color: var(--pt-primary);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(28, 29, 43, 0.12);
+}
+
+.settings-segmented label:has(input:focus-visible) {
+  outline: 2px solid var(--pt-primary);
+  outline-offset: 1px;
+}
+
+.settings-segmented input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.settings-actions .btn-light {
+  border: 1px solid var(--pt-border);
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.settings-save {
+  padding: 0.5rem 1.4rem;
+  border: 0;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(90deg, var(--pt-primary) 0%, var(--pt-accent) 100%);
+}
+
+.settings-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (min-width: 992px) {
+  .settings-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2.5rem;
+  }
+
+  .settings-nav {
+    position: sticky;
+    top: calc(var(--pt-navbar-height) + 2.5rem);
+    width: 210px;
+    flex-shrink: 0;
+  }
+
+  .settings-nav nav {
+    flex-direction: column;
+  }
+}
