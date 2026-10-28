@@ -1,29 +1,37 @@
-import { useState } from 'react';
+import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import './App.css';
 import { AuthProvider } from './auth/AuthProvider';
-import NavBar from './components/NavBar';
+import Layout from './components/Layout';
 import LoginPage from './components/LoginPage';
 import VideoGrid from './components/VideoGrid';
+import NotFoundPage from './pages/NotFoundPage';
+import VideoDetailPage from './pages/VideoDetailPage';
 
-// No router yet: the current page is kept in state
-type Page = 'home' | 'login';
+const LoginRoute = () => {
+  const navigate = useNavigate();
+  return <LoginPage onSuccess={() => navigate('/')} />;
+};
+
+/**
+ * Routes of the app. Kept apart from the router so tests can render them inside a MemoryRouter.
+ */
+export const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<Layout />}>
+      <Route index element={<VideoGrid />} />
+      <Route path="login" element={<LoginRoute />} />
+      <Route path="videos/:id" element={<VideoDetailPage />} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Route>
+  </Routes>
+);
 
 function App() {
-  const [page, setPage] = useState<Page>('home');
-  const goHome = () => setPage('home');
-
   return (
     <AuthProvider>
-      <div className="App">
-        <NavBar onHome={goHome} onLogin={() => setPage('login')} />
-        {page === 'login' ? (
-          <LoginPage onSuccess={goHome} />
-        ) : (
-          <main className="container py-4">
-            <VideoGrid />
-          </main>
-        )}
-      </div>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
     </AuthProvider>
   );
 }

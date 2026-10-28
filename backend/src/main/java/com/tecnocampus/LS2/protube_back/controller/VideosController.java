@@ -1,12 +1,14 @@
 package com.tecnocampus.LS2.protube_back.controller;
 
 import com.tecnocampus.LS2.protube_back.controller.dto.PageResponse;
+import com.tecnocampus.LS2.protube_back.controller.dto.VideoDetailResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
 import com.tecnocampus.LS2.protube_back.services.VideoService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,5 +34,13 @@ public class VideosController {
             @Min(value = 1, message = "Size must be between 1 and 50")
             @Max(value = 50, message = "Size must be between 1 and 50") int size) {
         return ResponseEntity.ok(videoService.getVideos(page, size));
+    }
+
+    /**
+     * US-05: public detail of one video with its comments. Answers 404 if the id does not exist.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<VideoDetailResponse> getVideo(@PathVariable Long id) {
+        return ResponseEntity.ok(videoService.getVideo(id));
     }
 }

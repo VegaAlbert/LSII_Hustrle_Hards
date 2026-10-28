@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { formatDuration } from '../utils/formatDuration';
 import { toMediaUrl, type VideoSummary } from '../videos/videosApi';
 
@@ -17,7 +18,12 @@ const VideoCard = ({ video }: Props) => (
       </time>
     </div>
     <div className="card-body text-start">
-      <h2 className="card-title h6 video-card-title">{video.title}</h2>
+      <h2 className="card-title h6 video-card-title">
+        {/* stretched-link makes the whole card clickable */}
+        <Link to={`/videos/${video.id}`} className="stretched-link text-reset text-decoration-none">
+          {video.title}
+        </Link>
+      </h2>
       {video.author && <p className="card-text text-muted small mb-0">{video.author}</p>}
     </div>
   </article>

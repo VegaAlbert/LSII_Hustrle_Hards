@@ -1,6 +1,7 @@
 package com.tecnocampus.LS2.protube_back.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tecnocampus.LS2.protube_back.domain.Comment;
 import com.tecnocampus.LS2.protube_back.domain.Video;
 import com.tecnocampus.LS2.protube_back.repository.VideoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,7 @@ import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -160,6 +162,50 @@ class VideoStoreImporterTest {
         when(videoRepository.save(any())).thenThrow(new DataIntegrityViolationException("duplicate"));
 
         assertEquals(0, importer.importFrom(store));
+    }
+
+    @Test
+    void importsTheCommentsOfTheVideo() throws IOException {
+        writeVideo("0", true, true);
+
+        importer.importFrom(store);
+
+        ArgumentCaptor<Video> saved = ArgumentCaptor.forClass(Video.class);
+        verify(videoRepository).save(saved.capture());
+        Video video = saved.getValue();
+        assertEquals(1, video.getComments().size());
+        Comment comment = video.getComments().get(0);
+        assertEquals("bob", comment.getAuthor());
+        assertEquals("Nice", comment.getText());
+        assertEquals(0, comment.getLikeCount());
+        assertEquals(Instant.ofEpochSecond(1700000001), comment.getPublishedAt());
+        assertSame(video, comment.getVideo());
+    }
+
+    @Test
+    void skipsCommentsWithoutTextOrAuthorAndDefaultsMissingFields() throws IOException {
+        Files.writeString(store.resolve("5.json"), """
+                {
+                  "id": "5", "title": "With comments", "timestamp": 1700000000,
+                  "meta": {"comments": [
+                    {"text": "", "author": "empty"},
+                    {"text": "No author"},
+                    {"text": "Kept", "author": "ann"}
+                  ]}
+                }
+                """);
+        Files.writeString(store.resolve("5.mp4"), "video");
+        Files.writeString(store.resolve("5.webp"), "image");
+
+        importer.importFrom(store);
+
+        ArgumentCaptor<Video> saved = ArgumentCaptor.forClass(Video.class);
+        verify(videoRepository).save(saved.capture());
+        assertEquals(1, saved.getValue().getComments().size());
+        Comment kept = saved.getValue().getComments().get(0);
+        assertEquals("Kept", kept.getText());
+        assertEquals(0, kept.getLikeCount());
+        assertNull(kept.getPublishedAt());
     }
 
     @Test

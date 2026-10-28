@@ -8,6 +8,17 @@
   background-color: #212529;
 }
 
+.video-player {
+  max-height: 70vh;
+  background-color: #000;
+}
+
+/* Keep the line breaks of descriptions and comments */
+.video-description,
+.comment-text {
+  white-space: pre-wrap;
+}
+
 /* Long titles are cut after two lines so every card keeps the same height */
 .video-card-title {
   display: -webkit-box;
