@@ -7,18 +7,28 @@ type Status = 'loading' | 'success' | 'error';
 
 /**
  * Loads the video list page by page: loadMore() appends the next page, retry() repeats a failed request.
+ * A new `query` (US-08) starts again from the first page of its results.
  */
-export function useVideoList() {
+export function useVideoList(query = '') {
   const [videos, setVideos] = useState<VideoSummary[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [status, setStatus] = useState<Status>('loading');
   // Changing it requests the current page again
   const [attempt, setAttempt] = useState(0);
+  const [currentQuery, setCurrentQuery] = useState(query);
+
+  // Reset while rendering (not in an effect) so the old results are never shown with the new query
+  if (query !== currentQuery) {
+    setCurrentQuery(query);
+    setVideos([]);
+    setPage(0);
+    setStatus('loading');
+  }
 
   useEffect(() => {
     let cancelled = false;
-    fetchVideos(page, PAGE_SIZE)
+    fetchVideos(page, PAGE_SIZE, currentQuery)
       .then((result) => {
         if (cancelled) return;
         setVideos((current) => (page === 0 ? result.content : [...current, ...result.content]));
@@ -31,7 +41,7 @@ export function useVideoList() {
     return () => {
       cancelled = true;
     };
-  }, [page, attempt]);
+  }, [currentQuery, page, attempt]);
 
   const loadMore = useCallback(() => {
     setStatus('loading');

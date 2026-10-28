@@ -50,7 +50,7 @@ describe('VideoGrid', () => {
     expect(list.children).toHaveLength(2);
     expect(screen.getByRole('img', { name: 'Video 1' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Video 2' })).toBeInTheDocument();
-    expect(mockedFetchVideos).toHaveBeenCalledWith(0, 12);
+    expect(mockedFetchVideos).toHaveBeenCalledWith(0, 12, '');
   });
 
   it('hides "Load more" when there are no more pages', async () => {
@@ -74,7 +74,7 @@ describe('VideoGrid', () => {
     expect(await screen.findByRole('img', { name: 'Video 3' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Video 1' })).toBeInTheDocument();
     expect(screen.getByRole('list', { name: 'Videos' }).children).toHaveLength(3);
-    expect(mockedFetchVideos).toHaveBeenLastCalledWith(1, 12);
+    expect(mockedFetchVideos).toHaveBeenLastCalledWith(1, 12, '');
     expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument();
   });
 
@@ -98,7 +98,7 @@ describe('VideoGrid', () => {
     expect(await screen.findByRole('img', { name: 'Video 1' })).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(mockedFetchVideos).toHaveBeenCalledTimes(2);
-    expect(mockedFetchVideos).toHaveBeenLastCalledWith(0, 12);
+    expect(mockedFetchVideos).toHaveBeenLastCalledWith(0, 12, '');
   });
 
   it('keeps the loaded videos when the next page fails and retries that page', async () => {
@@ -117,6 +117,42 @@ describe('VideoGrid', () => {
     await user.click(screen.getByRole('button', { name: 'Retry' }));
 
     expect(await screen.findByRole('img', { name: 'Video 2' })).toBeInTheDocument();
-    expect(mockedFetchVideos).toHaveBeenLastCalledWith(1, 12);
+    expect(mockedFetchVideos).toHaveBeenLastCalledWith(1, 12, '');
+  });
+
+  describe('with a search query', () => {
+    it('shows the matching videos', async () => {
+      mockedFetchVideos.mockResolvedValueOnce(page([video(7)], 0, 1));
+
+      render(<VideoGrid query="cats" />, { wrapper: MemoryRouter });
+
+      const list = await screen.findByRole('list', { name: 'Results for "cats"' });
+      expect(list.children).toHaveLength(1);
+      expect(mockedFetchVideos).toHaveBeenCalledWith(0, 12, 'cats');
+    });
+
+    it('shows an empty-state message when nothing matches', async () => {
+      mockedFetchVideos.mockResolvedValueOnce(page([], 0, 0));
+
+      render(<VideoGrid query="zzz" />, { wrapper: MemoryRouter });
+
+      expect(await screen.findByText('No videos match "zzz".')).toBeInTheDocument();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('replaces the loaded videos with the first page of a new search', async () => {
+      mockedFetchVideos
+        .mockResolvedValueOnce(page([video(1), video(2)], 0, 2))
+        .mockResolvedValueOnce(page([video(9)], 0, 1));
+
+      const { rerender } = render(<VideoGrid />, { wrapper: MemoryRouter });
+      await screen.findByRole('img', { name: 'Video 1' });
+      rerender(<VideoGrid query="nine" />);
+
+      expect(await screen.findByRole('img', { name: 'Video 9' })).toBeInTheDocument();
+      expect(screen.queryByRole('img', { name: 'Video 1' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument();
+      expect(mockedFetchVideos).toHaveBeenLastCalledWith(0, 12, 'nine');
+    });
   });
 });

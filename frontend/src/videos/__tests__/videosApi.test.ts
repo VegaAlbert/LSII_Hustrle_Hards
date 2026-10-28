@@ -37,6 +37,26 @@ describe('videosApi', () => {
     expect(isNotFound(new Error('Network Error'))).toBe(false);
   });
 
+  it('sends the trimmed search text as q', async () => {
+    mockedAxios.get.mockResolvedValueOnce({
+      data: { content: [], page: 0, size: 12, totalElements: 0, totalPages: 0 },
+    });
+
+    await fetchVideos(0, 12, '  cats ');
+
+    expect(mockedAxios.get).toHaveBeenCalledWith('other/videos', { params: { q: 'cats', page: 0, size: 12 } });
+  });
+
+  it('does not send q for a blank search', async () => {
+    mockedAxios.get.mockResolvedValueOnce({
+      data: { content: [], page: 0, size: 12, totalElements: 0, totalPages: 0 },
+    });
+
+    await fetchVideos(0, 12, '   ');
+
+    expect(mockedAxios.get).toHaveBeenCalledWith('other/videos', { params: { page: 0, size: 12 } });
+  });
+
   it('builds media urls on the media server', () => {
     expect(toMediaUrl('/media/0.webp')).toBe('development/0.webp');
   });

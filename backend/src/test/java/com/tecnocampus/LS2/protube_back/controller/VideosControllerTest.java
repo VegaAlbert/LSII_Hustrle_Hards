@@ -5,6 +5,7 @@ import com.tecnocampus.LS2.protube_back.domain.Video;
 import com.tecnocampus.LS2.protube_back.repository.VideoRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -161,5 +162,84 @@ class VideosControllerTest {
         mockMvc.perform(get("/api/videos/abc"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors.id").value("Invalid value"));
+    }
+
+    @Nested
+    class Search {
+
+        @BeforeEach
+        void setUpSearchVideos() {
+            // One video per relevance level; the oldest ones would win if the date decided the order
+            saveVideo("java-desc", "Music", "Played with java beans", "Someone", 10);
+            saveVideo("java-author", "Cooking", "Pasta", "Java Channel", 11);
+            saveVideo("java-contains", "Learning Java basics", "Course", "Teacher", 12);
+            saveVideo("java-prefix", "Java streams", "Course", "Teacher", 13);
+            saveVideo("java-exact", "Java", "Course", "Teacher", 14);
+        }
+
+        private void saveVideo(String storeId, String title, String description, String author, int day) {
+            videoRepository.save(new Video(storeId, title, description, author, 60, 1280, 720,
+                    Instant.ofEpochSecond(1700000000L - day * 86400L), storeId + ".mp4", storeId + ".webp"));
+        }
+
+        @Test
+        void returnsMatchingVideosRankedByRelevance() throws Exception {
+            mockMvc.perform(get("/api/videos").param("q", "java"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.totalElements").value(5))
+                    .andExpect(jsonPath("$.content[0].title").value("Java"))
+                    .andExpect(jsonPath("$.content[1].title").value("Java streams"))
+                    .andExpect(jsonPath("$.content[2].title").value("Learning Java basics"))
+                    .andExpect(jsonPath("$.content[3].title").value("Cooking"))
+                    .andExpect(jsonPath("$.content[4].title").value("Music"));
+        }
+
+        @Test
+        void ignoresCaseAndSurroundingSpaces() throws Exception {
+            mockMvc.perform(get("/api/videos").param("q", "  JAVA STREAMS "))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content", hasSize(1)))
+                    .andExpect(jsonPath("$.content[0].title").value("Java streams"));
+        }
+
+        @Test
+        void paginatesTheResults() throws Exception {
+            mockMvc.perform(get("/api/videos").param("q", "java").param("page", "1").param("size", "2"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content", hasSize(2)))
+                    .andExpect(jsonPath("$.content[0].title").value("Learning Java basics"))
+                    .andExpect(jsonPath("$.totalElements").value(5))
+                    .andExpect(jsonPath("$.totalPages").value(3));
+        }
+
+        @Test
+        void returnsAnEmptyPageWhenNothingMatches() throws Exception {
+            mockMvc.perform(get("/api/videos").param("q", "kotlin"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content", hasSize(0)))
+                    .andExpect(jsonPath("$.totalElements").value(0));
+        }
+
+        @Test
+        void treatsLikeWildcardsAsPlainText() throws Exception {
+            mockMvc.perform(get("/api/videos").param("q", "%"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.totalElements").value(0));
+        }
+
+        @Test
+        void returnsTheWholeListForABlankQuery() throws Exception {
+            mockMvc.perform(get("/api/videos").param("q", "   "))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.totalElements").value(10))
+                    .andExpect(jsonPath("$.content[0].title").value("Video 4"));
+        }
+
+        @Test
+        void rejectsATooLongQuery() throws Exception {
+            mockMvc.perform(get("/api/videos").param("q", "a".repeat(101)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.fieldErrors.q").value("Search text must be at most 100 characters"));
+        }
     }
 }
