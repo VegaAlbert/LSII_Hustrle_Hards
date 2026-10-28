@@ -77,6 +77,15 @@ describe('App', () => {
     expect(await screen.findByRole('list', { name: 'Videos' })).toBeInTheDocument();
   });
 
+  it('opens the settings page from the navbar', async () => {
+    const user = userEvent.setup();
+    renderAt('/');
+
+    await user.click(screen.getByRole('button', { name: 'Settings' }));
+
+    expect(screen.getByRole('heading', { name: 'Appearance' })).toBeInTheDocument();
+  });
+
   it('shows a not-found page for unknown routes', () => {
     renderAt('/does-not-exist');
 
