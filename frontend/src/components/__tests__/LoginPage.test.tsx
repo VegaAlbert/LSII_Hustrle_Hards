@@ -64,6 +64,18 @@ describe('LoginPage', () => {
     expect(onSuccess).not.toHaveBeenCalled();
   });
 
+  it('shows and hides the password', () => {
+    renderLoginPage();
+    const password = screen.getByLabelText('Password');
+    expect(password).toHaveAttribute('type', 'password');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show password' }));
+    expect(password).toHaveAttribute('type', 'text');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Hide password' }));
+    expect(password).toHaveAttribute('type', 'password');
+  });
+
   it('switches to the register form and back', () => {
     renderLoginPage();
 

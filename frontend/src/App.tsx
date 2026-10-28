@@ -15,7 +15,7 @@ function App() {
   return (
     <AuthProvider>
       <div className="App">
-        <NavBar onHome={goHome} onLogin={() => setPage('login')} />
+        <NavBar onHome={goHome} onLogin={() => setPage('login')} showLogin={page !== 'login'} />
         {page === 'login' ? (
           <LoginPage onSuccess={goHome} />
         ) : (
