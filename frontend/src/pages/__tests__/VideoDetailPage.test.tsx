@@ -56,8 +56,10 @@ describe('VideoDetailPage', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Uptown Funk' })).toBeInTheDocument();
     expect(screen.getByText(/Mark Ronson/)).toBeInTheDocument();
     expect(screen.getByText('19 November 2014')).toBeInTheDocument();
+    expect(screen.getByText('1:19')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'About this video' })).toBeInTheDocument();
     expect(screen.getByText('Official video')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Comments (1)' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Comments 1' })).toBeInTheDocument();
     expect(screen.getByText('Great song')).toBeInTheDocument();
   });
 
@@ -69,6 +71,7 @@ describe('VideoDetailPage', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Uptown Funk' })).toBeInTheDocument();
     expect(screen.queryByText(/Mark Ronson/)).not.toBeInTheDocument();
     expect(screen.queryByText('Official video')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'About this video' })).not.toBeInTheDocument();
   });
 
   it('shows a not-found state when the video does not exist', async () => {

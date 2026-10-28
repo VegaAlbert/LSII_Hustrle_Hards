@@ -1,5 +1,8 @@
 import { useParams } from 'react-router-dom';
+import Avatar from '../components/Avatar';
 import CommentList from '../components/CommentList';
+import ExpandableText from '../components/ExpandableText';
+import { formatDuration } from '../utils/formatDuration';
 import { useVideoDetail } from '../videos/useVideoDetail';
 import { toMediaUrl } from '../videos/videosApi';
 import NotFoundPage from './NotFoundPage';
@@ -47,22 +50,39 @@ const VideoDetail = ({ id }: { id: number }) => {
 
   return (
     <article className="text-start video-detail">
-      <video
-        className="w-100 rounded video-player"
-        src={toMediaUrl(video.videoUrl)}
-        poster={toMediaUrl(video.thumbnailUrl)}
-        aria-label={`Video player: ${video.title}`}
-        controls
-        autoPlay
-      />
+      <div className="video-frame">
+        <video
+          className="video-player"
+          src={toMediaUrl(video.videoUrl)}
+          poster={toMediaUrl(video.thumbnailUrl)}
+          aria-label={`Video player: ${video.title}`}
+          controls
+          autoPlay
+        />
+      </div>
 
-      <h1 className="h4 mt-3">{video.title}</h1>
-      <p className="text-muted small">
-        {video.author && <span>{video.author} · </span>}
-        <time dateTime={video.publishedAt}>{dateFormat.format(new Date(video.publishedAt))}</time>
-      </p>
+      <h1 className="video-detail-title">{video.title}</h1>
 
-      {video.description && <p className="video-description">{video.description}</p>}
+      <div className="video-meta">
+        {video.author && <Avatar name={video.author} />}
+        <div className="min-w-0">
+          {video.author && <p className="video-author mb-0">{video.author}</p>}
+          <p className="video-facts mb-0">
+            <time dateTime={video.publishedAt}>{dateFormat.format(new Date(video.publishedAt))}</time>
+            <span aria-hidden="true"> · </span>
+            <span>{formatDuration(video.durationSeconds)}</span>
+          </p>
+        </div>
+      </div>
+
+      {video.description && (
+        <section aria-labelledby="description-title" className="description-card">
+          <h2 id="description-title" className="section-label">
+            About this video
+          </h2>
+          <ExpandableText text={video.description} />
+        </section>
+      )}
 
       <CommentList comments={video.comments} />
     </article>
