@@ -10,7 +10,12 @@ const Layout = () => {
 
   return (
     <div className="App">
-      <NavBar onHome={() => navigate('/')} onLogin={() => navigate('/login')} showLogin={pathname !== '/login'} />
+      <NavBar
+        onHome={() => navigate('/')}
+        onLogin={() => navigate('/login')}
+        onSettings={() => navigate('/settings')}
+        showLogin={pathname !== '/login'}
+      />
       <main className="container py-4">
         <Outlet />
       </main>

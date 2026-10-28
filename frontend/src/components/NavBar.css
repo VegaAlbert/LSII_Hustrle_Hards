@@ -122,3 +122,30 @@
 .pt-menu-item:focus-visible {
   background: rgba(69, 39, 232, 0.08);
 }
+
+.pt-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pt-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--pt-muted);
+  background: none;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.pt-icon-btn:hover,
+.pt-icon-btn:focus-visible {
+  color: var(--pt-primary);
+  background: rgba(69, 39, 232, 0.08);
+}
