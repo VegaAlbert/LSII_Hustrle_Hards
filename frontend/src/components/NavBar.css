@@ -8,8 +8,7 @@
   height: var(--pt-navbar-height);
   padding: 0 1.5rem;
   border-bottom: 1px solid var(--pt-border);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: saturate(180%) blur(8px);
+  background: var(--pt-bg-body);
 }
 
 .pt-brand {
@@ -19,32 +18,29 @@
   padding: 0;
   border: 0;
   background: none;
-  font-size: 1.35rem;
-  font-weight: 800;
+  font-size: 1.125rem;
+  font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--pt-text);
+  color: var(--pt-text-primary);
 }
 
 .pt-brand img {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
 }
 
-.pt-brand span {
-  background: linear-gradient(90deg, var(--pt-primary) 0%, var(--pt-accent) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.pt-brand-accent {
+  color: var(--pt-primary);
 }
 
 .pt-login-btn {
   padding: 0.5rem 1.25rem;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--pt-radius-pill);
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(90deg, var(--pt-primary) 0%, var(--pt-accent) 100%);
-  box-shadow: 0 4px 12px rgba(69, 39, 232, 0.25);
+  background: var(--pt-primary);
+  box-shadow: 0 4px 12px rgba(var(--pt-primary-rgb), 0.25);
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease;
@@ -52,7 +48,8 @@
 
 .pt-login-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(69, 39, 232, 0.32);
+  background: var(--pt-primary-hover);
+  box-shadow: 0 8px 18px rgba(var(--pt-primary-rgb), 0.32);
 }
 
 .pt-user {
@@ -65,17 +62,17 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  border: 2px solid #fff;
+  border: 2px solid var(--pt-bg-body);
   border-radius: 50%;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, var(--pt-primary) 0%, var(--pt-accent) 100%);
-  box-shadow: 0 0 0 2px rgba(69, 39, 232, 0.2);
+  background: var(--pt-primary);
+  box-shadow: 0 0 0 2px rgba(var(--pt-primary-rgb), 0.2);
 }
 
 .pt-avatar:hover,
 .pt-avatar[aria-expanded='true'] {
-  box-shadow: 0 0 0 3px rgba(69, 39, 232, 0.35);
+  box-shadow: 0 0 0 3px rgba(var(--pt-primary-rgb), 0.35);
 }
 
 .pt-menu {
@@ -87,9 +84,9 @@
   margin: 0;
   list-style: none;
   border: 1px solid var(--pt-border);
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 12px 32px rgba(28, 29, 43, 0.12);
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+  box-shadow: var(--pt-shadow);
   text-align: left;
 }
 
@@ -101,26 +98,26 @@
 
 .pt-menu-header strong {
   display: block;
-  color: var(--pt-text);
+  color: var(--pt-text-primary);
 }
 
 .pt-menu-header small {
-  color: var(--pt-muted);
+  color: var(--pt-text-secondary);
 }
 
 .pt-menu-item {
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--pt-radius-md);
   text-align: left;
-  color: var(--pt-text);
+  color: var(--pt-text-primary);
   background: none;
 }
 
 .pt-menu-item:hover,
 .pt-menu-item:focus-visible {
-  background: rgba(69, 39, 232, 0.08);
+  background: rgba(var(--pt-primary-rgb), 0.08);
 }
 
 .pt-nav-actions {
@@ -137,7 +134,7 @@
   height: 40px;
   border: 0;
   border-radius: 50%;
-  color: var(--pt-muted);
+  color: var(--pt-text-secondary);
   background: none;
   transition:
     background 0.15s ease,
@@ -147,5 +144,5 @@
 .pt-icon-btn:hover,
 .pt-icon-btn:focus-visible {
   color: var(--pt-primary);
-  background: rgba(69, 39, 232, 0.08);
+  background: rgba(var(--pt-primary-rgb), 0.08);
 }

@@ -14,7 +14,9 @@ const video = (id: number, title: string): VideoSummary => ({
   title,
   author: 'Author',
   durationSeconds: 60,
+  publishedAt: '2023-11-14T22:13:20Z',
   thumbnailUrl: `/media/${id}.webp`,
+  videoUrl: `/media/${id}.mp4`,
 });
 
 const results = (content: VideoSummary[]): Page<VideoSummary> => ({

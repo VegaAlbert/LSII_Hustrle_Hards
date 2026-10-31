@@ -2,40 +2,21 @@
   text-align: center;
 }
 
-.video-card-thumbnail {
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  background-color: #212529;
-}
-
 /* ===== Video detail page (US-05) ===== */
-
-:root {
-  /* Colours of the ProTube logo */
-  --pt-indigo: #4a2bff;
-  --pt-sky: #2f8cff;
-  --pt-gradient: linear-gradient(135deg, var(--pt-indigo), var(--pt-sky));
-  --pt-ink: #1b1d29;
-  --pt-muted: #6b7080;
-  --pt-surface: #f6f7fb;
-  --pt-border: #e6e8f0;
-}
 
 .video-detail {
   max-width: 1040px;
   margin: 0 auto;
-  color: var(--pt-ink);
+  color: var(--pt-text-primary);
 }
 
-/* Player with a soft glow in the brand colours */
+/* Player with a soft glow in the brand red */
 .video-frame {
   position: relative;
-  border-radius: 20px;
+  border-radius: var(--pt-radius-lg);
   overflow: hidden;
   background: #000;
-  box-shadow:
-    0 24px 48px -24px rgba(74, 43, 255, 0.55),
-    0 12px 32px -18px rgba(47, 140, 255, 0.45);
+  box-shadow: 0 24px 48px -24px rgba(var(--pt-primary-rgb), 0.45);
 }
 
 .video-player {
@@ -65,7 +46,7 @@
 }
 
 .video-facts {
-  color: var(--pt-muted);
+  color: var(--pt-text-secondary);
   font-size: 0.875rem;
 }
 
@@ -101,8 +82,8 @@
 .description-card {
   position: relative;
   padding: 1.25rem 1.5rem;
-  border-radius: 16px;
-  background: radial-gradient(circle at top right, rgba(47, 140, 255, 0.12), transparent 55%), var(--pt-surface);
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
   border: 1px solid var(--pt-border);
 }
 
@@ -112,10 +93,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  background: var(--pt-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--pt-primary);
 }
 
 /* Keep the line breaks of descriptions and comments */
@@ -135,7 +113,7 @@
 /* Two classes so it wins over Bootstrap's .btn-link, which is loaded after this file */
 .btn.expandable-toggle {
   font-weight: 600;
-  color: var(--pt-indigo);
+  color: var(--pt-primary);
   text-decoration: none;
 }
 
@@ -157,7 +135,7 @@
 .count-pill {
   padding: 0.1rem 0.6rem;
   border-radius: 999px;
-  background: var(--pt-gradient);
+  background: var(--pt-primary);
   color: #fff;
   font-size: 0.8rem;
 }
@@ -165,8 +143,8 @@
 .comments-empty {
   padding: 1.5rem;
   border: 1px dashed var(--pt-border);
-  border-radius: 16px;
-  color: var(--pt-muted);
+  border-radius: var(--pt-radius-lg);
+  color: var(--pt-text-secondary);
   text-align: center;
 }
 
@@ -174,8 +152,8 @@
   display: flex;
   gap: 0.75rem;
   padding: 1rem 1.25rem;
-  border-radius: 16px;
-  background: #fff;
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
   border: 1px solid var(--pt-border);
   transition:
     transform 0.15s ease,
@@ -184,7 +162,7 @@
 
 .comment:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px -16px rgba(27, 29, 41, 0.35);
+  box-shadow: var(--pt-shadow);
 }
 
 .comment-header {
@@ -200,7 +178,7 @@
 }
 
 .comment-time {
-  color: var(--pt-muted);
+  color: var(--pt-text-secondary);
   font-size: 0.8rem;
 }
 
@@ -209,9 +187,9 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  background: var(--pt-surface);
-  color: var(--pt-muted);
+  border-radius: var(--pt-radius-pill);
+  background: var(--pt-bg-body);
+  color: var(--pt-text-secondary);
   font-size: 0.8rem;
 }
 
@@ -229,10 +207,153 @@
   }
 }
 
+/* ===== Home grid (US-04) ===== */
+
+.video-card {
+  position: relative;
+  text-align: left;
+}
+
+/* Thumbnail and hover preview share the same 16:9 box */
+.video-card-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+  transition: border-radius 0.2s ease;
+}
+
+.video-card.is-previewing .video-card-media {
+  border-radius: var(--pt-radius-md);
+}
+
+.video-card-thumbnail,
+.video-card-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-card-preview {
+  background: #000;
+}
+
+.video-card-progress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.video-card-progress span {
+  display: block;
+  height: 100%;
+  background: var(--pt-primary);
+}
+
+/* Duration overlay on thumbnails: 11 / 14px bold */
+.video-card-duration {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  border-radius: var(--pt-radius-sm);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 0.875rem;
+  letter-spacing: 0.02em;
+}
+
+.video-card.is-previewing .video-card-duration {
+  bottom: 0.75rem;
+}
+
+.video-card-body {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+}
+
 /* Long titles are cut after two lines so every card keeps the same height */
 .video-card-title {
+  margin-bottom: 0.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.375;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.video-card-title a {
+  color: var(--pt-text-primary);
+  text-decoration: none;
+}
+
+.video-card:hover .video-card-title a,
+.video-card-title a:focus-visible {
+  color: var(--pt-primary);
+}
+
+/* The stretched link covers the whole card: draw its focus ring around the thumbnail */
+.video-card-title a:focus-visible {
+  outline: none;
+}
+
+.video-card:has(a:focus-visible) .video-card-media {
+  box-shadow: 0 0 0 3px rgba(var(--pt-primary-rgb), 0.6);
+}
+
+.video-card-meta {
+  margin: 0;
+  color: var(--pt-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+/* Loading placeholders */
+.video-card-skeleton .skeleton-thumbnail,
+.video-card-skeleton .skeleton-line {
+  background: var(--pt-surface);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.video-card-skeleton .skeleton-thumbnail {
+  aspect-ratio: 16 / 9;
+  margin-bottom: 0.75rem;
+  border-radius: var(--pt-radius-lg);
+}
+
+.video-card-skeleton .skeleton-line {
+  height: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: var(--pt-radius-sm);
+}
+
+.video-card-skeleton .skeleton-line.is-short {
+  width: 60%;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-card-media {
+    transition: none;
+  }
+
+  .video-card-skeleton .skeleton-thumbnail,
+  .video-card-skeleton .skeleton-line {
+    animation: none;
+  }
 }

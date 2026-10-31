@@ -11,6 +11,8 @@ Applies to everything under `frontend/`. Root rules: [../AGENTS.md](../AGENTS.md
   states. URLs always built from `src/utils/Env.ts` (`API_BASE_URL`, `MEDIA_BASE_URL`).
 * Lists need a stable `key` (an id, never the array index). Forms use controlled inputs with a `<label>`.
 * Every user-visible text in English; images need `alt`, buttons and inputs need an accessible name.
+* Styles follow [docs/DESIGN_SYSTEM.md](../docs/DESIGN_SYSTEM.md): colours, radius and sizes through the `--pt-*`
+  tokens of `src/theme.css`, never hardcoded values in component stylesheets.
 
 ## Tests (Jest + Testing Library)
 
