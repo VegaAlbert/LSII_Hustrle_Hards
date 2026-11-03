@@ -34,6 +34,9 @@ class AuthServiceTest {
     @Mock
     JwtService jwtService;
 
+    @Mock
+    GoogleTokenVerifier googleTokenVerifier;
+
     @InjectMocks
     AuthService authService;
 
@@ -120,5 +123,57 @@ class AuthServiceTest {
         when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
 
         assertThrows(InvalidCredentialsException.class, () -> authService.getCurrentUser("ghost"));
+    }
+
+    @Test
+    void googleLoginShouldLogInExistingAccountWithSameEmail() {
+        when(googleTokenVerifier.verify("credential")).thenReturn(new GoogleAccount("alice@mail.com", "Alice"));
+        when(userRepository.findByEmail("alice@mail.com"))
+                .thenReturn(Optional.of(new User("alice", "alice@mail.com", "hashed")));
+        when(jwtService.generateToken("alice")).thenReturn("token");
+
+        AuthResponse response = authService.loginWithGoogle("credential");
+
+        assertEquals("token", response.token());
+        assertEquals("alice", response.user().username());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void googleLoginShouldCreateAccountOnFirstLogin() {
+        when(googleTokenVerifier.verify("credential")).thenReturn(new GoogleAccount("john.doe+yt@gmail.com", "John"));
+        when(userRepository.findByEmail("john.doe+yt@gmail.com")).thenReturn(Optional.empty());
+        when(userRepository.existsByUsername("john.doeyt")).thenReturn(true);
+        when(userRepository.existsByUsername("john.doeyt1")).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn("random-hash");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(jwtService.generateToken("john.doeyt1")).thenReturn("token");
+
+        AuthResponse response = authService.loginWithGoogle("credential");
+
+        ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(saved.capture());
+        assertEquals("john.doeyt1", saved.getValue().getUsername());
+        assertEquals("john.doe+yt@gmail.com", saved.getValue().getEmail());
+        assertEquals("random-hash", saved.getValue().getPasswordHash());
+        assertEquals("token", response.token());
+    }
+
+    @Test
+    void googleLoginShouldBuildValidUsernameFromShortOrLongEmails() {
+        when(googleTokenVerifier.verify("short")).thenReturn(new GoogleAccount("ab@mail.com", null));
+        when(googleTokenVerifier.verify("long")).thenReturn(new GoogleAccount("a".repeat(40) + "@mail.com", null));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        assertEquals("userab", authService.loginWithGoogle("short").user().username());
+        assertEquals("a".repeat(26), authService.loginWithGoogle("long").user().username());
+    }
+
+    @Test
+    void googleLoginShouldFailWithInvalidCredential() {
+        when(googleTokenVerifier.verify("bad")).thenThrow(new InvalidGoogleTokenException("Invalid Google credential"));
+
+        assertThrows(InvalidGoogleTokenException.class, () -> authService.loginWithGoogle("bad"));
+        verify(userRepository, never()).save(any());
     }
 }

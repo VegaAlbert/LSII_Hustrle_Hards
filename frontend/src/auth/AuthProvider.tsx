@@ -29,6 +29,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(await authApi.register(username, email, password));
   }, []);
 
+  const loginWithGoogle = useCallback(async (credential: string) => {
+    setSession(await authApi.loginWithGoogle(credential));
+  }, []);
+
   // Persist the session and send the token with every axios request to the backend
   useEffect(() => {
     if (session) {
@@ -78,8 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [token, logout]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user: session?.user ?? null, login, register, logout }),
-    [session, login, register, logout]
+    () => ({ user: session?.user ?? null, login, register, loginWithGoogle, logout }),
+    [session, login, register, loginWithGoogle, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

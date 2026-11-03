@@ -3,7 +3,13 @@ import SettingsPage from '../SettingsPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 
 const renderSettings = (user: AuthContextValue['user'] = null) => {
-  const auth: AuthContextValue = { user, login: jest.fn(), register: jest.fn(), logout: jest.fn() };
+  const auth: AuthContextValue = {
+    user,
+    login: jest.fn(),
+    register: jest.fn(),
+    loginWithGoogle: jest.fn(),
+    logout: jest.fn(),
+  };
   render(
     <AuthContext.Provider value={auth}>
       <SettingsPage />

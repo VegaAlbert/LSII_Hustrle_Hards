@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../auth/authContext';
 import { toApiError } from '../auth/authApi';
+import GoogleLoginButton from './GoogleLoginButton';
 import './LoginPage.css';
 
 type Mode = 'login' | 'register';
@@ -45,7 +46,7 @@ type Props = {
 };
 
 const LoginPage = ({ onSuccess }: Props) => {
-  const { login, register } = useAuth();
+  const { login, register, loginWithGoogle } = useAuth();
   const [mode, setMode] = useState<Mode>('login');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -83,6 +84,20 @@ const LoginPage = ({ onSuccess }: Props) => {
       const apiError = toApiError(error);
       setFieldErrors(apiError.fieldErrors);
       setFormError(apiError.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleGoogleCredential = async (credential: string) => {
+    setFormError(null);
+    setFieldErrors({});
+    setSubmitting(true);
+    try {
+      await loginWithGoogle(credential);
+      onSuccess();
+    } catch (error) {
+      setFormError(toApiError(error).message);
     } finally {
       setSubmitting(false);
     }
@@ -178,6 +193,8 @@ const LoginPage = ({ onSuccess }: Props) => {
               {isRegister ? 'Register' : 'Login'}
             </button>
           </form>
+
+          <GoogleLoginButton onCredential={handleGoogleCredential} onError={setFormError} />
 
           <p className="auth-switch">
             {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}

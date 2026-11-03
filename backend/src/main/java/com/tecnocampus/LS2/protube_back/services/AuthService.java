@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -18,11 +19,18 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final GoogleTokenVerifier googleTokenVerifier;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    // Same rules as RegisterRequest
+    private static final int USERNAME_MIN = 3;
+    private static final int USERNAME_MAX = 30;
+
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
+                       GoogleTokenVerifier googleTokenVerifier) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.googleTokenVerifier = googleTokenVerifier;
     }
 
     /**
@@ -54,6 +62,42 @@ public class AuthService {
                 .orElseThrow(InvalidCredentialsException::new);
 
         return new AuthResponse(jwtService.generateToken(user.getUsername()), UserResponse.from(user));
+    }
+
+    /**
+     * "Sign in with Google": logs in the account with the same (verified) email, or creates one the first time.
+     * Accounts created this way get a random password, so they can only log in with Google.
+     */
+    @Transactional
+    public AuthResponse loginWithGoogle(String credential) {
+        GoogleAccount account = googleTokenVerifier.verify(credential);
+
+        User user = userRepository.findByEmail(account.email())
+                .orElseGet(() -> userRepository.save(new User(
+                        uniqueUsernameFor(account.email()),
+                        account.email(),
+                        passwordEncoder.encode(UUID.randomUUID().toString()))));
+
+        return new AuthResponse(jwtService.generateToken(user.getUsername()), UserResponse.from(user));
+    }
+
+    /**
+     * Builds a valid, free username from the part of the email before the '@' (e.g. "john.doe" -> "john.doe",
+     * then "john.doe1", "john.doe2"... if it is taken).
+     */
+    private String uniqueUsernameFor(String email) {
+        String base = email.substring(0, email.indexOf('@')).replaceAll("[^A-Za-z0-9_.-]", "");
+        if (base.length() < USERNAME_MIN) {
+            base = "user" + base;
+        }
+        // Leave room for a numeric suffix
+        base = base.substring(0, Math.min(base.length(), USERNAME_MAX - 4));
+
+        String candidate = base;
+        for (int suffix = 1; userRepository.existsByUsername(candidate); suffix++) {
+            candidate = base + suffix;
+        }
+        return candidate;
     }
 
     @Transactional(readOnly = true)

@@ -6,6 +6,8 @@ export type AuthContextValue = {
   user: User | null;
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
+  // credential: the Google ID token returned by the "Sign in with Google" button
+  loginWithGoogle: (credential: string) => Promise<void>;
   logout: () => void;
 };
 
