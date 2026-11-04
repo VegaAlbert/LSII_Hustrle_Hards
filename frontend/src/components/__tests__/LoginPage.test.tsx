@@ -2,11 +2,22 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import LoginPage from '../LoginPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 
+// Google's real button needs Google's script; this stand-in hands over a fake credential when clicked
+jest.mock('../GoogleLoginButton', () => ({
+  __esModule: true,
+  default: ({ onCredential }: { onCredential: (credential: string) => void }) => (
+    <button type="button" onClick={() => onCredential('google-id-token')}>
+      Continue with Google
+    </button>
+  ),
+}));
+
 const renderLoginPage = (overrides: Partial<AuthContextValue> = {}) => {
   const auth: AuthContextValue = {
     user: null,
     login: jest.fn().mockResolvedValue(undefined),
     register: jest.fn().mockResolvedValue(undefined),
+    loginWithGoogle: jest.fn().mockResolvedValue(undefined),
     logout: jest.fn(),
     ...overrides,
   };
@@ -144,5 +155,25 @@ describe('LoginPage', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Email is already registered');
     expect(screen.getByLabelText('Email')).toHaveClass('is-invalid');
+  });
+
+  it('logs in with Google and calls onSuccess', async () => {
+    const { auth, onSuccess } = renderLoginPage();
+
+    submit('Continue with Google');
+
+    await waitFor(() => expect(onSuccess).toHaveBeenCalled());
+    expect(auth.loginWithGoogle).toHaveBeenCalledWith('google-id-token');
+  });
+
+  it('shows the backend error when the Google login is rejected', async () => {
+    const { onSuccess } = renderLoginPage({
+      loginWithGoogle: jest.fn().mockRejectedValue({ response: { data: { message: 'Invalid Google credential' } } }),
+    });
+
+    submit('Continue with Google');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Invalid Google credential');
+    expect(onSuccess).not.toHaveBeenCalled();
   });
 });

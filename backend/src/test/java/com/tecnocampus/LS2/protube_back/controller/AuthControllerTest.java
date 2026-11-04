@@ -2,14 +2,19 @@ package com.tecnocampus.LS2.protube_back.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tecnocampus.LS2.protube_back.services.GoogleAccount;
+import com.tecnocampus.LS2.protube_back.services.GoogleTokenVerifier;
+import com.tecnocampus.LS2.protube_back.services.InvalidGoogleTokenException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -32,6 +37,10 @@ class AuthControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    // Google itself is not called in tests
+    @MockBean
+    GoogleTokenVerifier googleTokenVerifier;
 
     private String registerBody(String username, String email, String password) {
         return """
@@ -145,5 +154,61 @@ class AuthControllerTest {
     void videosStayPublic() throws Exception {
         mockMvc.perform(get("/api/videos"))
                 .andExpect(status().isOk());
+    }
+
+    private String googleBody(String credential) {
+        return """
+                {"credential": "%s"}
+                """.formatted(credential);
+    }
+
+    @Test
+    void googleLoginCreatesAccountAndReturnsUsableToken() throws Exception {
+        when(googleTokenVerifier.verify("google-token")).thenReturn(new GoogleAccount("carol@gmail.com", "Carol"));
+
+        String response = mockMvc.perform(post("/api/auth/google")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(googleBody("google-token")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.username").value("carol"))
+                .andExpect(jsonPath("$.user.email").value("carol@gmail.com"))
+                .andReturn().getResponse().getContentAsString();
+        String token = objectMapper.readTree(response).get("token").asText();
+
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("carol"));
+    }
+
+    @Test
+    void googleLoginReusesAccountWithSameEmail() throws Exception {
+        register("alice", "alice@mail.com");
+        when(googleTokenVerifier.verify("google-token")).thenReturn(new GoogleAccount("alice@mail.com", "Alice"));
+
+        mockMvc.perform(post("/api/auth/google")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(googleBody("google-token")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.username").value("alice"));
+    }
+
+    @Test
+    void googleLoginWithInvalidCredentialIsRejected() throws Exception {
+        when(googleTokenVerifier.verify("bad")).thenThrow(new InvalidGoogleTokenException("Invalid Google credential"));
+
+        mockMvc.perform(post("/api/auth/google")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(googleBody("bad")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Invalid Google credential"));
+    }
+
+    @Test
+    void googleLoginWithoutCredentialIsRejected() throws Exception {
+        mockMvc.perform(post("/api/auth/google")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(googleBody("")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.credential").value("Google credential is required"));
     }
 }

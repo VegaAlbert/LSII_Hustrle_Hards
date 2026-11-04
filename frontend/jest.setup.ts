@@ -10,6 +10,7 @@ jest.mock('./src/utils/Env', () => ({
   getEnv: () => ({
     API_BASE_URL: 'other',
     MEDIA_BASE_URL: 'development',
+    GOOGLE_CLIENT_ID: '',
   }),
 }));
 

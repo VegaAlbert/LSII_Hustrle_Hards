@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { fetchCurrentUser, isUnauthorized, login, register, toApiError } from '../authApi';
+import { fetchCurrentUser, isUnauthorized, login, loginWithGoogle, register, toApiError } from '../authApi';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -25,6 +25,13 @@ describe('authApi', () => {
 
     await expect(login('alice', 'password123')).resolves.toEqual(authResponse);
     expect(mockedAxios.post).toHaveBeenCalledWith('other/auth/login', { username: 'alice', password: 'password123' });
+  });
+
+  it('logs a user in with a Google credential', async () => {
+    mockedAxios.post.mockResolvedValueOnce({ data: authResponse });
+
+    await expect(loginWithGoogle('google-id-token')).resolves.toEqual(authResponse);
+    expect(mockedAxios.post).toHaveBeenCalledWith('other/auth/google', { credential: 'google-id-token' });
   });
 
   it('fetches the current user with the token', async () => {

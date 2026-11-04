@@ -9,6 +9,7 @@ jest.mock('../authApi', () => ({
   ...jest.requireActual('../authApi'),
   login: jest.fn(),
   register: jest.fn(),
+  loginWithGoogle: jest.fn(),
   fetchCurrentUser: jest.fn(),
 }));
 const mockedApi = authApi as jest.Mocked<typeof authApi>;
@@ -18,12 +19,13 @@ const tokenExpiringIn = (ms: number) =>
   `header.${btoa(JSON.stringify({ exp: Math.floor((Date.now() + ms) / 1000) }))}.signature`;
 
 function Consumer() {
-  const { user, login, register, logout } = useAuth();
+  const { user, login, register, loginWithGoogle, logout } = useAuth();
   return (
     <>
       <span data-testid="user">{user?.username ?? 'anonymous'}</span>
       <button onClick={() => login('alice', 'password123')}>login</button>
       <button onClick={() => register('alice', 'alice@mail.com', 'password123')}>register</button>
+      <button onClick={() => loginWithGoogle('google-id-token')}>google</button>
       <button onClick={logout}>logout</button>
     </>
   );
@@ -70,6 +72,16 @@ describe('AuthProvider', () => {
     fireEvent.click(screen.getByText('register'));
 
     await waitFor(() => expect(screen.getByTestId('user')).toHaveTextContent('alice'));
+  });
+
+  it('logs in with Google', async () => {
+    mockedApi.loginWithGoogle.mockResolvedValueOnce({ token: tokenExpiringIn(60_000), user });
+    renderWithProvider();
+
+    fireEvent.click(screen.getByText('google'));
+
+    await waitFor(() => expect(screen.getByTestId('user')).toHaveTextContent('alice'));
+    expect(mockedApi.loginWithGoogle).toHaveBeenCalledWith('google-id-token');
   });
 
   it('logs out and forgets the session', async () => {

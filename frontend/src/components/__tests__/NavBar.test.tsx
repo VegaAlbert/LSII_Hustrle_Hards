@@ -3,7 +3,13 @@ import NavBar from '../NavBar';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 
 const renderNavBar = (user: AuthContextValue['user'], showLogin?: boolean) => {
-  const auth: AuthContextValue = { user, login: jest.fn(), register: jest.fn(), logout: jest.fn() };
+  const auth: AuthContextValue = {
+    user,
+    login: jest.fn(),
+    register: jest.fn(),
+    loginWithGoogle: jest.fn(),
+    logout: jest.fn(),
+  };
   const onHome = jest.fn();
   const onLogin = jest.fn();
   const onSettings = jest.fn();

@@ -46,8 +46,7 @@ python3 main.py --store=/absolute/path/to/videos --id=10 --videos=../../resource
 | Variable                           | Needed for              | Description                                                                                      |
 |------------------------------------|-------------------------|--------------------------------------------------------------------------------------------------|
 | `ENV_PROTUBE_STORE_DIR`            | always                  | Absolute path of the video store folder. **End it with a path separator** (`/` or `\`) — it is used as a `file:` prefix to serve `/media/**`. |
-| `ENV_PROTUBE_GOOGLE_CLIENT_ID`     | Google OAuth login      | Google OAuth client id                                                                           |
-| `ENV_PROTUBE_GOOGLE_CLIENT_SECRET` | Google OAuth login      | Google OAuth client secret                                                                       |
+| `ENV_PROTUBE_GOOGLE_CLIENT_ID`     | "Sign in with Google", optional | OAuth client id (`...apps.googleusercontent.com`). Empty disables Google login. The frontend needs the same value in `VITE_GOOGLE_CLIENT_ID` (see [Google login](#google-login)). |
 | `ENV_PROTUBE_DB_HOST`              | `prod` profile          | PostgreSQL host (e.g. `localhost`, or the service name inside Docker Compose)                    |
 | `ENV_PROTUBE_DB`                   | `prod` profile          | PostgreSQL database name (see [Using PostgreSQL](#using-postgresql))                              |
 | `ENV_PROTUBE_DB_USER`              | `prod` profile          | Database user                                                                                    |
@@ -66,6 +65,22 @@ Never commit real secrets or personal paths. The shared run configurations in `.
 # Linux / macOS (add it to ~/.bashrc or ~/.zshrc)
 export ENV_PROTUBE_STORE_DIR=/home/me/protube/videos/
 ```
+
+### Google login
+
+"Sign in with Google" is optional: without a client id the app works as before and the Google button is hidden.
+The frontend gets an ID token from Google and sends it to `POST /api/auth/google`; the backend checks it was signed
+by Google for our client id, then logs in the account with the same email (or creates it) and returns the usual
+ProTube JWT. Only the **client id** is needed (it is public, there is no client secret).
+
+1. In [Google Cloud Console](https://console.cloud.google.com/) create an OAuth client of type *Web application*
+   with these *Authorized JavaScript origins*: `http://localhost:5173` (dev), `http://localhost` (Docker) and
+   `http://localhost:8080` (jar).
+2. Backend: set `ENV_PROTUBE_GOOGLE_CLIENT_ID` like `ENV_PROTUBE_STORE_DIR` above.
+3. Frontend (dev): create `frontend/.env.development.local` (gitignored) with
+   `VITE_GOOGLE_CLIENT_ID=<client id>`, then restart `npm run dev`. For the jar use `.env.production.local`.
+4. Docker: add `ENV_PROTUBE_GOOGLE_CLIENT_ID=<client id>` to the root `.env`; compose passes it to both images
+   (rebuild with `docker compose up --build`).
 
 ## 3. Development mode
 
@@ -197,7 +212,7 @@ else), copy [`.env.example`](./.env.example) to `.env` in the repo root (it is g
 | `PROTUBE_STORE_DIR` | `./videos` | Host folder with the video store, mounted into the backend |
 | `ENV_PROTUBE_LOAD_INITIAL_DATA` | `true` | Import the video store into PostgreSQL on startup (already imported videos are skipped) |
 | `PROTUBE_FRONTEND_PORT` / `PROTUBE_BACKEND_PORT` / `PROTUBE_DB_PORT` | `80` / `8080` / `5432` | Host ports |
-| `ENV_PROTUBE_GOOGLE_CLIENT_ID` / `ENV_PROTUBE_GOOGLE_CLIENT_SECRET` | empty | Google OAuth credentials |
+| `ENV_PROTUBE_GOOGLE_CLIENT_ID` | empty | OAuth client id of "Sign in with Google" (backend and frontend build) |
 
 Database data lives in the `postgres_data` volume and survives `docker compose down`; use `docker compose down -v`
 to wipe it. If `PROTUBE_STORE_DIR` is empty the app still starts, but there are no videos to serve — generate them

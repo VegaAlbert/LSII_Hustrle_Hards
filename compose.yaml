@@ -39,8 +39,8 @@ services:
       ENV_PROTUBE_DB: ${ENV_PROTUBE_DB:-protube}
       ENV_PROTUBE_DB_USER: ${ENV_PROTUBE_DB_USER:-protube}
       ENV_PROTUBE_DB_PASS: ${ENV_PROTUBE_DB_PASS:-protube}
+      # "Sign in with Google" (empty disables it); the frontend gets the same id at build time
       ENV_PROTUBE_GOOGLE_CLIENT_ID: ${ENV_PROTUBE_GOOGLE_CLIENT_ID:-}
-      ENV_PROTUBE_GOOGLE_CLIENT_SECRET: ${ENV_PROTUBE_GOOGLE_CLIENT_SECRET:-}
     ports:
       - "${PROTUBE_BACKEND_PORT:-8080}:8080"
     volumes:
@@ -48,7 +48,10 @@ services:
       - ${PROTUBE_STORE_DIR:-./videos}:/data/videos
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${ENV_PROTUBE_GOOGLE_CLIENT_ID:-}
     container_name: protube_frontend
     restart: unless-stopped
     depends_on:

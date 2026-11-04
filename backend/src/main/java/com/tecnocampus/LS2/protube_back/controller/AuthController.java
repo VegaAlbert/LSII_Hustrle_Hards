@@ -1,6 +1,7 @@
 package com.tecnocampus.LS2.protube_back.controller;
 
 import com.tecnocampus.LS2.protube_back.controller.dto.AuthResponse;
+import com.tecnocampus.LS2.protube_back.controller.dto.GoogleLoginRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.LoginRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.RegisterRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.UserResponse;
@@ -33,6 +34,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    /**
+     * "Sign in with Google": exchanges the Google ID token for a ProTube token. Answers 401 if Google's token is
+     * not valid.
+     */
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
+        return ResponseEntity.ok(authService.loginWithGoogle(request.credential()));
     }
 
     /**

@@ -30,6 +30,14 @@ export async function login(username: string, password: string): Promise<AuthRes
   return response.data;
 }
 
+/**
+ * Exchanges the ID token given by the "Sign in with Google" button for a ProTube session.
+ */
+export async function loginWithGoogle(credential: string): Promise<AuthResponse> {
+  const response = await axios.post<AuthResponse>(`${authUrl()}/google`, { credential });
+  return response.data;
+}
+
 export async function fetchCurrentUser(token: string): Promise<User> {
   const response = await axios.get<User>(`${authUrl()}/me`, {
     headers: { Authorization: `Bearer ${token}` },
