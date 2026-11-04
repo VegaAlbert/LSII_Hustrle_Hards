@@ -37,29 +37,50 @@ python3 main.py --store=/absolute/path/to/videos --id=10 --videos=../../resource
 * `--id` is your group id (used to pick the set of videos).
 * `--recreate` wipes and regenerates an existing store folder (without it, the script exits if the folder exists).
 * Use `python` instead of `python3` on Windows if that's how Python is installed.
+* `vars.py` uses `yt-dlp`, `ffmpeg` and `ffprobe` from your PATH. If yours live elsewhere, create
+  `tooling/videoGrabber/vars_local.py` (gitignored) with your paths, e.g. `FFMPEG_BIN = "C:/tools/ffmpeg.exe"`.
+  Never edit `vars.py` with personal paths.
 
 ## 2. Environment variables
 
 | Variable                           | Needed for              | Description                                                                                      |
 |------------------------------------|-------------------------|--------------------------------------------------------------------------------------------------|
 | `ENV_PROTUBE_STORE_DIR`            | always                  | Absolute path of the video store folder. **End it with a path separator** (`/` or `\`) — it is used as a `file:` prefix to serve `/media/**`. |
-| `ENV_PROTUBE_GOOGLE_CLIENT_ID`     | Google OAuth login      | Google OAuth client id                                                                           |
-| `ENV_PROTUBE_GOOGLE_CLIENT_SECRET` | Google OAuth login      | Google OAuth client secret                                                                       |
-| `ENV_PROTUBE_DB_USER`              | `prod` profile          | Database user (use `sa` with the default H2 datasource)                                          |
-| `ENV_PROTUBE_DB_PWD`               | `prod` profile          | Database password (empty with the default H2 datasource)                                         |
-| `ENV_PROTUBE_DB`                   | `prod` + PostgreSQL     | PostgreSQL database name (see [Using PostgreSQL](#using-postgresql))                              |
+| `ENV_PROTUBE_GOOGLE_CLIENT_ID`     | "Sign in with Google", optional | OAuth client id (`...apps.googleusercontent.com`). Empty disables Google login. The frontend needs the same value in `VITE_GOOGLE_CLIENT_ID` (see [Google login](#google-login)). |
+| `ENV_PROTUBE_DB_HOST`              | `prod` profile          | PostgreSQL host (e.g. `localhost`, or the service name inside Docker Compose)                    |
+| `ENV_PROTUBE_DB`                   | `prod` profile          | PostgreSQL database name (see [Using PostgreSQL](#using-postgresql))                              |
+| `ENV_PROTUBE_DB_USER`              | `prod` profile          | Database user                                                                                    |
+| `ENV_PROTUBE_DB_PASS`              | `prod` profile          | Database password                                                                                |
+| `ENV_PROTUBE_LOAD_INITIAL_DATA`    | `prod` profile, optional | `true` imports the video store into the database on startup (default `false`; `dev` always imports) |
 
-Never commit real secrets. Set them in your shell, your OS, or your (local, uncommitted) IDE run configuration.
+Never commit real secrets or personal paths. The shared run configurations in `.run/` do **not** set
+`ENV_PROTUBE_STORE_DIR`: set it once as a user environment variable on your machine and restart IntelliJ.
+
+```powershell
+# Windows (permanent, for your user)
+[Environment]::SetEnvironmentVariable("ENV_PROTUBE_STORE_DIR", "C:\path\to\protube-videos\", "User")
+```
 
 ```bash
-# Linux / macOS
+# Linux / macOS (add it to ~/.bashrc or ~/.zshrc)
 export ENV_PROTUBE_STORE_DIR=/home/me/protube/videos/
 ```
 
-```powershell
-# Windows PowerShell (current session)
-$env:ENV_PROTUBE_STORE_DIR = "D:\code\videos\"
-```
+### Google login
+
+"Sign in with Google" is optional: without a client id the app works as before and the Google button is hidden.
+The frontend gets an ID token from Google and sends it to `POST /api/auth/google`; the backend checks it was signed
+by Google for our client id, then logs in the account with the same email (or creates it) and returns the usual
+ProTube JWT. Only the **client id** is needed (it is public, there is no client secret).
+
+1. In [Google Cloud Console](https://console.cloud.google.com/) create an OAuth client of type *Web application*
+   with these *Authorized JavaScript origins*: `http://localhost:5173` (dev), `http://localhost` (Docker) and
+   `http://localhost:8080` (jar).
+2. Backend: set `ENV_PROTUBE_GOOGLE_CLIENT_ID` like `ENV_PROTUBE_STORE_DIR` above.
+3. Frontend (dev): create `frontend/.env.development.local` (gitignored) with
+   `VITE_GOOGLE_CLIENT_ID=<client id>`, then restart `npm run dev`. For the jar use `.env.production.local`.
+4. Docker: add `ENV_PROTUBE_GOOGLE_CLIENT_ID=<client id>` to the root `.env`; compose passes it to both images
+   (rebuild with `docker compose up --build`).
 
 ## 3. Development mode
 
@@ -79,8 +100,8 @@ mvn spring-boot:run
 * Starts on **http://localhost:8080** with the `dev` profile (active by default through the Maven `dev` profile).
 * `dev` uses an in-memory H2 database and loads initial data (`pro_tube.load_initial_data=true`). All data is lost
   on restart.
-* From IntelliJ you can instead use the shared **ProtubeBackApplication** run configuration (`.run/`) — edit its
-  environment variables to point to your own store folder.
+* From IntelliJ you can instead use the shared **ProtubeBackApplication** run configuration (`.run/`); it reads
+  `ENV_PROTUBE_STORE_DIR` from your environment (section 2). Do not commit personal values in `.run/`.
 * CORS is open for `/api/**` and `/auth/**`, so the Vite dev server can call the API directly.
 
 ### Frontend
@@ -143,7 +164,8 @@ single origin (http://localhost:8080). The Maven `prod` profile:
 
 1. Downloads Node/npm into `backend/target/`, runs `npm install` and `npm run build:prod` in `frontend/`.
 2. Copies `frontend/dist/` into the jar's `static/` folder.
-3. Activates the Spring `prod` profile (`pro_tube.load_initial_data=false`, `ddl-auto=update`).
+3. Activates the Spring `prod` profile (`ddl-auto=update`; the video store is only imported when
+   `ENV_PROTUBE_LOAD_INITIAL_DATA=true`).
 
 `frontend/.env.production` leaves `VITE_API_DOMAIN`/`VITE_MEDIA_DOMAIN` empty, so the built SPA calls the API with
 relative URLs (`/api`, `/media`) on the same host.
@@ -166,25 +188,53 @@ java -jar target/protube-back-0.0.1-SNAPSHOT.jar
 ```
 
 (IntelliJ: the **Create jar** run configuration runs `package` with the `prod` profile.) Remember that
-`ENV_PROTUBE_STORE_DIR`, `ENV_PROTUBE_DB_USER` and `ENV_PROTUBE_DB_PWD` must be set in the environment where the jar
-runs.
+`ENV_PROTUBE_STORE_DIR` and the four `ENV_PROTUBE_DB_*` variables must be set in the environment where the jar runs.
 
 To only preview the production frontend bundle, without the backend: `cd frontend && npm run build:prod && npm run preview`.
 
+### Run with Docker Compose (delivery, NFR-03)
+
+The delivered application runs as three containers defined in [`compose.yaml`](./compose.yaml): `db`
+(PostgreSQL 16), `backend` (Spring Boot, Spring `prod` profile) and `frontend` (nginx serving the built SPA and
+proxying `/api` and `/media` to the backend). Only Docker is needed:
+
+```bash
+docker compose up --build
+```
+
+Then open http://localhost. Every variable has a default; to point Docker to your video store (or override anything
+else), copy [`.env.example`](./.env.example) to `.env` in the repo root (it is gitignored) and set
+`PROTUBE_STORE_DIR` to your store folder:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `ENV_PROTUBE_DB` / `ENV_PROTUBE_DB_USER` / `ENV_PROTUBE_DB_PASS` | `protube` | PostgreSQL database and credentials |
+| `PROTUBE_STORE_DIR` | `./videos` | Host folder with the video store, mounted into the backend |
+| `ENV_PROTUBE_LOAD_INITIAL_DATA` | `true` | Import the video store into PostgreSQL on startup (already imported videos are skipped) |
+| `PROTUBE_FRONTEND_PORT` / `PROTUBE_BACKEND_PORT` / `PROTUBE_DB_PORT` | `80` / `8080` / `5432` | Host ports |
+| `ENV_PROTUBE_GOOGLE_CLIENT_ID` | empty | OAuth client id of "Sign in with Google" (backend and frontend build) |
+
+Database data lives in the `postgres_data` volume and survives `docker compose down`; use `docker compose down -v`
+to wipe it. If `PROTUBE_STORE_DIR` is empty the app still starts, but there are no videos to serve — generate them
+with the video grabber (section 1).
+
 ### Using PostgreSQL
 
-The `prod` profile still points to an in-memory H2 database, which is only a placeholder — the MVP requires a real
-database (NFR-01 in [REQUIREMENT.md](./REQUIREMENT.md)). The PostgreSQL driver is already a dependency. To switch:
+The `prod` profile already points to PostgreSQL (`jdbc:postgresql://${ENV_PROTUBE_DB_HOST}:5432/${ENV_PROTUBE_DB}`
+in `application.properties`); the MVP requires a real database (NFR-01 in [REQUIREMENT.md](./REQUIREMENT.md)). To
+run it locally:
 
-1. Start a PostgreSQL server (e.g. `docker run -d --name protube-db -p 5432:5432 -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=protube postgres:16`).
-2. In `backend/src/main/resources/application.properties`, in the `prod` section, uncomment the PostgreSQL
-   `spring.datasource.url` line and remove the H2 one.
-3. Set `ENV_PROTUBE_DB` (e.g. `protube`), `ENV_PROTUBE_DB_USER` (e.g. `postgres`) and `ENV_PROTUBE_DB_PWD`.
+1. Start PostgreSQL, e.g. with the `db` service of `compose.yaml` (`docker compose up -d db`), which reads
+   `ENV_PROTUBE_DB`, `ENV_PROTUBE_DB_USER` and `ENV_PROTUBE_DB_PASS`.
+2. Set `ENV_PROTUBE_DB_HOST=localhost`, `ENV_PROTUBE_DB` (e.g. `protube`), `ENV_PROTUBE_DB_USER` (e.g. `postgres`) and
+   `ENV_PROTUBE_DB_PASS`.
+3. Run the backend with the `prod` profile (`mvn -Pprod spring-boot:run`).
 
 ## 6. Workflow reminders
 
-* `main` is protected: work in a branch and open a Pull Request; it needs at least one approval and all Copilot
-  review comments resolved before merging.
+* `main` and `develop` are protected by a ruleset: work in a `task/<issue>-short-name` branch from `develop` and open
+  a Pull Request into `develop`; it needs one approval, all Copilot review comments resolved and green CI, and is
+  squash-merged. Only release and hotfix PRs go into `main`. Full conventions: [AGENTS.md](./AGENTS.md).
 * Use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) and reference the task.
 * If AI generated part of a change, mark it in the commit message and reference the prompt from `prompts/` that was
   used (see [prompts/README.md](./prompts/README.md)).
@@ -199,4 +249,8 @@ database (NFR-01 in [REQUIREMENT.md](./REQUIREMENT.md)). The PostgreSQL driver i
   points to the folder containing the `.mp4`/`.webp` files.
 * **Frontend can't reach the API in dev**: make sure the backend is running on port 8080, or adjust
   `VITE_API_DOMAIN` in `.env.development.local`.
-* **Port already in use**: change `server.port` (backend) or run `npm run dev -- --port 5174` (frontend).
+* **Port already in use**: change `server.port` (backend) or run `npm run dev -- --port 5174` (frontend). With Docker
+  Compose, set `PROTUBE_FRONTEND_PORT` / `PROTUBE_BACKEND_PORT` / `PROTUBE_DB_PORT` in the root `.env`.
+* **Docker backend keeps restarting with `role "..." does not exist`**: the `postgres_data` volume was initialised
+  earlier with other credentials (PostgreSQL only applies `POSTGRES_USER`/`POSTGRES_PASSWORD` on first start). Reuse
+  the old credentials in `.env`, or wipe the volume with `docker compose down -v`.

@@ -1,2 +1,16 @@
+### IDE ###
 .vscode/
 .idea/
+
+### AI agents (personal) ###
+/.agents
+.mcp.json
+
+### Maven wrapper (generated in CI) ###
+backend/.mvn/wrapper/maven-wrapper.properties
+backend/mvnw
+backend/mvnw.cmd
+
+### Local config and data ###
+.env
+/videos

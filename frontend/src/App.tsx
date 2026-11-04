@@ -1,41 +1,41 @@
+import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import './App.css';
-import { useAllVideos } from './useAllVideos';
+import { AuthProvider } from './auth/AuthProvider';
+import Layout from './components/Layout';
+import LoginPage from './components/LoginPage';
+import SettingsPage from './components/SettingsPage';
+import HomePage from './pages/HomePage';
+import NotFoundPage from './pages/NotFoundPage';
+import VideoDetailPage from './pages/VideoDetailPage';
+
+const LoginRoute = () => {
+  const navigate = useNavigate();
+  return <LoginPage onSuccess={() => navigate('/')} />;
+};
+
+/**
+ * Routes of the app. Kept apart from the router so tests can render them inside a MemoryRouter.
+ */
+export const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<Layout />}>
+      <Route index element={<HomePage />} />
+      <Route path="login" element={<LoginRoute />} />
+      <Route path="settings" element={<SettingsPage />} />
+      <Route path="videos/:id" element={<VideoDetailPage />} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Route>
+  </Routes>
+);
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src="/protube-logo-removebg-preview.png" className="App-logo" alt="logo" />
-        <ContentApp />
-      </header>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   );
-}
-
-function ContentApp() {
-  const { loading, message, value } = useAllVideos();
-  switch (loading) {
-    case 'loading':
-      return <div>Loading...</div>;
-    case 'error':
-      return (
-        <div>
-          <h3>Error</h3> <p>{message}</p>
-        </div>
-      );
-    case 'success':
-      return (
-        <>
-          <strong>Videos availables:</strong>
-          <ul>
-            {value.map((item) => (
-              <li>{item}</li>
-            ))}
-          </ul>
-        </>
-      );
-  }
-  return <div>Idle...</div>;
 }
 
 export default App;

@@ -2,5 +2,5 @@
 .venv/
 venv/
 __pycache__/
-
-vars.py
+# Personal paths of the programs, see vars.py
+vars_local.py

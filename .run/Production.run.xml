@@ -6,9 +6,7 @@
                 <MavenRunnerSettings>
                     <option name="delegateBuildToMaven" value="false" />
                     <option name="environmentProperties">
-                        <map>
-                            <entry key="ENV_PROTUBE_STORE_DIR" value="D:\code\videos\" />
-                        </map>
+                        <map />
                     </option>
                     <option name="jreName" value="#USE_PROJECT_JDK" />
                     <option name="mavenProperties">
