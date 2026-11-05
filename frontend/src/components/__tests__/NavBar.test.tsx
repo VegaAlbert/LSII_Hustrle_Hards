@@ -13,12 +13,13 @@ const renderNavBar = (user: AuthContextValue['user'], showLogin?: boolean) => {
   const onHome = jest.fn();
   const onLogin = jest.fn();
   const onSettings = jest.fn();
+  const onUpload = jest.fn();
   render(
     <AuthContext.Provider value={auth}>
-      <NavBar onHome={onHome} onLogin={onLogin} onSettings={onSettings} showLogin={showLogin} />
+      <NavBar onHome={onHome} onLogin={onLogin} onSettings={onSettings} onUpload={onUpload} showLogin={showLogin} />
     </AuthContext.Provider>
   );
-  return { auth, onHome, onLogin, onSettings };
+  return { auth, onHome, onLogin, onSettings, onUpload };
 };
 
 describe('NavBar', () => {
@@ -42,6 +43,14 @@ describe('NavBar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
 
     expect(onSettings).toHaveBeenCalled();
+  });
+
+  it('opens the upload page from the Create button', () => {
+    const { onUpload } = renderNavBar(null);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+
+    expect(onUpload).toHaveBeenCalled();
   });
 
   it('goes home when clicking the brand', () => {

@@ -1,0 +1,271 @@
+/* ===== Upload page (US-06) ===== */
+
+.upload-page {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.upload-header {
+  margin-bottom: 1.5rem;
+}
+
+.upload-header h1 {
+  margin-bottom: 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Step 1: drop the file */
+.upload-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 4rem 1.5rem;
+  border: 2px dashed var(--pt-border);
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.upload-dropzone:hover,
+.upload-dropzone.is-dragging,
+.upload-dropzone:focus-within {
+  border-color: var(--pt-primary);
+  background: rgba(var(--pt-primary-rgb), 0.06);
+}
+
+.upload-dropzone-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 0.5rem;
+  border-radius: 50%;
+  color: var(--pt-primary);
+  background: var(--pt-bg-body);
+}
+
+.upload-error {
+  color: var(--pt-danger);
+  font-weight: 600;
+}
+
+.upload-error-card {
+  padding: 1.5rem;
+  border: 1px solid var(--pt-danger);
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+}
+
+/* Step 2: details on the left, preview on the right, actions at the bottom */
+.upload-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-areas:
+    'main aside'
+    'actions actions';
+  gap: 1.5rem;
+}
+
+.upload-main {
+  grid-area: main;
+  padding: 1.5rem;
+  border: 1px solid var(--pt-border);
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+}
+
+.upload-aside {
+  grid-area: aside;
+}
+
+.upload-field {
+  margin-bottom: 1.5rem;
+  border: 0;
+  padding: 0;
+}
+
+.upload-field .form-label {
+  font-weight: 600;
+}
+
+/* Bootstrap draws legends as headings: same size as the other labels */
+.upload-field legend.form-label {
+  font-size: var(--bs-body-font-size);
+}
+
+.form-hint {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.25rem;
+  color: var(--pt-text-secondary);
+  font-size: 0.75rem;
+}
+
+.invalid-text {
+  color: var(--pt-danger);
+  font-size: 0.8rem;
+}
+
+.upload-hashtags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+}
+
+/* Thumbnails: three frames of the video and the custom image */
+.thumbnail-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.thumbnail-option,
+.thumbnail-upload {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  padding: 0;
+  border: 2px solid var(--pt-border);
+  border-radius: var(--pt-radius-md);
+  background: var(--pt-bg-body);
+  color: var(--pt-text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.thumbnail-option img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnail-option span {
+  position: absolute;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  padding: 0 0.35rem;
+  border-radius: var(--pt-radius-sm);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+}
+
+.thumbnail-option.is-selected {
+  border-color: var(--pt-primary);
+  box-shadow: var(--pt-focus-ring);
+}
+
+.thumbnail-upload {
+  border-style: dashed;
+}
+
+.thumbnail-upload span {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.thumbnail-upload:hover,
+.thumbnail-upload:focus-within {
+  border-color: var(--pt-primary);
+  color: var(--pt-text-primary);
+}
+
+/* Preview card, kept visible while scrolling the form */
+.upload-preview {
+  position: sticky;
+  top: calc(var(--pt-navbar-height) + 1rem);
+  overflow: hidden;
+  border: 1px solid var(--pt-border);
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+  padding-bottom: 1rem;
+}
+
+.upload-preview video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.upload-preview .btn {
+  margin: 0 1rem;
+}
+
+.upload-file-facts {
+  margin: 1rem;
+}
+
+.upload-file-facts div {
+  margin-bottom: 0.5rem;
+}
+
+.upload-file-facts dt {
+  color: var(--pt-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.upload-file-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.upload-actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--pt-border);
+}
+
+.upload-progress {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.upload-progress progress {
+  flex: 1;
+  height: 8px;
+  accent-color: var(--pt-primary);
+}
+
+@media (max-width: 900px) {
+  .upload-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'aside'
+      'main'
+      'actions';
+  }
+
+  .upload-preview {
+    position: static;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upload-dropzone {
+    transition: none;
+  }
+}

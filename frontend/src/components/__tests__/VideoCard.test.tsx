@@ -12,6 +12,7 @@ const video: VideoSummary = {
   publishedAt: '2024-01-01T00:00:00Z',
   thumbnailUrl: '/media/0.webp',
   videoUrl: '/media/0.mp4',
+  ageRestricted: false,
 };
 
 const renderCard = (overrides: Partial<VideoSummary> = {}) =>
@@ -70,6 +71,17 @@ describe('VideoCard', () => {
       const preview = screen.getByTestId('video-preview');
       expect(preview).toHaveAttribute('src', 'development/0.mp4');
       expect((preview as HTMLVideoElement).muted).toBe(true);
+    });
+
+    it('marks age-restricted videos and never previews them', async () => {
+      const user = setup();
+      renderCard({ ageRestricted: true });
+
+      expect(screen.getByText('18+')).toBeInTheDocument();
+      await user.hover(screen.getByRole('article'));
+      act(() => jest.advanceTimersByTime(PREVIEW_DELAY_MS));
+
+      expect(screen.queryByTestId('video-preview')).not.toBeInTheDocument();
     });
 
     it('stops the preview when the mouse leaves', async () => {
