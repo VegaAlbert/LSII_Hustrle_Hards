@@ -6,11 +6,12 @@ type Props = {
   onHome: () => void;
   onLogin: () => void;
   onSettings: () => void;
+  onUpload: () => void;
   // Hidden while the login page is already open
   showLogin?: boolean;
 };
 
-const NavBar = ({ onHome, onLogin, onSettings, showLogin = true }: Props) => {
+const NavBar = ({ onHome, onLogin, onSettings, onUpload, showLogin = true }: Props) => {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -30,6 +31,12 @@ const NavBar = ({ onHome, onLogin, onSettings, showLogin = true }: Props) => {
       </button>
 
       <div className="pt-nav-actions">
+        <button type="button" className="pt-create-btn" onClick={onUpload}>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path fill="currentColor" d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
+          </svg>
+          Create
+        </button>
         <button type="button" className="pt-icon-btn" aria-label="Settings" title="Settings" onClick={onSettings}>
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
             <path

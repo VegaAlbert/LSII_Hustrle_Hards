@@ -23,6 +23,11 @@
   --pt-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
   --pt-focus-ring: 0 0 0 0.2rem rgba(var(--pt-primary-rgb), 0.35);
   --pt-navbar-height: 64px;
+
+  /* Colours of other brands, only for their buttons in the share dialog */
+  --pt-share-whatsapp: #25d366;
+  --pt-share-facebook: #1877f2;
+  --pt-share-reddit: #ff4500;
 }
 
 /* Light variant: only the neutral tokens change */

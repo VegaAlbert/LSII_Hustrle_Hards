@@ -14,6 +14,7 @@ const Layout = () => {
         onHome={() => navigate('/')}
         onLogin={() => navigate('/login')}
         onSettings={() => navigate('/settings')}
+        onUpload={() => navigate('/upload')}
         showLogin={pathname !== '/login'}
       />
       <main className="container py-4">

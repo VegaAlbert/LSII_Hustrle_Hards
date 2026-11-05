@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getEnv } from '../utils/Env';
+import type { VideoCategory } from './categories';
 
 export type VideoSummary = {
   id: number;
@@ -11,6 +12,8 @@ export type VideoSummary = {
   // Paths under /media, e.g. /media/0.webp and /media/0.mp4 (the video is played as a preview on hover)
   thumbnailUrl: string;
   videoUrl: string;
+  // Shown with an 18+ badge and without hover preview
+  ageRestricted: boolean;
 };
 
 export type Page<T> = {
@@ -44,7 +47,25 @@ export type VideoDetail = {
   // Paths under /media, e.g. /media/0.mp4
   videoUrl: string;
   thumbnailUrl: string;
+  // Imported videos have no tags and no category
+  tags: string[];
+  category: VideoCategory | null;
+  ageRestricted: boolean;
   comments: VideoComment[];
+};
+
+/**
+ * Data typed in the upload form (US-06). Duration and size are read from the file by the browser.
+ */
+export type UploadMetadata = {
+  title: string;
+  description: string;
+  tags: string[];
+  category: VideoCategory | null;
+  ageRestricted: boolean;
+  durationSeconds: number;
+  width: number | null;
+  height: number | null;
 };
 
 /**
@@ -59,6 +80,29 @@ export async function fetchVideos(page: number, size: number, query = ''): Promi
 
 export async function fetchVideo(id: number): Promise<VideoDetail> {
   const response = await axios.get<VideoDetail>(`${getEnv().API_BASE_URL}/videos/${id}`);
+  return response.data;
+}
+
+/**
+ * US-06: publishes a video as the logged-in user (the token is sent by AuthProvider). `onProgress` receives the
+ * uploaded fraction, from 0 to 1.
+ */
+export async function uploadVideo(
+  metadata: UploadMetadata,
+  video: File,
+  thumbnail: Blob,
+  onProgress: (fraction: number) => void = () => {}
+): Promise<VideoDetail> {
+  const form = new FormData();
+  // A JSON part, read by @RequestPart("metadata") in the backend
+  form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+  form.append('video', video);
+  form.append('thumbnail', thumbnail, thumbnail instanceof File ? thumbnail.name : 'thumbnail.jpg');
+  const response = await axios.post<VideoDetail>(`${getEnv().API_BASE_URL}/videos`, form, {
+    onUploadProgress: (event) => {
+      if (event.total) onProgress(event.loaded / event.total);
+    },
+  });
   return response.data;
 }
 

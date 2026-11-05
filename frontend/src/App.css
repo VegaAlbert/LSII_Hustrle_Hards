@@ -357,3 +357,297 @@
     animation: none;
   }
 }
+
+/* ===== Tags, hashtags and sharing (US-06) ===== */
+
+.tag-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--pt-border);
+  border-radius: var(--pt-radius-md);
+  background: var(--pt-surface);
+}
+
+.tag-input:focus-within {
+  border-color: var(--pt-primary);
+  box-shadow: var(--pt-focus-ring);
+}
+
+.tag-input.is-invalid {
+  border-color: var(--pt-danger);
+}
+
+.tag-input input {
+  flex: 1;
+  min-width: 10rem;
+  padding: 0.25rem;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--pt-text-primary);
+}
+
+.tag-chip,
+.hashtag-chip,
+.video-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--pt-radius-pill);
+  background: var(--pt-bg-body);
+  color: var(--pt-text-primary);
+  font-size: 0.8rem;
+}
+
+.tag-chip button {
+  padding: 0 0.15rem;
+  border: 0;
+  background: none;
+  color: var(--pt-text-secondary);
+  line-height: 1;
+}
+
+.tag-chip button:hover {
+  color: var(--pt-primary);
+}
+
+.hashtag-chip {
+  color: var(--pt-info);
+}
+
+.hashtag-link,
+.video-hashtags a {
+  color: var(--pt-info);
+  text-decoration: none;
+}
+
+.hashtag-link:hover,
+.video-hashtags a:hover {
+  text-decoration: underline;
+}
+
+.video-hashtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.25rem 0 -1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.video-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.video-tag {
+  color: var(--pt-text-secondary);
+  text-decoration: none;
+}
+
+.video-tag:hover {
+  color: var(--pt-text-primary);
+}
+
+/* Title row: channel on the left, actions on the right */
+.video-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.video-meta-row .video-meta {
+  margin-bottom: 0;
+}
+
+.video-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--pt-border);
+  border-radius: var(--pt-radius-pill);
+  background: var(--pt-surface);
+  color: var(--pt-text-primary);
+  font-weight: 600;
+}
+
+.pill-btn:hover {
+  background: var(--pt-border);
+}
+
+.video-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.age-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--pt-radius-sm);
+  background: var(--pt-warning);
+  color: #000;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.video-card-age {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+}
+
+/* Age-restricted video: the gate covers the player until the viewer confirms */
+.age-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  aspect-ratio: 16 / 9;
+  max-height: 70vh;
+  padding: 2rem;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
+    var(--age-gate-image, none) center / cover;
+  color: #fff;
+  text-align: center;
+}
+
+.age-gate h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.age-gate p {
+  max-width: 32rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Share dialog */
+.share-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.share-dialog {
+  width: min(100%, 520px);
+  padding: 1.25rem 1.5rem 1.5rem;
+  border: 1px solid var(--pt-border);
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+  box-shadow: var(--pt-shadow);
+  text-align: left;
+}
+
+.share-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.share-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.share-header .pt-icon-btn {
+  font-size: 1.5rem;
+}
+
+.share-networks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.share-networks a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--pt-text-primary);
+  font-size: 0.75rem;
+  text-decoration: none;
+}
+
+.share-network-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--pt-bg-body);
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  transition: transform 0.15s ease;
+}
+
+.share-networks a:hover .share-network-icon {
+  transform: translateY(-2px);
+}
+
+.share-network-icon.is-whatsapp {
+  background: var(--pt-share-whatsapp);
+}
+
+.share-network-icon.is-x {
+  background: #000;
+}
+
+.share-network-icon.is-facebook {
+  background: var(--pt-share-facebook);
+}
+
+.share-network-icon.is-reddit {
+  background: var(--pt-share-reddit);
+}
+
+.share-network-icon.is-email {
+  background: var(--pt-border);
+}
+
+.share-link {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .share-network-icon {
+    transition: none;
+  }
+}

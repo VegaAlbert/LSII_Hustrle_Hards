@@ -3,6 +3,7 @@ package com.tecnocampus.LS2.protube_back.configuration;
 import com.tecnocampus.LS2.protube_back.services.JwtService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,6 +35,8 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/me").authenticated()
+                        // US-06: only logged-in users can upload
+                        .requestMatchers(HttpMethod.POST, "/api/videos").authenticated()
                         // Everything else stays public for now; protect new endpoints here as they are added
                         .anyRequest().permitAll())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
