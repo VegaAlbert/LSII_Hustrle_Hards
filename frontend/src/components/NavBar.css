@@ -146,3 +146,27 @@
   color: var(--pt-primary);
   background: rgba(var(--pt-primary-rgb), 0.08);
 }
+
+/* "Create" opens the upload page (US-06) */
+.pt-create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem 0.45rem 0.75rem;
+  border: 1px solid var(--pt-border);
+  border-radius: var(--pt-radius-pill);
+  font-weight: 600;
+  color: var(--pt-text-primary);
+  background: var(--pt-surface);
+  transition: background 0.15s ease;
+}
+
+.pt-create-btn:hover {
+  background: var(--pt-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pt-create-btn {
+    transition: none;
+  }
+}

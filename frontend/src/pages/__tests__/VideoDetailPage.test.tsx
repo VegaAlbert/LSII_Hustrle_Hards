@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import VideoDetailPage from '../VideoDetailPage';
+import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 import { fetchVideo, isNotFound, type VideoDetail } from '../../videos/videosApi';
 
 jest.mock('../../videos/videosApi', () => ({
@@ -23,16 +24,26 @@ const video: VideoDetail = {
   publishedAt: '2014-11-19T13:20:18Z',
   videoUrl: '/media/0.mp4',
   thumbnailUrl: '/media/0.webp',
+  tags: [],
+  category: null,
+  ageRestricted: false,
   comments: [{ id: 1, author: 'bob', text: 'Great song', likeCount: 2, publishedAt: null }],
 };
 
-const renderAt = (path: string) =>
+const alice = { id: 1, username: 'alice', email: 'alice@example.com' };
+
+const renderAt = (path: string, user: AuthContextValue['user'] = null) =>
   render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route path="/videos/:id" element={<VideoDetailPage />} />
-      </Routes>
-    </MemoryRouter>
+    <AuthContext.Provider
+      value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+    >
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route path="/videos/:id" element={<VideoDetailPage />} />
+          <Route path="/login" element={<p>Login page</p>} />
+        </Routes>
+      </MemoryRouter>
+    </AuthContext.Provider>
   );
 
 describe('VideoDetailPage', () => {
@@ -106,5 +117,87 @@ describe('VideoDetailPage', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Uptown Funk' })).toBeInTheDocument();
     expect(mockedFetchVideo).toHaveBeenCalledTimes(2);
+  });
+
+  it('links the hashtags and tags of the video to a search', async () => {
+    mockedFetchVideo.mockResolvedValueOnce({
+      ...video,
+      description: 'Live in London #funk #live #music #2014',
+      tags: ['Bruno Mars', 'pop'],
+      category: 'MUSIC',
+    });
+
+    renderAt('/videos/5');
+
+    const hashtags = await screen.findByLabelText('Hashtags');
+    expect(
+      within(hashtags)
+        .getAllByRole('link')
+        .map((link) => link.textContent)
+    ).toEqual(['#funk', '#live', '#music']);
+    expect(within(hashtags).getByRole('link', { name: '#funk' })).toHaveAttribute('href', '/?q=%23funk');
+    // In the description every hashtag is a link, the 4th one too
+    expect(screen.getAllByRole('link', { name: '#2014' })).toHaveLength(1);
+    const tags = screen.getByRole('list', { name: 'Tags' });
+    expect(within(tags).getByRole('link', { name: 'Bruno Mars' })).toHaveAttribute('href', '/?q=Bruno%20Mars');
+    expect(screen.getByText('Music')).toBeInTheDocument();
+  });
+
+  it('starts at the second given in the link', async () => {
+    mockedFetchVideo.mockResolvedValueOnce(video);
+
+    renderAt('/videos/5?t=42');
+
+    const player = (await screen.findByLabelText('Video player: Uptown Funk')) as HTMLVideoElement;
+    fireEvent.loadedMetadata(player);
+    expect(player.currentTime).toBe(42);
+  });
+
+  it('opens the share dialog with the link of the video', async () => {
+    const user = userEvent.setup();
+    const writeText = jest.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    mockedFetchVideo.mockResolvedValueOnce(video);
+    renderAt('/videos/5');
+
+    await user.click(await screen.findByRole('button', { name: 'Share' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Share' });
+    const link = `${window.location.origin}/videos/5`;
+    expect(within(dialog).getByLabelText('Video link')).toHaveValue(link);
+    expect(within(dialog).getByRole('link', { name: 'Share on WhatsApp' })).toHaveAttribute(
+      'href',
+      `https://wa.me/?text=Uptown%20Funk%20${encodeURIComponent(link)}`
+    );
+    await user.click(within(dialog).getByRole('button', { name: 'Copy' }));
+    expect(writeText).toHaveBeenCalledWith(link);
+    expect(within(dialog).getByRole('button', { name: 'Copied' })).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('asks anonymous visitors to log in before playing an age-restricted video', async () => {
+    const user = userEvent.setup();
+    mockedFetchVideo.mockResolvedValueOnce({ ...video, ageRestricted: true });
+    renderAt('/videos/5');
+
+    expect(await screen.findByRole('region', { name: 'Age-restricted video' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Video player: Uptown Funk')).not.toBeInTheDocument();
+    expect(screen.getAllByText('18+').length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole('link', { name: 'Log in' }));
+    expect(screen.getByText('Login page')).toBeInTheDocument();
+  });
+
+  it('plays an age-restricted video once a logged-in viewer confirms their age', async () => {
+    const user = userEvent.setup();
+    mockedFetchVideo.mockResolvedValueOnce({ ...video, ageRestricted: true });
+    renderAt('/videos/5', alice);
+
+    await user.click(await screen.findByRole('button', { name: 'I am over 18, play the video' }));
+
+    expect(screen.getByLabelText('Video player: Uptown Funk')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Age-restricted video' })).not.toBeInTheDocument();
   });
 });

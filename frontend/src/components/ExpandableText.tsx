@@ -1,7 +1,9 @@
-import { useId, useState } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 
 type Props = {
   text: string;
+  // How to draw the text, e.g. with its hashtags as links; plain text by default
+  render?: (text: string) => ReactNode;
 };
 
 // Texts longer than this, or with more lines, start collapsed
@@ -11,7 +13,7 @@ const MAX_LINES = 4;
 /**
  * Long text that starts collapsed with a "Show more" button, e.g. a video description.
  */
-const ExpandableText = ({ text }: Props) => {
+const ExpandableText = ({ text, render = (value) => value }: Props) => {
   const [expanded, setExpanded] = useState(false);
   const id = useId();
   const isLong = text.length > MAX_CHARS || text.split('\n').length > MAX_LINES;
@@ -20,7 +22,7 @@ const ExpandableText = ({ text }: Props) => {
   return (
     <>
       <p id={id} dir="auto" className={`expandable-text mb-0${collapsed ? ' is-collapsed' : ''}`}>
-        {text}
+        {render(text)}
       </p>
       {isLong && (
         <button

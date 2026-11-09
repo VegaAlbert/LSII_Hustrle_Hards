@@ -6,14 +6,14 @@ import java.time.Instant;
 
 /**
  * Video shown in the list. {@code thumbnailUrl} and {@code videoUrl} are paths under {@code /media}; the video file
- * is used for the preview played when the user hovers a card.
+ * is used for the preview played when the user hovers a card. Age-restricted videos get an 18+ badge and no preview.
  */
 public record VideoSummaryResponse(Long id, String title, String author, int durationSeconds, Instant publishedAt,
-                                   String thumbnailUrl, String videoUrl) {
+                                   String thumbnailUrl, String videoUrl, boolean ageRestricted) {
 
     public static VideoSummaryResponse from(Video video) {
         return new VideoSummaryResponse(video.getId(), video.getTitle(), video.getAuthor(),
                 video.getDurationSeconds(), video.getPublishedAt(), "/media/" + video.getThumbnailFile(),
-                "/media/" + video.getVideoFile());
+                "/media/" + video.getVideoFile(), video.isAgeRestricted());
     }
 }

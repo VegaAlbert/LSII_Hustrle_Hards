@@ -26,7 +26,8 @@ const VideoCard = ({ video }: Props) => {
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
   const startPreview = () => {
-    if (prefersReducedMotion()) {
+    // No preview for age-restricted videos: they are only played after confirming the age
+    if (prefersReducedMotion() || video.ageRestricted) {
       return;
     }
     window.clearTimeout(timer.current);
@@ -69,6 +70,11 @@ const VideoCard = ({ video }: Props) => {
               <span style={{ width: `${progress * 100}%` }} />
             </div>
           </>
+        )}
+        {video.ageRestricted && (
+          <span className="age-badge video-card-age" title="Age-restricted video">
+            18+
+          </span>
         )}
         <time className="badge video-card-duration" dateTime={`PT${Math.round(video.durationSeconds)}S`}>
           {formatDuration(video.durationSeconds)}

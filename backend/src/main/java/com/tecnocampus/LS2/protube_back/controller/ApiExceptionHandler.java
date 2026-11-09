@@ -3,8 +3,10 @@ package com.tecnocampus.LS2.protube_back.controller;
 import com.tecnocampus.LS2.protube_back.controller.dto.ErrorResponse;
 import com.tecnocampus.LS2.protube_back.services.InvalidCredentialsException;
 import com.tecnocampus.LS2.protube_back.services.InvalidGoogleTokenException;
+import com.tecnocampus.LS2.protube_back.services.InvalidUploadException;
 import com.tecnocampus.LS2.protube_back.services.UserAlreadyExistsException;
 import com.tecnocampus.LS2.protube_back.services.VideoNotFoundException;
+import com.tecnocampus.LS2.protube_back.services.VideoStorageException;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.util.Map;
 import java.util.Objects;
@@ -64,6 +68,33 @@ public class ApiExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleUnreadableBody(HttpMessageNotReadableException e) {
         return ResponseEntity.badRequest().body(new ErrorResponse("Malformed request body"));
+    }
+
+    // A multipart request without one of its parts, e.g. an upload without the video file
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErrorResponse> handleMissingPart(MissingServletRequestPartException e) {
+        String part = e.getRequestPartName();
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse("Invalid data", Map.of(part, "The " + part + " is required")));
+    }
+
+    @ExceptionHandler(InvalidUploadException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidUpload(InvalidUploadException e) {
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse(e.getMessage(), Map.of(e.getField(), e.getMessage())));
+    }
+
+    // Limits set by spring.servlet.multipart.* in application.properties
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleUploadTooBig(MaxUploadSizeExceededException e) {
+        String message = "The video must be at most 100 MB";
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(new ErrorResponse(message, Map.of("video", message)));
+    }
+
+    @ExceptionHandler(VideoStorageException.class)
+    public ResponseEntity<ErrorResponse> handleVideoStorage(VideoStorageException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)

@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -53,7 +55,7 @@ class VideoServiceTest {
         assertEquals(5, response.totalElements());
         assertEquals(3, response.totalPages());
         assertEquals(List.of(new VideoSummaryResponse(null, "Title", "Author", 90, Instant.ofEpochSecond(1700000000),
-                "/media/3.webp", "/media/3.mp4")), response.content());
+                "/media/3.webp", "/media/3.mp4", false)), response.content());
     }
 
     @Test
@@ -72,6 +74,9 @@ class VideoServiceTest {
         assertEquals(Instant.ofEpochSecond(1700000000), response.publishedAt());
         assertEquals("/media/3.mp4", response.videoUrl());
         assertEquals("/media/3.webp", response.thumbnailUrl());
+        assertEquals(List.of(), response.tags());
+        assertNull(response.category());
+        assertFalse(response.ageRestricted());
         assertEquals(List.of(new CommentResponse(null, "bob", "Nice", 2, Instant.ofEpochSecond(1700000001))),
                 response.comments());
     }

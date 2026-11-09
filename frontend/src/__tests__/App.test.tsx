@@ -55,6 +55,9 @@ describe('App', () => {
       publishedAt: '2024-01-01T00:00:00Z',
       videoUrl: '/media/1.mp4',
       thumbnailUrl: '/media/1.webp',
+      tags: [],
+      category: null,
+      ageRestricted: false,
       comments: [],
     });
   });
