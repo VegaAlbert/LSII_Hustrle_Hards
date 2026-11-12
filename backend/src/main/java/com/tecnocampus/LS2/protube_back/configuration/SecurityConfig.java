@@ -37,6 +37,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/me").authenticated()
                         // US-06: only logged-in users can upload
                         .requestMatchers(HttpMethod.POST, "/api/videos").authenticated()
+                        // US-09: only logged-in users can comment
+                        .requestMatchers(HttpMethod.POST, "/api/videos/*/comments").authenticated()
                         // Everything else stays public for now; protect new endpoints here as they are added
                         .anyRequest().permitAll())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);

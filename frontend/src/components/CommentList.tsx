@@ -1,9 +1,12 @@
+import type { ReactNode } from 'react';
 import { formatRelativeTime } from '../utils/relativeTime';
 import type { VideoComment } from '../videos/videosApi';
 import Avatar from './Avatar';
 
 type Props = {
   comments: VideoComment[];
+  // Shown above the list, e.g. the form to add a comment (US-09)
+  form?: ReactNode;
 };
 
 const ThumbIcon = () => (
@@ -13,13 +16,15 @@ const ThumbIcon = () => (
 );
 
 /**
- * Read-only list of the comments of a video (US-05). Writing comments comes with US-09.
+ * List of the comments of a video, newest first (US-05), with an optional form slot above it (US-09).
  */
-const CommentList = ({ comments }: Props) => (
+const CommentList = ({ comments, form }: Props) => (
   <section aria-labelledby="comments-title" className="comments mt-4">
     <h2 id="comments-title" className="section-title">
       Comments <span className="count-pill">{comments.length}</span>
     </h2>
+
+    {form}
 
     {comments.length === 0 ? (
       <p className="comments-empty">No comments yet.</p>

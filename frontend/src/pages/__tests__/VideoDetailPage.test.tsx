@@ -3,13 +3,15 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import VideoDetailPage from '../VideoDetailPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
-import { fetchVideo, isNotFound, type VideoDetail } from '../../videos/videosApi';
+import { fetchVideo, isNotFound, postComment, type VideoDetail } from '../../videos/videosApi';
 
 jest.mock('../../videos/videosApi', () => ({
   ...jest.requireActual('../../videos/videosApi'),
   fetchVideo: jest.fn(),
   isNotFound: jest.fn(),
+  postComment: jest.fn(),
 }));
+const mockedPostComment = postComment as jest.MockedFunction<typeof postComment>;
 const mockedFetchVideo = fetchVideo as jest.MockedFunction<typeof fetchVideo>;
 const mockedIsNotFound = isNotFound as jest.MockedFunction<typeof isNotFound>;
 
@@ -50,6 +52,7 @@ describe('VideoDetailPage', () => {
   beforeEach(() => {
     mockedFetchVideo.mockReset();
     mockedIsNotFound.mockReset();
+    mockedPostComment.mockReset();
   });
 
   it('plays the video and shows its information and comments', async () => {
@@ -199,5 +202,37 @@ describe('VideoDetailPage', () => {
 
     expect(screen.getByLabelText('Video player: Uptown Funk')).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Age-restricted video' })).not.toBeInTheDocument();
+  });
+
+  it('shows a new comment first under the video', async () => {
+    const user = userEvent.setup();
+    mockedFetchVideo.mockResolvedValueOnce(video);
+    mockedPostComment.mockResolvedValueOnce({
+      id: 2,
+      author: 'alice',
+      text: 'Love it',
+      likeCount: 0,
+      publishedAt: new Date().toISOString(),
+    });
+    renderAt('/videos/5', alice);
+
+    await user.type(await screen.findByLabelText('Add a comment'), 'Love it');
+    await user.click(screen.getByRole('button', { name: 'Comment' }));
+
+    expect(await screen.findByRole('heading', { name: 'Comments 2' })).toBeInTheDocument();
+    expect(mockedPostComment).toHaveBeenCalledWith(5, 'Love it');
+    const items = within(screen.getByRole('list', { name: 'Comments' })).getAllByRole('listitem');
+    expect(within(items[0]).getByText('Love it')).toBeInTheDocument();
+    expect(within(items[1]).getByText('Great song')).toBeInTheDocument();
+  });
+
+  it('asks anonymous visitors to log in to comment', async () => {
+    const user = userEvent.setup();
+    mockedFetchVideo.mockResolvedValueOnce(video);
+    renderAt('/videos/5');
+
+    await user.click(await screen.findByRole('link', { name: 'Log in to comment' }));
+
+    expect(screen.getByText('Login page')).toBeInTheDocument();
   });
 });
