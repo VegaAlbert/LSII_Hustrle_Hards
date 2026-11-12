@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { fetchVideo, isNotFound, type VideoDetail } from './videosApi';
+import { fetchVideo, isNotFound, type VideoComment, type VideoDetail } from './videosApi';
 
 type Status = 'loading' | 'success' | 'not-found' | 'error';
 
 /**
  * Loads one video with its comments. A missing video ('not-found') is told apart from other errors, which can be
- * retried with retry().
+ * retried with retry(). addComment() shows a comment just published (US-09) first, without loading the video again.
  */
 export function useVideoDetail(id: number) {
   const [video, setVideo] = useState<VideoDetail | null>(null);
@@ -32,5 +32,10 @@ export function useVideoDetail(id: number) {
 
   const retry = useCallback(() => setAttempt((current) => current + 1), []);
 
-  return { video, status, retry };
+  // The backend also returns the comments newest first, so a reload would show the same order
+  const addComment = useCallback((comment: VideoComment) => {
+    setVideo((current) => (current ? { ...current, comments: [comment, ...current.comments] } : current));
+  }, []);
+
+  return { video, status, retry, addComment };
 }
