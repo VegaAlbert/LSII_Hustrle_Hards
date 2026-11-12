@@ -58,6 +58,7 @@ describe('App', () => {
       tags: [],
       category: null,
       ageRestricted: false,
+      uploader: null,
       comments: [],
     });
   });

@@ -17,12 +17,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -81,7 +77,7 @@ public class VideoUploadService {
             Video video = new Video(storeId, request.title().trim(), blankToNull(request.description()),
                     uploader.getUsername(), request.durationSeconds(), request.width(), request.height(),
                     Instant.now(), videoPath.getFileName().toString(), thumbnailPath.getFileName().toString());
-            video.setTags(normalizeTags(request.tags()));
+            video.setTags(VideoTags.normalize(request.tags()));
             video.setCategory(request.category());
             video.setAgeRestricted(request.ageRestricted());
             video.setUploader(uploader);
@@ -94,27 +90,6 @@ public class VideoUploadService {
             deleteQuietly(videoPath, thumbnailPath);
             throw e;
         }
-    }
-
-    /**
-     * Trims the tags, drops a leading {@code #}, blank tags and repeated ones (ignoring case), keeping their order.
-     */
-    static List<String> normalizeTags(List<String> tags) {
-        if (tags == null) {
-            return List.of();
-        }
-        Set<String> seen = new LinkedHashSet<>();
-        List<String> result = new ArrayList<>();
-        for (String tag : tags) {
-            if (tag == null) {
-                continue;
-            }
-            String clean = tag.trim().replaceFirst("^#+", "").replaceAll("\\s+", " ").trim();
-            if (!clean.isEmpty() && seen.add(clean.toLowerCase(Locale.ROOT))) {
-                result.add(clean);
-            }
-        }
-        return result;
     }
 
     private static String extensionOf(MultipartFile file, Map<String, String> allowedTypes, String field,
