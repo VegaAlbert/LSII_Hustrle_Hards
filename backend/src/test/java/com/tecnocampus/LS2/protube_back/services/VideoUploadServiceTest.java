@@ -23,7 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -229,13 +228,5 @@ class VideoUploadServiceTest {
 
         assertTrue(storedFiles().isEmpty());
         verify(videoRepository, never()).saveAndFlush(any());
-    }
-
-    @Test
-    void normalizesTags() {
-        List<String> tags = Arrays.asList("  #Travel ", "travel", "", null, "##road   trip", "Beach");
-
-        assertEquals(List.of("Travel", "road trip", "Beach"), VideoUploadService.normalizeTags(tags));
-        assertEquals(List.of(), VideoUploadService.normalizeTags(null));
     }
 }

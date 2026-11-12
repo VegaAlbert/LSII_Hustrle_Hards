@@ -204,6 +204,15 @@
   background: #000;
 }
 
+/* Edit page (US-07): the current thumbnail instead of the video preview */
+.upload-preview .edit-thumbnail {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: #000;
+}
+
 .upload-preview .btn {
   margin: 0 1rem;
 }

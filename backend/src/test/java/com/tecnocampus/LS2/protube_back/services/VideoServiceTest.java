@@ -2,10 +2,13 @@ package com.tecnocampus.LS2.protube_back.services;
 
 import com.tecnocampus.LS2.protube_back.controller.dto.CommentResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.PageResponse;
+import com.tecnocampus.LS2.protube_back.controller.dto.UpdateVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoDetailResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
 import com.tecnocampus.LS2.protube_back.domain.Comment;
+import com.tecnocampus.LS2.protube_back.domain.User;
 import com.tecnocampus.LS2.protube_back.domain.Video;
+import com.tecnocampus.LS2.protube_back.domain.VideoCategory;
 import com.tecnocampus.LS2.protube_back.repository.VideoRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -127,5 +131,71 @@ class VideoServiceTest {
 
         verify(videoRepository).findAll(request);
         verify(videoRepository, never()).search(any(), any(), any(), any());
+    }
+
+    private static Video ownedBy(String username) {
+        Video video = new Video("upload-1", "Old title", "Old description", username, 60, null, null,
+                Instant.ofEpochSecond(1700000000), "upload-1.mp4", "upload-1-thumbnail.jpg");
+        video.setUploader(new User(username, username + "@example.com", "hash"));
+        video.setTags(List.of("old"));
+        return video;
+    }
+
+    @Test
+    void updateVideoReplacesTheMetadataOfTheOwnersVideo() {
+        Video video = ownedBy("alice");
+        when(videoRepository.findById(7L)).thenReturn(Optional.of(video));
+        UpdateVideoRequest request = new UpdateVideoRequest("  New title ", " New #text ",
+                List.of("#Beach", "beach", "sea"), VideoCategory.TRAVEL_AND_EVENTS, true);
+
+        VideoDetailResponse response = videoService.updateVideo(7L, "alice", request);
+
+        assertEquals("New title", video.getTitle());
+        assertEquals("New #text", video.getDescription());
+        assertEquals(List.of("Beach", "sea"), video.getTags());
+        assertEquals(VideoCategory.TRAVEL_AND_EVENTS, video.getCategory());
+        assertTrue(video.isAgeRestricted());
+        assertEquals("New title", response.title());
+        assertEquals("alice", response.uploader());
+    }
+
+    @Test
+    void updateVideoClearsABlankDescription() {
+        Video video = ownedBy("alice");
+        when(videoRepository.findById(7L)).thenReturn(Optional.of(video));
+
+        videoService.updateVideo(7L, "alice", new UpdateVideoRequest("Title", "  ", null, null, false));
+
+        assertNull(video.getDescription());
+        assertEquals(List.of(), video.getTags());
+        assertNull(video.getCategory());
+    }
+
+    @Test
+    void updateVideoDeniesOtherUsers() {
+        Video video = ownedBy("alice");
+        when(videoRepository.findById(7L)).thenReturn(Optional.of(video));
+
+        assertThrows(VideoAccessDeniedException.class, () -> videoService.updateVideo(7L, "bob",
+                new UpdateVideoRequest("Hacked", null, null, null, false)));
+        assertEquals("Old title", video.getTitle());
+    }
+
+    @Test
+    void updateVideoDeniesImportedVideosWithoutOwner() {
+        Video imported = new Video("3", "Title", null, "Author", 90, null, null, Instant.ofEpochSecond(1700000000),
+                "3.mp4", "3.webp");
+        when(videoRepository.findById(3L)).thenReturn(Optional.of(imported));
+
+        assertThrows(VideoAccessDeniedException.class, () -> videoService.updateVideo(3L, "alice",
+                new UpdateVideoRequest("Title", null, null, null, false)));
+    }
+
+    @Test
+    void updateVideoThrowsWhenTheVideoDoesNotExist() {
+        when(videoRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(VideoNotFoundException.class, () -> videoService.updateVideo(99L, "alice",
+                new UpdateVideoRequest("Title", null, null, null, false)));
     }
 }

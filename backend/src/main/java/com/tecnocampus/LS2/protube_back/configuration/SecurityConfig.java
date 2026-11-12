@@ -37,6 +37,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/me").authenticated()
                         // US-06: only logged-in users can upload
                         .requestMatchers(HttpMethod.POST, "/api/videos").authenticated()
+                        // US-07: only logged-in users can edit (the service checks they own the video)
+                        .requestMatchers(HttpMethod.PUT, "/api/videos/*").authenticated()
                         // Everything else stays public for now; protect new endpoints here as they are added
                         .anyRequest().permitAll())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);

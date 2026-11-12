@@ -45,6 +45,7 @@ const VideoDetailPage = () => {
 
 const VideoDetail = ({ id }: { id: number }) => {
   const { video, status, retry } = useVideoDetail(id);
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const player = useRef<HTMLVideoElement>(null);
   // Second the player was at when "Share" was clicked; null while the dialog is closed
@@ -130,6 +131,18 @@ const VideoDetail = ({ id }: { id: number }) => {
             </svg>
             Share
           </button>
+          {/* US-07: only the user who uploaded the video can edit it */}
+          {user && video.uploader === user.username && (
+            <Link to={`/videos/${video.id}/edit`} className="pill-btn text-decoration-none">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75z"
+                />
+              </svg>
+              Edit video
+            </Link>
+          )}
         </div>
       </div>
 

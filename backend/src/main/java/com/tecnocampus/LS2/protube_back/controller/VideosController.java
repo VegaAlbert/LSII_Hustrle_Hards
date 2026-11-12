@@ -1,6 +1,7 @@
 package com.tecnocampus.LS2.protube_back.controller;
 
 import com.tecnocampus.LS2.protube_back.controller.dto.PageResponse;
+import com.tecnocampus.LS2.protube_back.controller.dto.UpdateVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.UploadVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoDetailResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
@@ -16,6 +17,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -58,6 +61,17 @@ public class VideosController {
     @GetMapping("/{id}")
     public ResponseEntity<VideoDetailResponse> getVideo(@PathVariable Long id) {
         return ResponseEntity.ok(videoService.getVideo(id));
+    }
+
+    /**
+     * US-07: edits the metadata of a video owned by the logged-in user. Answers 200 with the updated video, 400 for
+     * invalid data, 401 without a valid token, 403 if the video belongs to someone else and 404 if it does not exist.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<VideoDetailResponse> updateVideo(@PathVariable Long id,
+                                                           @Valid @RequestBody UpdateVideoRequest request,
+                                                           Authentication authentication) {
+        return ResponseEntity.ok(videoService.updateVideo(id, authentication.getName(), request));
     }
 
     /**

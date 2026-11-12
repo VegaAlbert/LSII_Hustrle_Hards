@@ -27,6 +27,7 @@ const video: VideoDetail = {
   tags: [],
   category: null,
   ageRestricted: false,
+  uploader: null,
   comments: [{ id: 1, author: 'bob', text: 'Great song', likeCount: 2, publishedAt: null }],
 };
 
@@ -188,6 +189,19 @@ describe('VideoDetailPage', () => {
 
     await user.click(screen.getByRole('link', { name: 'Log in' }));
     expect(screen.getByText('Login page')).toBeInTheDocument();
+  });
+
+  it('shows the Edit button only to the user who uploaded the video', async () => {
+    mockedFetchVideo.mockResolvedValueOnce({ ...video, uploader: 'alice' });
+    const { unmount } = renderAt('/videos/5', alice);
+
+    expect(await screen.findByRole('link', { name: 'Edit video' })).toHaveAttribute('href', '/videos/5/edit');
+    unmount();
+
+    mockedFetchVideo.mockResolvedValueOnce({ ...video, uploader: 'someone-else' });
+    renderAt('/videos/5', alice);
+    expect(await screen.findByRole('button', { name: 'Share' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Edit video' })).not.toBeInTheDocument();
   });
 
   it('plays an age-restricted video once a logged-in viewer confirms their age', async () => {
