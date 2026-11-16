@@ -1,5 +1,6 @@
 package com.tecnocampus.LS2.protube_back.controller;
 
+import com.tecnocampus.LS2.protube_back.controller.dto.CommentLikeResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.CommentResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.CreateCommentRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.PageResponse;
@@ -17,9 +18,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -62,10 +65,13 @@ public class VideosController {
 
     /**
      * US-05: public detail of one video with its comments. Answers 404 if the id does not exist.
+     * US-10: if a valid token is sent, the comments the user likes have {@code likedByMe} set.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<VideoDetailResponse> getVideo(@PathVariable Long id) {
-        return ResponseEntity.ok(videoService.getVideo(id));
+    public ResponseEntity<VideoDetailResponse> getVideo(@PathVariable Long id, Authentication authentication) {
+        // Null for anonymous visitors
+        String viewer = authentication != null ? authentication.getName() : null;
+        return ResponseEntity.ok(videoService.getVideo(id, viewer));
     }
 
     /**
@@ -93,5 +99,37 @@ public class VideosController {
         CommentResponse created = commentService.addComment(id, authentication.getName(), request.text());
         // No Location header: comments have no route of their own, they are read with GET /api/videos/{id}
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    /**
+     * US-10: replies to a comment of the video as the logged-in user. Answers 201 with the new reply, 400 for a blank
+     * or too long text, 401 without a valid token and 404 if the video or the comment does not exist.
+     */
+    @PostMapping("/{videoId}/comments/{commentId}/replies")
+    public ResponseEntity<CommentResponse> addReply(@PathVariable Long videoId, @PathVariable Long commentId,
+                                                    @Valid @RequestBody CreateCommentRequest request,
+                                                    Authentication authentication) {
+        CommentResponse created = commentService.addReply(videoId, commentId, authentication.getName(),
+                request.text());
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    /**
+     * US-10: the logged-in user likes a comment (idempotent). Answers 200 with the new count, 401 without a valid
+     * token and 404 if the video or the comment does not exist.
+     */
+    @PutMapping("/{videoId}/comments/{commentId}/like")
+    public ResponseEntity<CommentLikeResponse> likeComment(@PathVariable Long videoId, @PathVariable Long commentId,
+                                                           Authentication authentication) {
+        return ResponseEntity.ok(commentService.likeComment(videoId, commentId, authentication.getName()));
+    }
+
+    /**
+     * US-10: the logged-in user stops liking a comment (idempotent). Same answers as {@link #likeComment}.
+     */
+    @DeleteMapping("/{videoId}/comments/{commentId}/like")
+    public ResponseEntity<CommentLikeResponse> unlikeComment(@PathVariable Long videoId, @PathVariable Long commentId,
+                                                             Authentication authentication) {
+        return ResponseEntity.ok(commentService.unlikeComment(videoId, commentId, authentication.getName()));
     }
 }

@@ -32,6 +32,7 @@ function startTime(value: string | null): number {
  * US-05: plays a video and shows its title, author, date, description and comments. The route is /videos/:id.
  * US-06: also its hashtags, tags and category, a share dialog and, for age-restricted videos, a confirmation gate.
  * US-09: logged-in users can comment; the new comment is shown first.
+ * US-10: logged-in users can reply to comments (shown nested) and like them.
  */
 const VideoDetailPage = () => {
   const { id } = useParams();
@@ -46,7 +47,7 @@ const VideoDetailPage = () => {
 };
 
 const VideoDetail = ({ id }: { id: number }) => {
-  const { video, status, retry, addComment } = useVideoDetail(id);
+  const { video, status, retry, addComment, addReply, updateLike } = useVideoDetail(id);
   const [searchParams] = useSearchParams();
   const player = useRef<HTMLVideoElement>(null);
   // Second the player was at when "Share" was clicked; null while the dialog is closed
@@ -163,7 +164,13 @@ const VideoDetail = ({ id }: { id: number }) => {
         </section>
       )}
 
-      <CommentList comments={video.comments} form={<CommentForm videoId={video.id} onCommentAdded={addComment} />} />
+      <CommentList
+        videoId={video.id}
+        comments={video.comments}
+        form={<CommentForm videoId={video.id} onCommentAdded={addComment} />}
+        onReplyAdded={addReply}
+        onLikeChanged={updateLike}
+      />
 
       {sharingAt !== null && (
         <ShareDialog

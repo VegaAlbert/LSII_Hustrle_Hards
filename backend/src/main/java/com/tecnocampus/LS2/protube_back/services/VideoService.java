@@ -3,11 +3,15 @@ package com.tecnocampus.LS2.protube_back.services;
 import com.tecnocampus.LS2.protube_back.controller.dto.PageResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoDetailResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
+import com.tecnocampus.LS2.protube_back.domain.Video;
+import com.tecnocampus.LS2.protube_back.repository.CommentLikeRepository;
 import com.tecnocampus.LS2.protube_back.repository.VideoRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 @Service
 public class VideoService {
@@ -16,9 +20,11 @@ public class VideoService {
     static final Sort NEWEST_FIRST = Sort.by(Sort.Order.desc("publishedAt"), Sort.Order.desc("id"));
 
     private final VideoRepository videoRepository;
+    private final CommentLikeRepository commentLikeRepository;
 
-    public VideoService(VideoRepository videoRepository) {
+    public VideoService(VideoRepository videoRepository, CommentLikeRepository commentLikeRepository) {
         this.videoRepository = videoRepository;
+        this.commentLikeRepository = commentLikeRepository;
     }
 
     /**
@@ -32,12 +38,14 @@ public class VideoService {
 
     /**
      * US-05: one video with its comments. Read in a transaction so the lazy comments can be loaded.
+     * US-10: {@code viewer} is the username of the logged-in user, or null for an anonymous visitor; it marks the
+     * comments that user likes.
      */
     @Transactional(readOnly = true)
-    public VideoDetailResponse getVideo(Long id) {
-        return videoRepository.findById(id)
-                .map(VideoDetailResponse::from)
-                .orElseThrow(() -> new VideoNotFoundException(id));
+    public VideoDetailResponse getVideo(Long id, String viewer) {
+        Video video = videoRepository.findById(id).orElseThrow(() -> new VideoNotFoundException(id));
+        Set<Long> likedCommentIds = viewer == null ? Set.of() : commentLikeRepository.findLikedCommentIds(id, viewer);
+        return VideoDetailResponse.from(video, likedCommentIds);
     }
 
     /**

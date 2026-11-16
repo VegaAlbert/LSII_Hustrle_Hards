@@ -32,6 +32,18 @@ export type VideoComment = {
   likeCount: number;
   // ISO date; null for imported comments without a date
   publishedAt: string | null;
+  // US-10: whether the logged-in user likes it (always false for anonymous visitors)
+  likedByMe: boolean;
+  // US-10: replies, oldest first. Always empty for a reply: there is only one level
+  replies: VideoComment[];
+};
+
+/**
+ * US-10: answer of liking or unliking a comment.
+ */
+export type CommentLike = {
+  likeCount: number;
+  liked: boolean;
 };
 
 export type VideoDetail = {
@@ -114,6 +126,27 @@ export const MAX_COMMENT_LENGTH = 1000;
  */
 export async function postComment(videoId: number, text: string): Promise<VideoComment> {
   const response = await axios.post<VideoComment>(`${getEnv().API_BASE_URL}/videos/${videoId}/comments`, { text });
+  return response.data;
+}
+
+/**
+ * US-10: replies to a comment of a video as the logged-in user. A reply to a reply is attached by the backend to the
+ * top-level comment.
+ */
+export async function postReply(videoId: number, commentId: number, text: string): Promise<VideoComment> {
+  const response = await axios.post<VideoComment>(
+    `${getEnv().API_BASE_URL}/videos/${videoId}/comments/${commentId}/replies`,
+    { text }
+  );
+  return response.data;
+}
+
+/**
+ * US-10: likes (`liked` true) or unlikes a comment as the logged-in user. Both calls are idempotent.
+ */
+export async function setCommentLike(videoId: number, commentId: number, liked: boolean): Promise<CommentLike> {
+  const url = `${getEnv().API_BASE_URL}/videos/${videoId}/comments/${commentId}/like`;
+  const response = liked ? await axios.put<CommentLike>(url) : await axios.delete<CommentLike>(url);
   return response.data;
 }
 

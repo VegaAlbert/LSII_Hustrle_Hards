@@ -4,6 +4,8 @@ import {
   fetchVideos,
   isNotFound,
   postComment,
+  postReply,
+  setCommentLike,
   toMediaUrl,
   uploadVideo,
   type UploadMetadata,
@@ -114,6 +116,36 @@ describe('videosApi', () => {
 
     await expect(postComment(5, 'Hi')).resolves.toEqual(comment);
     expect(mockedAxios.post).toHaveBeenCalledWith('other/videos/5/comments', { text: 'Hi' });
+  });
+
+  it('posts a reply to a comment', async () => {
+    const reply = {
+      id: 8,
+      author: 'alice',
+      text: 'Agree',
+      likeCount: 0,
+      publishedAt: null,
+      likedByMe: false,
+      replies: [],
+    };
+    mockedAxios.post.mockResolvedValueOnce({ data: reply });
+
+    await expect(postReply(5, 7, 'Agree')).resolves.toEqual(reply);
+    expect(mockedAxios.post).toHaveBeenCalledWith('other/videos/5/comments/7/replies', { text: 'Agree' });
+  });
+
+  it('likes a comment with a PUT', async () => {
+    mockedAxios.put.mockResolvedValueOnce({ data: { likeCount: 3, liked: true } });
+
+    await expect(setCommentLike(5, 7, true)).resolves.toEqual({ likeCount: 3, liked: true });
+    expect(mockedAxios.put).toHaveBeenCalledWith('other/videos/5/comments/7/like');
+  });
+
+  it('unlikes a comment with a DELETE', async () => {
+    mockedAxios.delete.mockResolvedValueOnce({ data: { likeCount: 2, liked: false } });
+
+    await expect(setCommentLike(5, 7, false)).resolves.toEqual({ likeCount: 2, liked: false });
+    expect(mockedAxios.delete).toHaveBeenCalledWith('other/videos/5/comments/7/like');
   });
 
   it('builds media urls on the media server', () => {
