@@ -1,21 +1,26 @@
 package com.tecnocampus.LS2.protube_back.controller;
 
+import com.tecnocampus.LS2.protube_back.controller.dto.CommentResponse;
+import com.tecnocampus.LS2.protube_back.controller.dto.CreateCommentRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.PageResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.UploadVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoDetailResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
+import com.tecnocampus.LS2.protube_back.services.CommentService;
 import com.tecnocampus.LS2.protube_back.services.VideoService;
 import com.tecnocampus.LS2.protube_back.services.VideoUploadService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -30,10 +35,13 @@ public class VideosController {
 
     private final VideoService videoService;
     private final VideoUploadService videoUploadService;
+    private final CommentService commentService;
 
-    public VideosController(VideoService videoService, VideoUploadService videoUploadService) {
+    public VideosController(VideoService videoService, VideoUploadService videoUploadService,
+                            CommentService commentService) {
         this.videoService = videoService;
         this.videoUploadService = videoUploadService;
+        this.commentService = commentService;
     }
 
     /**
@@ -72,5 +80,18 @@ public class VideosController {
                                                            Authentication authentication) {
         VideoDetailResponse created = videoUploadService.upload(authentication.getName(), metadata, video, thumbnail);
         return ResponseEntity.created(URI.create("/api/videos/" + created.id())).body(created);
+    }
+
+    /**
+     * US-09: comments on a video as the logged-in user. Answers 201 with the new comment, 400 for a blank or too long
+     * text, 401 without a valid token and 404 if the video does not exist.
+     */
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<CommentResponse> addComment(@PathVariable Long id,
+                                                      @Valid @RequestBody CreateCommentRequest request,
+                                                      Authentication authentication) {
+        CommentResponse created = commentService.addComment(id, authentication.getName(), request.text());
+        // No Location header: comments have no route of their own, they are read with GET /api/videos/{id}
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }

@@ -2,6 +2,7 @@ import { useRef, useState, type CSSProperties, type ReactElement } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/authContext';
 import Avatar from '../components/Avatar';
+import CommentForm from '../components/CommentForm';
 import CommentList from '../components/CommentList';
 import ExpandableText from '../components/ExpandableText';
 import HashtagText from '../components/HashtagText';
@@ -30,6 +31,7 @@ function startTime(value: string | null): number {
 /**
  * US-05: plays a video and shows its title, author, date, description and comments. The route is /videos/:id.
  * US-06: also its hashtags, tags and category, a share dialog and, for age-restricted videos, a confirmation gate.
+ * US-09: logged-in users can comment; the new comment is shown first.
  */
 const VideoDetailPage = () => {
   const { id } = useParams();
@@ -44,7 +46,7 @@ const VideoDetailPage = () => {
 };
 
 const VideoDetail = ({ id }: { id: number }) => {
-  const { video, status, retry } = useVideoDetail(id);
+  const { video, status, retry, addComment } = useVideoDetail(id);
   const [searchParams] = useSearchParams();
   const player = useRef<HTMLVideoElement>(null);
   // Second the player was at when "Share" was clicked; null while the dialog is closed
@@ -161,7 +163,7 @@ const VideoDetail = ({ id }: { id: number }) => {
         </section>
       )}
 
-      <CommentList comments={video.comments} />
+      <CommentList comments={video.comments} form={<CommentForm videoId={video.id} onCommentAdded={addComment} />} />
 
       {sharingAt !== null && (
         <ShareDialog
