@@ -19,11 +19,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -251,6 +254,19 @@ class CommentRepliesAndLikesControllerTest {
         mockMvc.perform(withToken(get("/api/videos/" + videoId)))
                 .andExpect(jsonPath("$.comments[0].likedByMe").value(false))
                 .andExpect(jsonPath("$.comments[0].replies[0].likedByMe").value(true));
+    }
+
+    @Test
+    void browsersOnAnotherOriginMayLikeAndUnlike() throws Exception {
+        // The frontend runs on another origin, so the browser asks first with a CORS preflight
+        for (String method : new String[]{"PUT", "DELETE"}) {
+            mockMvc.perform(options(likePath(videoId, commentId))
+                            .header("Origin", "http://localhost:5173")
+                            .header("Access-Control-Request-Method", method)
+                            .header("Access-Control-Request-Headers", "authorization"))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string("Access-Control-Allow-Methods", containsString(method)));
+        }
     }
 
     @Test

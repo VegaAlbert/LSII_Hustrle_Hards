@@ -54,7 +54,9 @@ public class MvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOriginPatterns("*");
+                .allowedOriginPatterns("*")
+                // The default only allows GET, HEAD and POST; US-10 likes and unlikes comments with PUT and DELETE
+                .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE");
         registry.addMapping("/auth/**")
                 .allowedOriginPatterns("*");
     }
