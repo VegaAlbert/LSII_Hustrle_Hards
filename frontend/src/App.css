@@ -148,6 +148,36 @@
   text-align: center;
 }
 
+/* US-09: form to add a comment, or the login prompt for visitors */
+.comment-form,
+.comment-login-prompt {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+  border: 1px solid var(--pt-border);
+}
+
+.comment-login-prompt {
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--pt-text-secondary);
+}
+
+.comment-form textarea {
+  resize: vertical;
+}
+
+.comment-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
 .comment {
   display: flex;
   gap: 0.75rem;

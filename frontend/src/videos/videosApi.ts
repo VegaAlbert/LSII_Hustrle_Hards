@@ -108,6 +108,17 @@ export async function uploadVideo(
   return response.data;
 }
 
+// Same limit as CreateCommentRequest in the backend
+export const MAX_COMMENT_LENGTH = 1000;
+
+/**
+ * US-09: publishes a comment on a video as the logged-in user (the token is sent by AuthProvider).
+ */
+export async function postComment(videoId: number, text: string): Promise<VideoComment> {
+  const response = await axios.post<VideoComment>(`${getEnv().API_BASE_URL}/videos/${videoId}/comments`, { text });
+  return response.data;
+}
+
 /**
  * Metadata that the owner of a video can change (US-07). Every field is replaced.
  */

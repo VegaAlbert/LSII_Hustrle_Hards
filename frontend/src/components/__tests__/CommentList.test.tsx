@@ -47,4 +47,10 @@ describe('CommentList', () => {
     expect(screen.getByText('No comments yet.')).toBeInTheDocument();
     expect(screen.queryByRole('list', { name: 'Comments' })).not.toBeInTheDocument();
   });
+
+  it('shows the form slot above the comments', () => {
+    render(<CommentList comments={[comment(1, 0)]} form={<p>Comment form</p>} />);
+
+    expect(screen.getByText('Comment form')).toBeInTheDocument();
+  });
 });

@@ -3,6 +3,7 @@ import {
   fetchVideo,
   fetchVideos,
   isNotFound,
+  postComment,
   toMediaUrl,
   updateVideo,
   uploadVideo,
@@ -115,6 +116,14 @@ describe('videosApi', () => {
     await fetchVideos(0, 12, '   ');
 
     expect(mockedAxios.get).toHaveBeenCalledWith('other/videos', { params: { page: 0, size: 12 } });
+  });
+
+  it('posts a comment on a video', async () => {
+    const comment = { id: 7, author: 'alice', text: 'Hi', likeCount: 0, publishedAt: '2026-11-12T10:00:00Z' };
+    mockedAxios.post.mockResolvedValueOnce({ data: comment });
+
+    await expect(postComment(5, 'Hi')).resolves.toEqual(comment);
+    expect(mockedAxios.post).toHaveBeenCalledWith('other/videos/5/comments', { text: 'Hi' });
   });
 
   it('builds media urls on the media server', () => {
