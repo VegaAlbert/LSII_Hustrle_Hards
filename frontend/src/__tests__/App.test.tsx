@@ -9,6 +9,7 @@ jest.mock('../videos/videosApi', () => ({
   ...jest.requireActual('../videos/videosApi'),
   fetchVideos: jest.fn(),
   fetchVideo: jest.fn(),
+  recordView: jest.fn().mockResolvedValue(undefined),
 }));
 const mockedFetchVideos = fetchVideos as jest.MockedFunction<typeof fetchVideos>;
 const mockedFetchVideo = fetchVideo as jest.MockedFunction<typeof fetchVideo>;
@@ -98,6 +99,12 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Settings' }));
 
     expect(screen.getByRole('heading', { name: 'Appearance' })).toBeInTheDocument();
+  });
+
+  it('sends anonymous visitors of the analytics page to the login page', () => {
+    renderAt('/analytics');
+
+    expect(screen.getByRole('heading', { name: 'Log in' })).toBeInTheDocument();
   });
 
   it('shows a not-found page for unknown routes', () => {

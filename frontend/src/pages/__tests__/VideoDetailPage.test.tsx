@@ -8,6 +8,7 @@ import {
   isNotFound,
   postComment,
   postReply,
+  recordView,
   setCommentLike,
   type VideoDetail,
 } from '../../videos/videosApi';
@@ -18,8 +19,10 @@ jest.mock('../../videos/videosApi', () => ({
   isNotFound: jest.fn(),
   postComment: jest.fn(),
   postReply: jest.fn(),
+  recordView: jest.fn(),
   setCommentLike: jest.fn(),
 }));
+const mockedRecordView = recordView as jest.MockedFunction<typeof recordView>;
 const mockedPostComment = postComment as jest.MockedFunction<typeof postComment>;
 const mockedPostReply = postReply as jest.MockedFunction<typeof postReply>;
 const mockedSetCommentLike = setCommentLike as jest.MockedFunction<typeof setCommentLike>;
@@ -85,6 +88,28 @@ describe('VideoDetailPage', () => {
     mockedPostComment.mockReset();
     mockedPostReply.mockReset();
     mockedSetCommentLike.mockReset();
+    mockedRecordView.mockReset();
+    mockedRecordView.mockResolvedValue(undefined);
+  });
+
+  it('counts a view of the video for its analytics', async () => {
+    mockedFetchVideo.mockResolvedValueOnce(video);
+
+    renderAt('/videos/5');
+
+    expect(await screen.findByRole('heading', { name: 'Uptown Funk' })).toBeInTheDocument();
+    expect(mockedRecordView).toHaveBeenCalledTimes(1);
+    expect(mockedRecordView).toHaveBeenCalledWith(5);
+  });
+
+  it('still shows the video when the view cannot be counted', async () => {
+    mockedRecordView.mockRejectedValueOnce(new Error('Network Error'));
+    mockedFetchVideo.mockResolvedValueOnce(video);
+
+    renderAt('/videos/5');
+
+    expect(await screen.findByRole('heading', { name: 'Uptown Funk' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('plays the video and shows its information and comments', async () => {

@@ -132,6 +132,14 @@ export async function postComment(videoId: number, text: string): Promise<VideoC
 }
 
 /**
+ * US-11: counts a view of a video for the analytics of its owner. Sent with the token when logged in (authenticated
+ * view) and without it otherwise (anonymous view).
+ */
+export async function recordView(videoId: number): Promise<void> {
+  await axios.post(`${getEnv().API_BASE_URL}/videos/${videoId}/views`);
+}
+
+/**
  * US-10: replies to a comment of a video as the logged-in user. A reply to a reply is attached by the backend to the
  * top-level comment.
  */

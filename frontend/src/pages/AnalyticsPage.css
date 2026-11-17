@@ -1,0 +1,240 @@
+/* ===== Analytics page (US-11) ===== */
+
+.analytics-page {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.analytics-header {
+  margin-bottom: 1.5rem;
+}
+
+.analytics-header h1 {
+  margin-bottom: 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Totals: four cards, two per row on phones */
+.analytics-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.analytics-card,
+.analytics-panel {
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--pt-border);
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+}
+
+.analytics-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.analytics-card-label {
+  color: var(--pt-text-secondary);
+}
+
+.analytics-card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.analytics-card-value.is-views {
+  color: var(--pt-info);
+}
+
+.analytics-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Audience: authenticated vs anonymous views */
+.analytics-audience {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.analytics-audience dt {
+  font-weight: 400;
+  color: var(--pt-text-secondary);
+}
+
+.analytics-audience dd {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.analytics-audience .is-authenticated {
+  color: var(--pt-success);
+}
+
+.analytics-audience .is-anonymous {
+  color: var(--pt-warning);
+}
+
+.analytics-split {
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--pt-radius-pill);
+  background: var(--pt-border);
+}
+
+.analytics-split .is-authenticated {
+  background: var(--pt-success);
+}
+
+.analytics-split .is-anonymous {
+  background: var(--pt-warning);
+}
+
+.analytics-split-legend {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--pt-text-secondary);
+}
+
+/* Views over time: one bar per day */
+.analytics-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 140px;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--pt-border);
+  list-style: none;
+}
+
+.analytics-chart li {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  height: 100%;
+}
+
+.analytics-bar {
+  width: 100%;
+  min-height: 2px;
+  border-radius: var(--pt-radius-sm) var(--pt-radius-sm) 0 0;
+  background: var(--pt-primary);
+}
+
+.analytics-chart li:hover .analytics-bar {
+  background: var(--pt-primary-hover);
+}
+
+.analytics-chart-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--pt-text-secondary);
+}
+
+/* Per-video table */
+.analytics-table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--pt-text-primary);
+  --bs-table-border-color: var(--pt-border);
+}
+
+.analytics-table th {
+  font-weight: 600;
+  color: var(--pt-text-secondary);
+}
+
+.analytics-video {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--pt-text-primary);
+  text-decoration: none;
+}
+
+.analytics-video:hover span {
+  color: var(--pt-primary);
+}
+
+.analytics-video img {
+  flex-shrink: 0;
+  width: 96px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--pt-radius-md);
+  background: var(--pt-border);
+}
+
+.analytics-video span {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: 500;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* Empty state for users without videos */
+.analytics-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 4rem 1.5rem;
+  border: 2px dashed var(--pt-border);
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+  text-align: center;
+}
+
+.analytics-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 0.5rem;
+  border-radius: 50%;
+  color: var(--pt-primary);
+  background: var(--pt-bg-body);
+}
+
+.analytics-empty h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+  .analytics-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .analytics-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analytics-card-value {
+    font-size: 1.5rem;
+  }
+
+  .analytics-video img {
+    width: 72px;
+  }
+}
