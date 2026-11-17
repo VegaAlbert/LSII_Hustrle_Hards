@@ -41,6 +41,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/videos/*").authenticated()
                         // US-09: only logged-in users can comment
                         .requestMatchers(HttpMethod.POST, "/api/videos/*/comments").authenticated()
+                        // Video ratings: anyone sees the average, only logged-in users rate
+                        .requestMatchers(HttpMethod.PUT, "/api/videos/*/rating").authenticated()
                         // Everything else stays public for now; protect new endpoints here as they are added
                         .anyRequest().permitAll())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);

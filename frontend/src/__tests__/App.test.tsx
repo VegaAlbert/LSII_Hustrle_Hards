@@ -10,6 +10,10 @@ jest.mock('../videos/videosApi', () => ({
   fetchVideos: jest.fn(),
   fetchVideo: jest.fn(),
 }));
+jest.mock('../ratings/ratingsApi', () => ({
+  ...jest.requireActual('../ratings/ratingsApi'),
+  fetchRating: jest.fn().mockResolvedValue({ average: null, count: 0, myScore: null }),
+}));
 const mockedFetchVideos = fetchVideos as jest.MockedFunction<typeof fetchVideos>;
 const mockedFetchVideo = fetchVideo as jest.MockedFunction<typeof fetchVideo>;
 

@@ -7,6 +7,7 @@ import CommentList from '../components/CommentList';
 import ExpandableText from '../components/ExpandableText';
 import HashtagText from '../components/HashtagText';
 import ShareDialog from '../components/ShareDialog';
+import VideoRating from '../components/VideoRating';
 import { formatDuration } from '../utils/formatDuration';
 import { extractHashtags, hashtagSearchUrl } from '../utils/hashtags';
 import { formatRelativeTime } from '../utils/relativeTime';
@@ -32,6 +33,7 @@ function startTime(value: string | null): number {
  * US-05: plays a video and shows its title, author, date, description and comments. The route is /videos/:id.
  * US-06: also its hashtags, tags and category, a share dialog and, for age-restricted videos, a confirmation gate.
  * US-09: logged-in users can comment; the new comment is shown first.
+ * Video ratings: the average rating and, for logged-in users, a star picker to rate the video.
  */
 const VideoDetailPage = () => {
   const { id } = useParams();
@@ -147,6 +149,8 @@ const VideoDetail = ({ id }: { id: number }) => {
           )}
         </div>
       </div>
+
+      <VideoRating videoId={video.id} />
 
       {hasAbout && (
         <section aria-labelledby="description-title" className="description-card">
