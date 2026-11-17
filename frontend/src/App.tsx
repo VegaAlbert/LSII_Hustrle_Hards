@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import EditVideoPage from './pages/EditVideoPage';
 import NotFoundPage from './pages/NotFoundPage';
 import UploadPage from './pages/UploadPage';
+import { ThemeProvider } from './theme/ThemeProvider';
 import VideoDetailPage from './pages/VideoDetailPage';
 
 // After logging in, go back to the page that sent the user here (e.g. /upload), or home
@@ -36,11 +37,13 @@ export const AppRoutes = () => (
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

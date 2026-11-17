@@ -4,18 +4,13 @@ import {
   DEFAULT_SETTINGS,
   LANGUAGES,
   PLAYBACK_SPEEDS,
+  THEME_OPTIONS,
   type Settings,
   type TextSize,
-  type Theme,
   type VideoQuality,
 } from '../settings/settings';
+import { useTheme } from '../theme/themeContext';
 import './SettingsPage.css';
-
-const THEMES: { value: Theme; label: string }[] = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System' },
-];
 
 const TEXT_SIZES: { value: TextSize; label: string }[] = [
   { value: 'small', label: 'Small' },
@@ -105,8 +100,15 @@ const SECTIONS = [
 
 const SettingsPage = () => {
   const { user } = useAuth();
-  // Not applied nor saved yet: each setting only changes this state
+  // The theme lives in ThemeProvider (applied and saved at once); settings.theme is not used
+  const { preference: theme, setPreference: setTheme } = useTheme();
+  // Not applied nor saved yet: each other setting only changes this state
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+
+  const resetToDefaults = () => {
+    setSettings(DEFAULT_SETTINGS);
+    setTheme(DEFAULT_SETTINGS.theme);
+  };
 
   const update = <K extends keyof Settings>(key: K, value: Settings[K]) =>
     setSettings((current) => ({ ...current, [key]: value }));
@@ -129,18 +131,13 @@ const SettingsPage = () => {
 
         <div className="settings-content">
           <div className="settings-notice" role="note">
-            <strong>Preview</strong> These settings are not applied or saved yet.
+            <strong>Preview</strong> The theme is applied and saved on this device. The other settings are not applied
+            or saved yet.
           </div>
 
           <Section id="appearance" title="Appearance" description="Choose how ProTube looks to you.">
             <Row label="Theme" hint="System follows your device setting.">
-              <Segmented
-                name="theme"
-                label="Theme"
-                options={THEMES}
-                value={settings.theme}
-                onChange={(value) => update('theme', value)}
-              />
+              <Segmented name="theme" label="Theme" options={THEME_OPTIONS} value={theme} onChange={setTheme} />
             </Row>
             <Row label="Text size">
               <Segmented
@@ -272,7 +269,7 @@ const SettingsPage = () => {
           )}
 
           <div className="settings-actions">
-            <button type="button" className="btn btn-light" onClick={() => setSettings(DEFAULT_SETTINGS)}>
+            <button type="button" className="btn btn-light" onClick={resetToDefaults}>
               Reset to defaults
             </button>
             <button type="button" className="settings-save" disabled title="Coming soon">

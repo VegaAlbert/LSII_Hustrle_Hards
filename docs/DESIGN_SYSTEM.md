@@ -21,7 +21,11 @@ Bootstrap has no equivalent.
 
 ## Colours
 
-Dark is the default theme (`data-bs-theme="dark"` on `<html>`). The light variant only redefines the neutral tokens.
+The theme is set with `data-bs-theme` on `<html>`. Users choose Light, Dark or System (the default, which follows
+the operating system) from the navbar sun/moon button or Settings → Appearance; the choice is kept in
+`localStorage` (`protube.theme`) by `src/theme/ThemeProvider.tsx`, and an inline script in `index.html` applies it
+before the first paint. Dark is used when the system preference is unknown. The light variant redefines the
+neutral tokens and darkens `--pt-success` and `--pt-info`, which are used as text, so they keep a 4.5:1 contrast.
 
 | Token                 | Dark      | Light     | Use                              |
 | --------------------- | --------- | --------- | -------------------------------- |
@@ -36,10 +40,10 @@ Dark is the default theme (`data-bs-theme="dark"` on `<html>`). The light varian
 | `--pt-primary`         | `#E63946` | Brand red: primary buttons, links, focus, active states |
 | `--pt-primary-hover`   | `#D62828` | Hover of primary elements                               |
 | `--pt-primary-pressed` | `#B71C1C` | Pressed state                                           |
-| `--pt-success`         | `#2EC4B6` | Validation, success messages                            |
+| `--pt-success`         | `#2EC4B6` | Validation, success messages (light theme: `#0F766E`)   |
 | `--pt-warning`         | `#FFB703` | Warnings                                                |
 | `--pt-danger`          | `#DC3545` | Errors and destructive actions                          |
-| `--pt-info`            | `#4CC9F0` | Informative labels                                      |
+| `--pt-info`            | `#4CC9F0` | Informative labels, hashtags (light theme: `#0B7A9E`)   |
 
 `--pt-primary-rgb` (`230, 57, 70`) is there for translucent tints, e.g. `rgba(var(--pt-primary-rgb), 0.12)`.
 

@@ -1,7 +1,14 @@
 // User preferences shown in the settings page.
-// They are only kept in the page state for now: applying and saving each one is still to be done.
+// The theme is applied and saved on this device (ThemeProvider, dark mode). The rest are only kept in the page state
+// for now: applying and saving each one is still to be done.
 
 export type Theme = 'light' | 'dark' | 'system';
+
+export const THEME_OPTIONS: { value: Theme; label: string }[] = [
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'System' },
+];
 export type Language = 'en' | 'es' | 'ca';
 export type TextSize = 'small' | 'medium' | 'large';
 export type VideoQuality = 'auto' | '1080p' | '720p' | '480p';

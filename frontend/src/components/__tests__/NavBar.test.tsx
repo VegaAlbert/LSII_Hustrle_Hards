@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import NavBar from '../NavBar';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
+import { ThemeProvider } from '../../theme/ThemeProvider';
 
 const renderNavBar = (user: AuthContextValue['user'], showLogin?: boolean) => {
   const auth: AuthContextValue = {
@@ -15,14 +16,24 @@ const renderNavBar = (user: AuthContextValue['user'], showLogin?: boolean) => {
   const onSettings = jest.fn();
   const onUpload = jest.fn();
   render(
-    <AuthContext.Provider value={auth}>
-      <NavBar onHome={onHome} onLogin={onLogin} onSettings={onSettings} onUpload={onUpload} showLogin={showLogin} />
-    </AuthContext.Provider>
+    <ThemeProvider>
+      <AuthContext.Provider value={auth}>
+        <NavBar onHome={onHome} onLogin={onLogin} onSettings={onSettings} onUpload={onUpload} showLogin={showLogin} />
+      </AuthContext.Provider>
+    </ThemeProvider>
   );
   return { auth, onHome, onLogin, onSettings, onUpload };
 };
 
 describe('NavBar', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('has the dark mode switch next to the settings button', () => {
+    renderNavBar(null);
+
+    expect(screen.getByRole('button', { name: 'Theme: System' })).toBeInTheDocument();
+  });
+
   it('shows a login button to anonymous visitors', () => {
     const { onLogin } = renderNavBar(null);
 

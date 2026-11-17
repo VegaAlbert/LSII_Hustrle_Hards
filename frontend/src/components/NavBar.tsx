@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../auth/authContext';
+import ThemeMenu from './ThemeMenu';
 import './NavBar.css';
 
 type Props = {
@@ -35,8 +36,9 @@ const NavBar = ({ onHome, onLogin, onSettings, onUpload, showLogin = true }: Pro
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
             <path fill="currentColor" d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
           </svg>
-          Create
+          <span className="pt-create-label">Create</span>
         </button>
+        <ThemeMenu />
         <button type="button" className="pt-icon-btn" aria-label="Settings" title="Settings" onClick={onSettings}>
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
             <path

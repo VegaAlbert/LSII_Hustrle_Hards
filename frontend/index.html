@@ -2,6 +2,26 @@
 <html lang="en" data-bs-theme="dark">
   <head>
     <meta charset="UTF-8" />
+    <meta name="color-scheme" content="dark light" />
+    <script>
+      // Dark mode: applies the saved theme before anything is drawn, so a page with the dark theme never flashes light
+      // (or the other way round) while the app loads. Same key and rules as src/theme/themePreference.ts
+      (function () {
+        var theme = 'dark';
+        try {
+          var saved = localStorage.getItem('protube.theme');
+          if (saved === 'light' || saved === 'dark') {
+            theme = saved;
+          } else if (window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            theme = 'light';
+          }
+        } catch (e) {
+          // Storage blocked: keep the default dark theme
+        }
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/protube-favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
