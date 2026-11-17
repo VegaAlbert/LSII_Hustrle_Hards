@@ -39,8 +39,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/favourites/**").authenticated()
                         // US-06: only logged-in users can upload
                         .requestMatchers(HttpMethod.POST, "/api/videos").authenticated()
+                        // US-07: only logged-in users can edit (the service checks they own the video)
+                        .requestMatchers(HttpMethod.PUT, "/api/videos/*").authenticated()
                         // US-09: only logged-in users can comment
                         .requestMatchers(HttpMethod.POST, "/api/videos/*/comments").authenticated()
+                        // US-10: only logged-in users can reply to and like comments
+                        .requestMatchers(HttpMethod.POST, "/api/videos/*/comments/*/replies").authenticated()
+                        .requestMatchers("/api/videos/*/comments/*/like").authenticated()
                         // Everything else stays public for now; protect new endpoints here as they are added
                         .anyRequest().permitAll())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);

@@ -3,15 +3,26 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import VideoDetailPage from '../VideoDetailPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
-import { fetchVideo, isNotFound, postComment, type VideoDetail } from '../../videos/videosApi';
+import {
+  fetchVideo,
+  isNotFound,
+  postComment,
+  postReply,
+  setCommentLike,
+  type VideoDetail,
+} from '../../videos/videosApi';
 
 jest.mock('../../videos/videosApi', () => ({
   ...jest.requireActual('../../videos/videosApi'),
   fetchVideo: jest.fn(),
   isNotFound: jest.fn(),
   postComment: jest.fn(),
+  postReply: jest.fn(),
+  setCommentLike: jest.fn(),
 }));
 const mockedPostComment = postComment as jest.MockedFunction<typeof postComment>;
+const mockedPostReply = postReply as jest.MockedFunction<typeof postReply>;
+const mockedSetCommentLike = setCommentLike as jest.MockedFunction<typeof setCommentLike>;
 
 // US-12: the favourite button asks for the saved state of the video
 jest.mock('../../favourites/favouritesApi', () => ({
@@ -35,7 +46,20 @@ const video: VideoDetail = {
   tags: [],
   category: null,
   ageRestricted: false,
-  comments: [{ id: 1, author: 'bob', text: 'Great song', likeCount: 2, publishedAt: null }],
+  uploader: null,
+  comments: [
+    {
+      id: 1,
+      author: 'bob',
+      text: 'Great song',
+      likeCount: 2,
+      publishedAt: null,
+      likedByMe: false,
+      replies: [
+        { id: 3, author: 'carol', text: 'So true', likeCount: 0, publishedAt: null, likedByMe: false, replies: [] },
+      ],
+    },
+  ],
 };
 
 const alice = { id: 1, username: 'alice', email: 'alice@example.com' };
@@ -59,6 +83,8 @@ describe('VideoDetailPage', () => {
     mockedFetchVideo.mockReset();
     mockedIsNotFound.mockReset();
     mockedPostComment.mockReset();
+    mockedPostReply.mockReset();
+    mockedSetCommentLike.mockReset();
   });
 
   it('plays the video and shows its information and comments', async () => {
@@ -79,7 +105,7 @@ describe('VideoDetailPage', () => {
     expect(screen.getByText('1:19')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'About this video' })).toBeInTheDocument();
     expect(screen.getByText('Official video')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Comments 1' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Comments 2' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save to favourites' })).toBeInTheDocument();
     expect(screen.getByText('Great song')).toBeInTheDocument();
   });
@@ -200,6 +226,19 @@ describe('VideoDetailPage', () => {
     expect(screen.getByText('Login page')).toBeInTheDocument();
   });
 
+  it('shows the Edit button only to the user who uploaded the video', async () => {
+    mockedFetchVideo.mockResolvedValueOnce({ ...video, uploader: 'alice' });
+    const { unmount } = renderAt('/videos/5', alice);
+
+    expect(await screen.findByRole('link', { name: 'Edit video' })).toHaveAttribute('href', '/videos/5/edit');
+    unmount();
+
+    mockedFetchVideo.mockResolvedValueOnce({ ...video, uploader: 'someone-else' });
+    renderAt('/videos/5', alice);
+    expect(await screen.findByRole('button', { name: 'Share' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Edit video' })).not.toBeInTheDocument();
+  });
+
   it('plays an age-restricted video once a logged-in viewer confirms their age', async () => {
     const user = userEvent.setup();
     mockedFetchVideo.mockResolvedValueOnce({ ...video, ageRestricted: true });
@@ -220,17 +259,75 @@ describe('VideoDetailPage', () => {
       text: 'Love it',
       likeCount: 0,
       publishedAt: new Date().toISOString(),
+      likedByMe: false,
+      replies: [],
     });
     renderAt('/videos/5', alice);
 
     await user.type(await screen.findByLabelText('Add a comment'), 'Love it');
     await user.click(screen.getByRole('button', { name: 'Comment' }));
 
-    expect(await screen.findByRole('heading', { name: 'Comments 2' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Comments 3' })).toBeInTheDocument();
     expect(mockedPostComment).toHaveBeenCalledWith(5, 'Love it');
-    const items = within(screen.getByRole('list', { name: 'Comments' })).getAllByRole('listitem');
+    const comments = screen.getByRole('list', { name: 'Comments' });
+    const items = within(comments)
+      .getAllByRole('listitem')
+      .filter((item) => item.parentElement === comments);
     expect(within(items[0]).getByText('Love it')).toBeInTheDocument();
     expect(within(items[1]).getByText('Great song')).toBeInTheDocument();
+  });
+
+  it('shows a new reply at the end of the replies of its comment', async () => {
+    const user = userEvent.setup();
+    mockedFetchVideo.mockResolvedValueOnce(video);
+    mockedPostReply.mockResolvedValueOnce({
+      id: 4,
+      author: 'alice',
+      text: 'Me too',
+      likeCount: 0,
+      publishedAt: new Date().toISOString(),
+      likedByMe: false,
+      replies: [],
+    });
+    renderAt('/videos/5', alice);
+
+    await user.click(await screen.findByRole('button', { name: 'Reply to @bob' }));
+    await user.type(screen.getByLabelText('Add a reply'), 'Me too');
+    await user.click(screen.getByRole('button', { name: 'Reply' }));
+
+    expect(await screen.findByRole('heading', { name: 'Comments 3' })).toBeInTheDocument();
+    expect(mockedPostReply).toHaveBeenCalledWith(5, 1, 'Me too');
+    const replies = within(screen.getByRole('list', { name: 'Replies to @bob' })).getAllByRole('listitem');
+    expect(replies).toHaveLength(2);
+    expect(within(replies[1]).getByText('Me too')).toBeInTheDocument();
+  });
+
+  it('updates the like count and state of a comment', async () => {
+    const user = userEvent.setup();
+    mockedFetchVideo.mockResolvedValueOnce(video);
+    mockedSetCommentLike.mockResolvedValueOnce({ likeCount: 3, liked: true });
+    renderAt('/videos/5', alice);
+
+    await user.click(await screen.findByRole('button', { name: 'Like comment by @bob, 2 likes' }));
+
+    const like = await screen.findByRole('button', { name: 'Like comment by @bob, 3 likes' });
+    expect(like).toHaveAttribute('aria-pressed', 'true');
+    expect(mockedSetCommentLike).toHaveBeenCalledWith(5, 1, true);
+  });
+
+  it('updates the like of a reply', async () => {
+    const user = userEvent.setup();
+    mockedFetchVideo.mockResolvedValueOnce(video);
+    mockedSetCommentLike.mockResolvedValueOnce({ likeCount: 1, liked: true });
+    renderAt('/videos/5', alice);
+
+    await user.click(await screen.findByRole('button', { name: 'Like comment by @carol, 0 likes' }));
+
+    expect(await screen.findByRole('button', { name: 'Like comment by @carol, 1 like' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(mockedSetCommentLike).toHaveBeenCalledWith(5, 3, true);
   });
 
   it('asks anonymous visitors to log in to comment', async () => {

@@ -6,6 +6,7 @@ import LoginPage from './components/LoginPage';
 import SettingsPage from './components/SettingsPage';
 import HomePage from './pages/HomePage';
 import FavouritesPage from './pages/FavouritesPage';
+import EditVideoPage from './pages/EditVideoPage';
 import NotFoundPage from './pages/NotFoundPage';
 import UploadPage from './pages/UploadPage';
 import VideoDetailPage from './pages/VideoDetailPage';
@@ -29,6 +30,7 @@ export const AppRoutes = () => (
       <Route path="upload" element={<UploadPage />} />
       <Route path="favourites" element={<FavouritesPage />} />
       <Route path="videos/:id" element={<VideoDetailPage />} />
+      <Route path="videos/:id/edit" element={<EditVideoPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Route>
   </Routes>

@@ -9,6 +9,7 @@ the MVP spec see [REQUIREMENT.md](./REQUIREMENT.md).
 |--------------------------|----------------------------------------------------------------------------|
 | `backend/`               | Spring Boot 3.3 REST API (Java 21, Maven). Serves `/api/**` and `/media/**` |
 | `frontend/`              | React 19 + TypeScript SPA (Vite)                                           |
+| `e2e/`                   | Playwright end-to-end tests of the golden paths (NFR-02)                   |
 | `tooling/videoGrabber/`  | Python script that downloads sample videos into the video store folder     |
 | `resources/`             | Images for the docs and `video_list.txt` (input for the video grabber)     |
 | `.run/`                  | Shared IntelliJ IDEA run configurations                                    |
@@ -147,6 +148,27 @@ npm run format                            # Prettier
 
 The MVP requires **more than 50% coverage** on both apps.
 
+### End-to-end (Playwright)
+
+The E2E suite in `e2e/` drives Chromium through the golden paths of the MVP: authentication, upload and playback,
+search and comments. It needs Java 21, Maven and Node 22, and `npm ci` already run in `frontend/`.
+
+```bash
+cd e2e
+npm ci
+npx playwright install --with-deps chromium   # once
+npm test                                      # whole suite
+npx playwright test tests/comments.spec.ts    # one file
+npm run test:ui                               # interactive mode, to debug
+npm run report                                # HTML report of the last run (traces of failed tests)
+```
+
+Playwright starts its own servers, so nothing else has to be running: the backend on **8081** (`dev` profile, empty
+in-memory H2, video store recreated in `e2e/.store/` from `e2e/fixtures/store/`) and the frontend on **5174**,
+pointing to it. Every run therefore starts from the same fresh data. Outside CI, servers already listening on those
+ports are reused; stop them for a clean database. Change ports or the Maven command with `E2E_BACKEND_PORT`,
+`E2E_FRONTEND_PORT` and `E2E_MAVEN` (e.g. `E2E_MAVEN=./mvnw`). Rules for writing tests: [e2e/AGENTS.md](./e2e/AGENTS.md).
+
 ### CI
 
 `.github/workflows/main.yml` runs on every PR and push to `main`:
@@ -154,6 +176,8 @@ The MVP requires **more than 50% coverage** on both apps.
 1. Frontend: `npm ci` → `npm run build` → `npm run test` → `npm run lint`
 2. Backend: `./mvnw clean verify -Pcoverage`
 3. Uploads both coverage reports as build artifacts.
+4. E2E job: `npm ci` (frontend and `e2e/`), installs Chromium, `npm run typecheck` and `npm test` in `e2e/`, and
+   uploads the Playwright report.
 
 Before opening a PR, run the same steps locally so the pipeline stays green.
 

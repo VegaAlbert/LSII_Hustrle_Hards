@@ -1,0 +1,15 @@
+{
+  "id": "e2e-mountain-sunrise",
+  "width": 320,
+  "height": 180,
+  "duration": 4,
+  "title": "Mountain Sunrise Timelapse",
+  "user": "e2e-seed",
+  "timestamp": 1735689600,
+  "meta": {
+    "description": "Fixture video of the E2E suite: sunrise over the mountains.",
+    "comments": [
+      { "text": "Beautiful colours!", "author": "seed-viewer", "timestamp": 1735693200, "like_count": 2 }
+    ]
+  }
+}

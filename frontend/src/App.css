@@ -212,15 +212,76 @@
   font-size: 0.8rem;
 }
 
-.comment-likes {
+/* US-10: like and reply buttons under each comment */
+.comment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.comment-like,
+.comment-reply-button {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   padding: 0.15rem 0.6rem;
+  border: 1px solid transparent;
   border-radius: var(--pt-radius-pill);
   background: var(--pt-bg-body);
   color: var(--pt-text-secondary);
   font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.comment-like:hover:not(:disabled),
+.comment-reply-button:hover {
+  color: var(--pt-text-primary);
+  border-color: var(--pt-border);
+}
+
+.comment-like:focus-visible,
+.comment-reply-button:focus-visible {
+  outline: none;
+  box-shadow: var(--pt-focus-ring);
+}
+
+.comment-like.is-liked {
+  color: var(--pt-primary);
+  border-color: var(--pt-primary);
+}
+
+.comment-like:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+/* US-10: replies, nested under their comment without a card of their own */
+.comment-replies {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--pt-border);
+}
+
+.comment.is-reply {
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.comment.is-reply:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.comment-form.is-reply {
+  margin-bottom: 0;
+  padding: 0;
+  border: none;
+  background: none;
 }
 
 .min-w-0 {

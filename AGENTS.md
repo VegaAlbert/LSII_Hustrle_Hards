@@ -2,12 +2,12 @@
 
 Video platform where registered users watch, upload and comment on videos (Software Lab II, Tecnocampus).
 Monorepo: `backend/` (Spring Boot 3.3, Java 21, Maven) and `frontend/` (React 19 + TypeScript, Vite), plus
-`tooling/videoGrabber/` (Python script that fills the video store).
+`e2e/` (Playwright end-to-end tests) and `tooling/videoGrabber/` (Python script that fills the video store).
 
 Assignment rules: [README.md](./README.md). MVP user stories and NFRs: [REQUIREMENT.md](./REQUIREMENT.md) — read the
 acceptance criteria of a story before implementing it. Setup details: [DEVELOPMENT.md](./DEVELOPMENT.md).
 Each folder has its own `AGENTS.md` with the rules for that app: [backend](./backend/AGENTS.md),
-[frontend](./frontend/AGENTS.md).
+[frontend](./frontend/AGENTS.md), [e2e](./e2e/AGENTS.md).
 
 ## Commands
 
@@ -19,9 +19,11 @@ The Maven wrapper is not committed: use `mvn` locally (CI generates `./mvnw`).
 * Frontend: `cd frontend && npm install && npm run dev` (port 5173)
 * Frontend tests (with coverage): `cd frontend && npm run test` · one file: `npx jest path/to/File.test.tsx`
 * Frontend checks: `npm run lint`, `npm run format`, `npm run build`
+* E2E (starts its own backend on 8081 and frontend on 5174): `cd e2e && npm ci && npx playwright install chromium`
+  once, then `npm test` · one file: `npx playwright test tests/comments.spec.ts`
 
 Before opening a PR, run what CI runs (`.github/workflows/main.yml`): frontend `npm ci`, `npm run build`,
-`npm run test`, `npm run lint`; backend `mvn clean verify -Pcoverage`.
+`npm run test`, `npm run lint`; backend `mvn clean verify -Pcoverage`; e2e `npm run typecheck`, `npm test`.
 
 ## Environment
 
@@ -53,7 +55,7 @@ Before opening a PR, run what CI runs (`.github/workflows/main.yml`): frontend `
     delete the branch. Only release/hotfix PRs go into `main`.
 * Commits: [Conventional Commits](https://www.conventionalcommits.org/) with the issue,
   e.g. `feat(videos): list videos from the store (#4)`.
-* Every member does backend, frontend and tests of their own user stories.
+* Every member does backend, frontend and tests of their own user stories, **including the E2E tests**.
 
 ## AI usage (NFR-06, NFR-07)
 
@@ -68,6 +70,9 @@ Before opening a PR, run what CI runs (`.github/workflows/main.yml`): frontend `
 
 * Acceptance criteria of the story in `REQUIREMENT.md` are met.
 * Backend and frontend tests added for the change; coverage stays above 50% on both apps (NFR-05).
+* **E2E tests (NFR-02)**: every new or changed user-facing feature adds or updates its golden path in `e2e/tests/`
+  (and its main error case), following [e2e/AGENTS.md](./e2e/AGENTS.md). If a UI change breaks an existing E2E
+  test, fix the test in the same PR. The whole suite passes locally and in CI.
 * Lint and build pass locally and CI is green on the PR.
 * PR approved by a teammate, Copilot comments resolved, squash-merged into `develop`.
 * Docs (`DEVELOPMENT.md`, this file) updated if commands, env vars or conventions changed.

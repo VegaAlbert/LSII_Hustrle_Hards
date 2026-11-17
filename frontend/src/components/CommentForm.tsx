@@ -1,23 +1,30 @@
-import { useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { isUnauthorized, toApiError } from '../auth/authApi';
 import { useAuth } from '../auth/authContext';
-import { MAX_COMMENT_LENGTH, postComment, type VideoComment } from '../videos/videosApi';
+import { MAX_COMMENT_LENGTH, postComment, postReply, type VideoComment } from '../videos/videosApi';
 import Avatar from './Avatar';
 
 type Props = {
   videoId: number;
   // Receives the comment saved by the backend, to show it under the video
   onCommentAdded: (comment: VideoComment) => void;
+  // US-10: with a comment id, the form posts a reply to that comment
+  parentId?: number;
+  // US-10: called by "Cancel" in a reply form, to close it
+  onCancel?: () => void;
 };
 
 /**
  * US-09: form to comment on a video. Visitors who are not logged in are asked to log in instead, and come back to the
- * video afterwards.
+ * video afterwards. US-10: with `parentId` it is the form to reply to that comment.
  */
-const CommentForm = ({ videoId, onCommentAdded }: Props) => {
+const CommentForm = ({ videoId, onCommentAdded, parentId, onCancel }: Props) => {
   const { user } = useAuth();
   const location = useLocation();
+  const isReply = parentId !== undefined;
+  const textareaId = useId();
+  const label = isReply ? 'Add a reply' : 'Add a comment';
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +54,8 @@ const CommentForm = ({ videoId, onCommentAdded }: Props) => {
     setError(null);
     setSessionExpired(false);
     try {
-      onCommentAdded(await postComment(videoId, text.trim()));
+      const trimmed = text.trim();
+      onCommentAdded(isReply ? await postReply(videoId, parentId, trimmed) : await postComment(videoId, trimmed));
       setText('');
     } catch (err: unknown) {
       if (isUnauthorized(err)) {
@@ -62,17 +70,19 @@ const CommentForm = ({ videoId, onCommentAdded }: Props) => {
   };
 
   return (
-    <form className="comment-form" onSubmit={handleSubmit}>
+    <form className={isReply ? 'comment-form is-reply' : 'comment-form'} onSubmit={handleSubmit}>
       <Avatar name={user.username} size="sm" />
       <div className="flex-grow-1 min-w-0">
-        <label htmlFor="comment-text" className="visually-hidden">
-          Add a comment
+        <label htmlFor={textareaId} className="visually-hidden">
+          {label}
         </label>
         <textarea
-          id="comment-text"
+          id={textareaId}
           className="form-control"
           rows={2}
-          placeholder="Add a comment..."
+          placeholder={`${label}...`}
+          // A reply form is opened on purpose, so the user can type right away
+          autoFocus={isReply}
           maxLength={MAX_COMMENT_LENGTH}
           value={text}
           onChange={(event) => setText(event.target.value)}
@@ -88,20 +98,24 @@ const CommentForm = ({ videoId, onCommentAdded }: Props) => {
             <Link to="/login" state={loginState}>
               Log in again
             </Link>{' '}
-            to comment.
+            to {isReply ? 'reply' : 'comment'}.
           </p>
         )}
         <div className="comment-form-actions">
           <button
             type="button"
             className="btn btn-outline-secondary btn-sm"
-            onClick={() => setText('')}
-            disabled={submitting || text.length === 0}
+            onClick={() => {
+              setText('');
+              onCancel?.();
+            }}
+            // A reply form can always be closed; the comment form only clears its text
+            disabled={submitting || (!isReply && text.length === 0)}
           >
             Cancel
           </button>
           <button type="submit" className="btn btn-primary btn-sm" disabled={!canSubmit}>
-            {submitting ? 'Commenting...' : 'Comment'}
+            {isReply ? (submitting ? 'Replying...' : 'Reply') : submitting ? 'Commenting...' : 'Comment'}
           </button>
         </div>
       </div>

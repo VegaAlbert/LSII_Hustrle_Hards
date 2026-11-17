@@ -1,10 +1,12 @@
 package com.tecnocampus.LS2.protube_back.controller;
 
 import com.tecnocampus.LS2.protube_back.controller.dto.ErrorResponse;
+import com.tecnocampus.LS2.protube_back.services.CommentNotFoundException;
 import com.tecnocampus.LS2.protube_back.services.InvalidCredentialsException;
 import com.tecnocampus.LS2.protube_back.services.InvalidGoogleTokenException;
 import com.tecnocampus.LS2.protube_back.services.InvalidUploadException;
 import com.tecnocampus.LS2.protube_back.services.UserAlreadyExistsException;
+import com.tecnocampus.LS2.protube_back.services.VideoAccessDeniedException;
 import com.tecnocampus.LS2.protube_back.services.VideoNotFoundException;
 import com.tecnocampus.LS2.protube_back.services.VideoStorageException;
 import org.springframework.context.MessageSourceResolvable;
@@ -92,6 +94,11 @@ public class ApiExceptionHandler {
                 .body(new ErrorResponse(message, Map.of("video", message)));
     }
 
+    @ExceptionHandler(VideoAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleVideoAccessDenied(VideoAccessDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(e.getMessage()));
+    }
+
     @ExceptionHandler(VideoStorageException.class)
     public ResponseEntity<ErrorResponse> handleVideoStorage(VideoStorageException e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
@@ -105,6 +112,11 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(VideoNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleVideoNotFound(VideoNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage()));
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCommentNotFound(CommentNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage()));
     }
 
