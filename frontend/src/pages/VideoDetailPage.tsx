@@ -4,6 +4,7 @@ import { useAuth } from '../auth/authContext';
 import Avatar from '../components/Avatar';
 import CommentForm from '../components/CommentForm';
 import CommentList from '../components/CommentList';
+import FavouriteButton from '../components/FavouriteButton';
 import ExpandableText from '../components/ExpandableText';
 import HashtagText from '../components/HashtagText';
 import ShareDialog from '../components/ShareDialog';
@@ -34,6 +35,7 @@ function startTime(value: string | null): number {
  * US-06: also its hashtags, tags and category, a share dialog and, for age-restricted videos, a confirmation gate.
  * US-09: logged-in users can comment; the new comment is shown first.
  * Video ratings: the average rating and, for logged-in users, a star picker to rate the video.
+ * US-10: logged-in users can reply to comments (shown nested) and like them.
  */
 const VideoDetailPage = () => {
   const { id } = useParams();
@@ -48,7 +50,7 @@ const VideoDetailPage = () => {
 };
 
 const VideoDetail = ({ id }: { id: number }) => {
-  const { video, status, retry, addComment } = useVideoDetail(id);
+  const { video, status, retry, addComment, addReply, updateLike } = useVideoDetail(id);
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const player = useRef<HTMLVideoElement>(null);
@@ -129,6 +131,8 @@ const VideoDetail = ({ id }: { id: number }) => {
           </div>
         </div>
         <div className="video-actions">
+          {/* US-12: save the video to watch it later */}
+          <FavouriteButton videoId={video.id} />
           <button type="button" className="pill-btn" onClick={() => setSharingAt(player.current?.currentTime ?? 0)}>
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
               <path fill="currentColor" d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z" />
@@ -180,7 +184,13 @@ const VideoDetail = ({ id }: { id: number }) => {
         </section>
       )}
 
-      <CommentList comments={video.comments} form={<CommentForm videoId={video.id} onCommentAdded={addComment} />} />
+      <CommentList
+        videoId={video.id}
+        comments={video.comments}
+        form={<CommentForm videoId={video.id} onCommentAdded={addComment} />}
+        onReplyAdded={addReply}
+        onLikeChanged={updateLike}
+      />
 
       {sharingAt !== null && (
         <ShareDialog

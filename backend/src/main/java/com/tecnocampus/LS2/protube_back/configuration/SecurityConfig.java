@@ -35,6 +35,8 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/me").authenticated()
+                        // US-12: favourites always belong to the logged-in user
+                        .requestMatchers("/api/favourites/**").authenticated()
                         // US-06: only logged-in users can upload
                         .requestMatchers(HttpMethod.POST, "/api/videos").authenticated()
                         // US-07: only logged-in users can edit (the service checks they own the video)
@@ -43,6 +45,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/videos/*/comments").authenticated()
                         // Video ratings: anyone sees the average, only logged-in users rate
                         .requestMatchers(HttpMethod.PUT, "/api/videos/*/rating").authenticated()
+                        // US-10: only logged-in users can reply to and like comments
+                        .requestMatchers(HttpMethod.POST, "/api/videos/*/comments/*/replies").authenticated()
+                        .requestMatchers("/api/videos/*/comments/*/like").authenticated()
                         // Everything else stays public for now; protect new endpoints here as they are added
                         .anyRequest().permitAll())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);

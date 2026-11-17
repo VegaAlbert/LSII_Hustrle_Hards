@@ -8,6 +8,7 @@ import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
 import com.tecnocampus.LS2.protube_back.domain.Comment;
 import com.tecnocampus.LS2.protube_back.domain.User;
 import com.tecnocampus.LS2.protube_back.domain.Video;
+import com.tecnocampus.LS2.protube_back.repository.CommentLikeRepository;
 import com.tecnocampus.LS2.protube_back.domain.VideoCategory;
 import com.tecnocampus.LS2.protube_back.repository.VideoRepository;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -32,6 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +45,9 @@ class VideoServiceTest {
 
     @Mock
     VideoRepository videoRepository;
+
+    @Mock
+    CommentLikeRepository commentLikeRepository;
 
     @InjectMocks
     VideoService videoService;
@@ -69,7 +76,7 @@ class VideoServiceTest {
         video.addComment(new Comment("bob", "Nice", 2, Instant.ofEpochSecond(1700000001)));
         when(videoRepository.findById(7L)).thenReturn(Optional.of(video));
 
-        VideoDetailResponse response = videoService.getVideo(7L);
+        VideoDetailResponse response = videoService.getVideo(7L, null);
 
         assertEquals("Title", response.title());
         assertEquals("Description", response.description());
@@ -81,15 +88,53 @@ class VideoServiceTest {
         assertEquals(List.of(), response.tags());
         assertNull(response.category());
         assertFalse(response.ageRestricted());
-        assertEquals(List.of(new CommentResponse(null, "bob", "Nice", 2, Instant.ofEpochSecond(1700000001))),
-                response.comments());
+        assertEquals(List.of(new CommentResponse(null, "bob", "Nice", 2, Instant.ofEpochSecond(1700000001), false,
+                List.of())), response.comments());
+        // An anonymous visitor likes nothing, so the likes are not even read
+        verify(commentLikeRepository, never()).findLikedCommentIds(anyLong(), anyString());
+    }
+
+    @Test
+    void getVideoNestsTheRepliesUnderTheirComment() {
+        Video video = new Video("3", "Title", null, "Author", 90, null, null,
+                Instant.ofEpochSecond(1700000000), "3.mp4", "3.webp");
+        Comment comment = new Comment("bob", "Nice", 0, Instant.ofEpochSecond(1700000001));
+        Comment reply = new Comment("alice", "Agree", 0, Instant.ofEpochSecond(1700000002));
+        video.addComment(comment);
+        video.addComment(reply);
+        comment.addReply(reply);
+        when(videoRepository.findById(7L)).thenReturn(Optional.of(video));
+
+        VideoDetailResponse response = videoService.getVideo(7L, null);
+
+        assertEquals(1, response.comments().size());
+        CommentResponse top = response.comments().get(0);
+        assertEquals("Nice", top.text());
+        assertEquals(1, top.replies().size());
+        assertEquals("Agree", top.replies().get(0).text());
+        assertEquals(List.of(), top.replies().get(0).replies());
+    }
+
+    @Test
+    void getVideoMarksTheCommentsTheViewerLikes() {
+        Video video = new Video("3", "Title", null, "Author", 90, null, null,
+                Instant.ofEpochSecond(1700000000), "3.mp4", "3.webp");
+        video.addComment(new Comment("bob", "Nice", 1, Instant.ofEpochSecond(1700000001)));
+        when(videoRepository.findById(7L)).thenReturn(Optional.of(video));
+        // The comment was never saved, so its id is null
+        when(commentLikeRepository.findLikedCommentIds(7L, "alice")).thenReturn(Set.of());
+
+        VideoDetailResponse response = videoService.getVideo(7L, "alice");
+
+        verify(commentLikeRepository).findLikedCommentIds(7L, "alice");
+        assertFalse(response.comments().get(0).likedByMe());
     }
 
     @Test
     void getVideoThrowsWhenTheVideoDoesNotExist() {
         when(videoRepository.findById(99L)).thenReturn(Optional.empty());
 
-        VideoNotFoundException e = assertThrows(VideoNotFoundException.class, () -> videoService.getVideo(99L));
+        VideoNotFoundException e = assertThrows(VideoNotFoundException.class, () -> videoService.getVideo(99L, null));
         assertEquals("Video 99 not found", e.getMessage());
     }
 

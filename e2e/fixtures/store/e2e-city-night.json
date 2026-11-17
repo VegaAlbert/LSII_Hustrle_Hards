@@ -1,0 +1,13 @@
+{
+  "id": "e2e-city-night",
+  "width": 320,
+  "height": 180,
+  "duration": 4,
+  "title": "City Night Walk",
+  "user": "e2e-seed",
+  "timestamp": 1735776000,
+  "meta": {
+    "description": "Fixture video of the E2E suite: a walk through the city at night.",
+    "comments": []
+  }
+}

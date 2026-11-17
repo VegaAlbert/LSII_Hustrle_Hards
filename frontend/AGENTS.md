@@ -29,4 +29,6 @@ Applies to everything under `frontend/`. Root rules: [../AGENTS.md](../AGENTS.md
 - Coverage thresholds live in `jest.config.ts`; CI runs `npm run test -- --coverage`.
 - Run `npm run test`, `npm run lint` and `npm run build` before pushing; fix with `npm run lint-fix` and
   `npm run format`.
-- E2E tests (NFR-02) will live in their own folder with their own runner (the course uses Playwright).
+- E2E tests (NFR-02) live in [`../e2e/`](../e2e/AGENTS.md) (Playwright). A new or changed page or flow also adds or
+  updates its E2E test there. They find elements by role and label, so keep accessible names stable or update the
+  E2E tests in the same PR.
