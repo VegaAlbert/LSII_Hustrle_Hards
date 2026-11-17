@@ -5,6 +5,7 @@ import com.tecnocampus.LS2.protube_back.services.InvalidCredentialsException;
 import com.tecnocampus.LS2.protube_back.services.InvalidGoogleTokenException;
 import com.tecnocampus.LS2.protube_back.services.InvalidUploadException;
 import com.tecnocampus.LS2.protube_back.services.UserAlreadyExistsException;
+import com.tecnocampus.LS2.protube_back.services.VideoAccessDeniedException;
 import com.tecnocampus.LS2.protube_back.services.VideoNotFoundException;
 import com.tecnocampus.LS2.protube_back.services.VideoStorageException;
 import org.springframework.context.MessageSourceResolvable;
@@ -90,6 +91,11 @@ public class ApiExceptionHandler {
         String message = "The video must be at most 100 MB";
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
                 .body(new ErrorResponse(message, Map.of("video", message)));
+    }
+
+    @ExceptionHandler(VideoAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleVideoAccessDenied(VideoAccessDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(VideoStorageException.class)
