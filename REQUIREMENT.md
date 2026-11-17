@@ -198,6 +198,26 @@ content is performing.
 ---
 
 
+## Epic 8 — Favourites (improvement)
+
+### US-12: Save videos as favourites
+
+**As a** user, **I want** to save videos as favourites, **so that** I can watch them later.
+
+**Scope:** mark / unmark a video as favourite; a list of the favourite videos of the user (a `/favourites` page
+until the profile page of US-03 exists).
+
+**Acceptance criteria**
+
+* Given an authenticated user on a video, when they mark or unmark it as favourite, then the state persists (it is
+  still shown after reloading the page or logging in again).
+* Given an authenticated user with favourite videos, when they open their favourites list, then the saved videos are
+  shown; when they have none, an empty state is shown instead.
+
+**Priority:** Could have (README improvement "Favorite videos")
+
+---
+
 ## Non-functional & engineering requirements
 
 These are cross-cutting constraints that apply to the whole MVP rather than a single feature. They belong in the

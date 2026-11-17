@@ -26,6 +26,12 @@ const mockedRecordView = recordView as jest.MockedFunction<typeof recordView>;
 const mockedPostComment = postComment as jest.MockedFunction<typeof postComment>;
 const mockedPostReply = postReply as jest.MockedFunction<typeof postReply>;
 const mockedSetCommentLike = setCommentLike as jest.MockedFunction<typeof setCommentLike>;
+
+// US-12: the favourite button asks for the saved state of the video
+jest.mock('../../favourites/favouritesApi', () => ({
+  fetchFavouriteState: jest.fn().mockResolvedValue({ videoId: 5, favourite: false }),
+  setFavourite: jest.fn(),
+}));
 const mockedFetchVideo = fetchVideo as jest.MockedFunction<typeof fetchVideo>;
 const mockedIsNotFound = isNotFound as jest.MockedFunction<typeof isNotFound>;
 
@@ -43,6 +49,7 @@ const video: VideoDetail = {
   tags: [],
   category: null,
   ageRestricted: false,
+  uploader: null,
   comments: [
     {
       id: 1,
@@ -124,6 +131,7 @@ describe('VideoDetailPage', () => {
     expect(screen.getByRole('heading', { name: 'About this video' })).toBeInTheDocument();
     expect(screen.getByText('Official video')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Comments 2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save to favourites' })).toBeInTheDocument();
     expect(screen.getByText('Great song')).toBeInTheDocument();
   });
 

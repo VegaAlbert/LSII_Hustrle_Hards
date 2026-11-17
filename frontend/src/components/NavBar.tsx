@@ -9,13 +9,28 @@ type Props = {
   onUpload: () => void;
   // US-11: "Analytics" item of the user menu
   onAnalytics?: () => void;
+  // US-12: opens the favourite videos of the user
+  onFavourites?: () => void;
   // Hidden while the login page is already open
   showLogin?: boolean;
 };
 
-const NavBar = ({ onHome, onLogin, onSettings, onUpload, onAnalytics = () => {}, showLogin = true }: Props) => {
+const NavBar = ({
+  onHome,
+  onLogin,
+  onSettings,
+  onUpload,
+  onFavourites,
+  onAnalytics = () => {},
+  showLogin = true,
+}: Props) => {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleFavourites = () => {
+    setMenuOpen(false);
+    onFavourites?.();
+  };
 
   const handleAnalytics = () => {
     setMenuOpen(false);
@@ -70,6 +85,13 @@ const NavBar = ({ onHome, onLogin, onSettings, onUpload, onAnalytics = () => {},
                   <strong>{user.username}</strong>
                   <small>{user.email}</small>
                 </li>
+                {onFavourites && (
+                  <li>
+                    <button type="button" className="pt-menu-item" onClick={handleFavourites}>
+                      Favourites
+                    </button>
+                  </li>
+                )}
                 <li>
                   <button type="button" className="pt-menu-item" onClick={handleAnalytics}>
                     Analytics

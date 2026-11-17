@@ -14,12 +14,20 @@ const renderNavBar = (user: AuthContextValue['user'], showLogin?: boolean) => {
   const onLogin = jest.fn();
   const onSettings = jest.fn();
   const onUpload = jest.fn();
+  const onFavourites = jest.fn();
   render(
     <AuthContext.Provider value={auth}>
-      <NavBar onHome={onHome} onLogin={onLogin} onSettings={onSettings} onUpload={onUpload} showLogin={showLogin} />
+      <NavBar
+        onHome={onHome}
+        onLogin={onLogin}
+        onSettings={onSettings}
+        onUpload={onUpload}
+        onFavourites={onFavourites}
+        showLogin={showLogin}
+      />
     </AuthContext.Provider>
   );
-  return { auth, onHome, onLogin, onSettings, onUpload };
+  return { auth, onHome, onLogin, onSettings, onUpload, onFavourites };
 };
 
 describe('NavBar', () => {
@@ -109,5 +117,16 @@ describe('NavBar', () => {
     renderNavBar(null);
 
     expect(screen.queryByRole('button', { name: 'Analytics' })).not.toBeInTheDocument();
+  });
+
+  it('opens the favourites from the user menu', () => {
+    const { onFavourites } = renderNavBar({ id: 1, username: 'alice', email: 'alice@mail.com' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'User menu for alice' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Favourites' }));
+
+    expect(onFavourites).toHaveBeenCalled();
+    // The menu closes after choosing an option
+    expect(screen.queryByRole('button', { name: 'Favourites' })).not.toBeInTheDocument();
   });
 });
