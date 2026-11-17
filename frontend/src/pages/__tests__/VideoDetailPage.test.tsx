@@ -29,6 +29,13 @@ jest.mock('../../favourites/favouritesApi', () => ({
   fetchFavouriteState: jest.fn().mockResolvedValue({ videoId: 5, favourite: false }),
   setFavourite: jest.fn(),
 }));
+
+// US-13: the subscribe button asks for the subscribers of the channel of the uploader
+jest.mock('../../subscriptions/subscriptionsApi', () => ({
+  ...jest.requireActual('../../subscriptions/subscriptionsApi'),
+  fetchSubscription: jest.fn().mockResolvedValue({ channel: 'bob', subscribed: false, subscribers: 3 }),
+  setSubscription: jest.fn(),
+}));
 const mockedFetchVideo = fetchVideo as jest.MockedFunction<typeof fetchVideo>;
 const mockedIsNotFound = isNotFound as jest.MockedFunction<typeof isNotFound>;
 
@@ -338,5 +345,21 @@ describe('VideoDetailPage', () => {
     await user.click(await screen.findByRole('link', { name: 'Log in to comment' }));
 
     expect(screen.getByText('Login page')).toBeInTheDocument();
+  });
+
+  it('offers to subscribe to the channel of the user who uploaded the video', async () => {
+    mockedFetchVideo.mockResolvedValueOnce({ ...video, uploader: 'bob' });
+    renderAt('/videos/5', alice);
+
+    expect(await screen.findByText('3 subscribers')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Subscribe' })).toBeInTheDocument();
+  });
+
+  it('has no subscribe button for imported videos without uploader', async () => {
+    mockedFetchVideo.mockResolvedValueOnce(video);
+    renderAt('/videos/5', alice);
+
+    expect(await screen.findByRole('button', { name: 'Share' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Subscribe' })).not.toBeInTheDocument();
   });
 });
