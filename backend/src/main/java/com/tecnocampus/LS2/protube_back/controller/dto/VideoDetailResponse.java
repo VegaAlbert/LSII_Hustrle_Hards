@@ -11,11 +11,13 @@ import java.util.Set;
  * Video shown on its detail page (US-05). {@code videoUrl} and {@code thumbnailUrl} are paths under {@code /media}.
  * {@code category} is null for imported videos, which also have no tags. {@code comments} only holds the top-level
  * comments, each with its replies (US-10).
+ * {@code category} is null for imported videos, which also have no tags. {@code uploader} is the username of the owner
+ * (null for imported videos): only that user can edit the video (US-07).
  */
 public record VideoDetailResponse(Long id, String title, String description, String author, int durationSeconds,
                                   Integer width, Integer height, Instant publishedAt, String videoUrl,
                                   String thumbnailUrl, List<String> tags, VideoCategory category,
-                                  boolean ageRestricted, List<CommentResponse> comments) {
+                                  boolean ageRestricted, String uploader, List<CommentResponse> comments) {
 
     /**
      * The video seen by an anonymous visitor or just uploaded: no comment is liked by the viewer.
@@ -37,5 +39,7 @@ public record VideoDetailResponse(Long id, String title, String description, Str
                         .filter(comment -> comment.getParent() == null)
                         .map(comment -> CommentResponse.from(comment, likedCommentIds))
                         .toList());
+                video.getUploader() == null ? null : video.getUploader().getUsername(),
+                video.getComments().stream().map(CommentResponse::from).toList());
     }
 }

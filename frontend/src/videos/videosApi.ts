@@ -63,6 +63,8 @@ export type VideoDetail = {
   tags: string[];
   category: VideoCategory | null;
   ageRestricted: boolean;
+  // Username of the user who uploaded it, the only one who can edit it (US-07); null for imported videos
+  uploader: string | null;
   comments: VideoComment[];
 };
 
@@ -147,6 +149,19 @@ export async function postReply(videoId: number, commentId: number, text: string
 export async function setCommentLike(videoId: number, commentId: number, liked: boolean): Promise<CommentLike> {
   const url = `${getEnv().API_BASE_URL}/videos/${videoId}/comments/${commentId}/like`;
   const response = liked ? await axios.put<CommentLike>(url) : await axios.delete<CommentLike>(url);
+  return response.data;
+}
+
+/**
+ * Metadata that the owner of a video can change (US-07). Every field is replaced.
+ */
+export type VideoChanges = Pick<UploadMetadata, 'title' | 'description' | 'tags' | 'category' | 'ageRestricted'>;
+
+/**
+ * US-07: saves the new metadata of a video of the logged-in user. The backend answers 403 for someone else's video.
+ */
+export async function updateVideo(id: number, changes: VideoChanges): Promise<VideoDetail> {
+  const response = await axios.put<VideoDetail>(`${getEnv().API_BASE_URL}/videos/${id}`, changes);  
   return response.data;
 }
 

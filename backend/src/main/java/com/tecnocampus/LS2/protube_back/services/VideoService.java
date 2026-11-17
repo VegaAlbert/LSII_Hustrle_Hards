@@ -1,6 +1,7 @@
 package com.tecnocampus.LS2.protube_back.services;
 
 import com.tecnocampus.LS2.protube_back.controller.dto.PageResponse;
+import com.tecnocampus.LS2.protube_back.controller.dto.UpdateVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoDetailResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
 import com.tecnocampus.LS2.protube_back.domain.Video;
@@ -46,6 +47,29 @@ public class VideoService {
         Video video = videoRepository.findById(id).orElseThrow(() -> new VideoNotFoundException(id));
         Set<Long> likedCommentIds = viewer == null ? Set.of() : commentLikeRepository.findLikedCommentIds(id, viewer);
         return VideoDetailResponse.from(video, likedCommentIds);
+    }
+
+    /**
+     * US-07: replaces the title, description, tags, category and age restriction of a video. Only the user who
+     * uploaded it can do it; imported videos have no owner, so nobody can edit them.
+     *
+     * @throws VideoNotFoundException     if the video does not exist
+     * @throws VideoAccessDeniedException if {@code username} is not the owner
+     */
+    @Transactional
+    public VideoDetailResponse updateVideo(Long id, String username, UpdateVideoRequest request) {
+        Video video = videoRepository.findById(id).orElseThrow(() -> new VideoNotFoundException(id));
+        if (video.getUploader() == null || !video.getUploader().getUsername().equals(username)) {
+            throw new VideoAccessDeniedException(id);
+        }
+
+        video.setTitle(request.title().trim());
+        video.setDescription(request.description() == null || request.description().isBlank()
+                ? null : request.description().strip());
+        video.setTags(VideoTags.normalize(request.tags()));
+        video.setCategory(request.category());
+        video.setAgeRestricted(request.ageRestricted());
+        return VideoDetailResponse.from(video);
     }
 
     /**

@@ -7,6 +7,7 @@ import {
   postReply,
   setCommentLike,
   toMediaUrl,
+  updateVideo,
   uploadVideo,
   type UploadMetadata,
 } from '../videosApi';
@@ -74,6 +75,15 @@ describe('videosApi', () => {
     config.onUploadProgress({ loaded: 25 });
     expect(onProgress).toHaveBeenCalledTimes(1);
     expect(onProgress).toHaveBeenCalledWith(0.25);
+  });
+
+  it('saves the new metadata of a video', async () => {
+    const updated = { id: 7, title: 'New' };
+    mockedAxios.put.mockResolvedValueOnce({ data: updated });
+    const changes = { title: 'New', description: '', tags: [], category: null, ageRestricted: false };
+
+    await expect(updateVideo(7, changes)).resolves.toEqual(updated);
+    expect(mockedAxios.put).toHaveBeenCalledWith('other/videos/7', changes);
   });
 
   it('detects not found errors', () => {

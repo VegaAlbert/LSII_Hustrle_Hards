@@ -4,6 +4,7 @@ import com.tecnocampus.LS2.protube_back.controller.dto.CommentLikeResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.CommentResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.CreateCommentRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.PageResponse;
+import com.tecnocampus.LS2.protube_back.controller.dto.UpdateVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.UploadVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoDetailResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
@@ -72,6 +73,17 @@ public class VideosController {
         // Null for anonymous visitors
         String viewer = authentication != null ? authentication.getName() : null;
         return ResponseEntity.ok(videoService.getVideo(id, viewer));
+    }
+
+    /**
+     * US-07: edits the metadata of a video owned by the logged-in user. Answers 200 with the updated video, 400 for
+     * invalid data, 401 without a valid token, 403 if the video belongs to someone else and 404 if it does not exist.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<VideoDetailResponse> updateVideo(@PathVariable Long id,
+                                                           @Valid @RequestBody UpdateVideoRequest request,
+                                                           Authentication authentication) {
+        return ResponseEntity.ok(videoService.updateVideo(id, authentication.getName(), request));
     }
 
     /**

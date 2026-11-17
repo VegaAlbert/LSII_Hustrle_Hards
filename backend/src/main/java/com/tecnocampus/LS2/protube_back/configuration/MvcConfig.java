@@ -51,11 +51,14 @@ public class MvcConfig implements WebMvcConfigurer {
                 .forEach(converter -> converter.setObjectMapper(objectMapper));
     }
 
+    /**
+     * In development the frontend (port 5173) calls the API on another origin. Spring only allows GET, HEAD and POST
+     * by default, so PUT (US-07) and DELETE are listed too; with Docker nginx serves both on the same origin.
+     */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
                 .allowedOriginPatterns("*")
-                // The default only allows GET, HEAD and POST; US-10 likes and unlikes comments with PUT and DELETE
                 .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE");
         registry.addMapping("/auth/**")
                 .allowedOriginPatterns("*");
