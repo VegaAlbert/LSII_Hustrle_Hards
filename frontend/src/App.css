@@ -564,6 +564,8 @@
 
 .video-actions {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 0.5rem;
 }
 
@@ -741,4 +743,24 @@
   .share-network-icon {
     transition: none;
   }
+}
+
+/* ===== Favourites (US-12) ===== */
+
+.favourite-btn.is-favourite {
+  color: var(--pt-primary);
+  border-color: var(--pt-primary);
+}
+
+.favourite-btn:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.favourites-empty {
+  padding: 2rem 1.5rem;
+  border: 1px dashed var(--pt-border);
+  border-radius: var(--pt-radius-lg);
+  color: var(--pt-text-secondary);
+  text-align: center;
 }

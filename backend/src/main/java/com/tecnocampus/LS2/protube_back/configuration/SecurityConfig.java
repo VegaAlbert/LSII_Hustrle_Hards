@@ -35,6 +35,8 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/me").authenticated()
+                        // US-12: favourites always belong to the logged-in user
+                        .requestMatchers("/api/favourites/**").authenticated()
                         // US-06: only logged-in users can upload
                         .requestMatchers(HttpMethod.POST, "/api/videos").authenticated()
                         // US-07: only logged-in users can edit (the service checks they own the video)
