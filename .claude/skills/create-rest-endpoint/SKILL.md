@@ -14,5 +14,7 @@ description: Add a REST endpoint to the Spring Boot backend (DTO, service, contr
 6. Tests:
    * Service unit test with Mockito for the happy path and each error.
    * Endpoint test with `@SpringBootTest` + `@AutoConfigureMockMvc` checking status codes and JSON fields.
-7. Run `cd backend && mvn clean verify -Pcoverage` until it is green.
+   * If the endpoint is used by a page, add or update the golden path of that feature in `e2e/tests/`
+     (see `e2e/AGENTS.md`).
+7. Run `cd backend && mvn clean verify -Pcoverage` (and `cd e2e && npm test` if E2E tests changed) until it is green.
 8. Document the new route in the PR description (method, path, body, responses) and link the issue.
