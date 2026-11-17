@@ -7,13 +7,20 @@ type Props = {
   onLogin: () => void;
   onSettings: () => void;
   onUpload: () => void;
+  // US-11: "Analytics" item of the user menu
+  onAnalytics?: () => void;
   // Hidden while the login page is already open
   showLogin?: boolean;
 };
 
-const NavBar = ({ onHome, onLogin, onSettings, onUpload, showLogin = true }: Props) => {
+const NavBar = ({ onHome, onLogin, onSettings, onUpload, onAnalytics = () => {}, showLogin = true }: Props) => {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleAnalytics = () => {
+    setMenuOpen(false);
+    onAnalytics();
+  };
 
   const handleLogout = () => {
     setMenuOpen(false);
@@ -62,6 +69,11 @@ const NavBar = ({ onHome, onLogin, onSettings, onUpload, showLogin = true }: Pro
                 <li className="pt-menu-header">
                   <strong>{user.username}</strong>
                   <small>{user.email}</small>
+                </li>
+                <li>
+                  <button type="button" className="pt-menu-item" onClick={handleAnalytics}>
+                    Analytics
+                  </button>
                 </li>
                 <li>
                   <button type="button" className="pt-menu-item" onClick={handleLogout}>

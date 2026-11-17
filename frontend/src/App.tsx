@@ -4,6 +4,7 @@ import { AuthProvider } from './auth/AuthProvider';
 import Layout from './components/Layout';
 import LoginPage from './components/LoginPage';
 import SettingsPage from './components/SettingsPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import HomePage from './pages/HomePage';
 import EditVideoPage from './pages/EditVideoPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -27,6 +28,7 @@ export const AppRoutes = () => (
       <Route path="login" element={<LoginRoute />} />
       <Route path="settings" element={<SettingsPage />} />
       <Route path="upload" element={<UploadPage />} />
+      <Route path="analytics" element={<AnalyticsPage />} />
       <Route path="videos/:id" element={<VideoDetailPage />} />
       <Route path="videos/:id/edit" element={<EditVideoPage />} />
       <Route path="*" element={<NotFoundPage />} />

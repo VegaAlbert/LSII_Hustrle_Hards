@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties, type ReactElement } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactElement } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/authContext';
 import Avatar from '../components/Avatar';
@@ -12,7 +12,7 @@ import { extractHashtags, hashtagSearchUrl } from '../utils/hashtags';
 import { formatRelativeTime } from '../utils/relativeTime';
 import { categoryLabel } from '../videos/categories';
 import { useVideoDetail } from '../videos/useVideoDetail';
-import { toMediaUrl, type VideoDetail as Video } from '../videos/videosApi';
+import { recordView, toMediaUrl, type VideoDetail as Video } from '../videos/videosApi';
 import NotFoundPage from './NotFoundPage';
 
 const dateFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -32,6 +32,7 @@ function startTime(value: string | null): number {
  * US-05: plays a video and shows its title, author, date, description and comments. The route is /videos/:id.
  * US-06: also its hashtags, tags and category, a share dialog and, for age-restricted videos, a confirmation gate.
  * US-09: logged-in users can comment; the new comment is shown first.
+ * US-11: opening the page counts a view for the analytics of the owner.
  */
 const VideoDetailPage = () => {
   const { id } = useParams();
@@ -53,6 +54,15 @@ const VideoDetail = ({ id }: { id: number }) => {
   // Second the player was at when "Share" was clicked; null while the dialog is closed
   const [sharingAt, setSharingAt] = useState<number | null>(null);
   const start = startTime(searchParams.get('t'));
+  // US-11: the view is counted once per visit, even when StrictMode runs the effect twice in development
+  const viewRecorded = useRef(false);
+
+  useEffect(() => {
+    if (viewRecorded.current) return;
+    viewRecorded.current = true;
+    // Analytics must never break the page: a failed count is ignored
+    recordView(id).catch(() => {});
+  }, [id]);
 
   if (status === 'not-found') {
     return <NotFoundPage title="Video not found" />;

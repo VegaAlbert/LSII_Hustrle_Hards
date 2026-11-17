@@ -3,14 +3,16 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import VideoDetailPage from '../VideoDetailPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
-import { fetchVideo, isNotFound, postComment, type VideoDetail } from '../../videos/videosApi';
+import { fetchVideo, isNotFound, postComment, recordView, type VideoDetail } from '../../videos/videosApi';
 
 jest.mock('../../videos/videosApi', () => ({
   ...jest.requireActual('../../videos/videosApi'),
   fetchVideo: jest.fn(),
   isNotFound: jest.fn(),
   postComment: jest.fn(),
+  recordView: jest.fn(),
 }));
+const mockedRecordView = recordView as jest.MockedFunction<typeof recordView>;
 const mockedPostComment = postComment as jest.MockedFunction<typeof postComment>;
 const mockedFetchVideo = fetchVideo as jest.MockedFunction<typeof fetchVideo>;
 const mockedIsNotFound = isNotFound as jest.MockedFunction<typeof isNotFound>;
@@ -54,6 +56,28 @@ describe('VideoDetailPage', () => {
     mockedFetchVideo.mockReset();
     mockedIsNotFound.mockReset();
     mockedPostComment.mockReset();
+    mockedRecordView.mockReset();
+    mockedRecordView.mockResolvedValue(undefined);
+  });
+
+  it('counts a view of the video for its analytics', async () => {
+    mockedFetchVideo.mockResolvedValueOnce(video);
+
+    renderAt('/videos/5');
+
+    expect(await screen.findByRole('heading', { name: 'Uptown Funk' })).toBeInTheDocument();
+    expect(mockedRecordView).toHaveBeenCalledTimes(1);
+    expect(mockedRecordView).toHaveBeenCalledWith(5);
+  });
+
+  it('still shows the video when the view cannot be counted', async () => {
+    mockedRecordView.mockRejectedValueOnce(new Error('Network Error'));
+    mockedFetchVideo.mockResolvedValueOnce(video);
+
+    renderAt('/videos/5');
+
+    expect(await screen.findByRole('heading', { name: 'Uptown Funk' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('plays the video and shows its information and comments', async () => {

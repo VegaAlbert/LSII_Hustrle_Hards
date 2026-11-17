@@ -120,6 +120,14 @@ export async function postComment(videoId: number, text: string): Promise<VideoC
 }
 
 /**
+ * US-11: counts a view of a video for the analytics of its owner. Sent with the token when logged in (authenticated
+ * view) and without it otherwise (anonymous view).
+ */
+export async function recordView(videoId: number): Promise<void> {
+  await axios.post(`${getEnv().API_BASE_URL}/videos/${videoId}/views`);
+}
+
+/**
  * Metadata that the owner of a video can change (US-07). Every field is replaced.
  */
 export type VideoChanges = Pick<UploadMetadata, 'title' | 'description' | 'tags' | 'category' | 'ageRestricted'>;

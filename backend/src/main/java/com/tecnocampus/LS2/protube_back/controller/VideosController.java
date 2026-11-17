@@ -7,6 +7,7 @@ import com.tecnocampus.LS2.protube_back.controller.dto.UpdateVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.UploadVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoDetailResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
+import com.tecnocampus.LS2.protube_back.services.AnalyticsService;
 import com.tecnocampus.LS2.protube_back.services.CommentService;
 import com.tecnocampus.LS2.protube_back.services.VideoService;
 import com.tecnocampus.LS2.protube_back.services.VideoUploadService;
@@ -38,12 +39,14 @@ public class VideosController {
     private final VideoService videoService;
     private final VideoUploadService videoUploadService;
     private final CommentService commentService;
+    private final AnalyticsService analyticsService;
 
     public VideosController(VideoService videoService, VideoUploadService videoUploadService,
-                            CommentService commentService) {
+                            CommentService commentService, AnalyticsService analyticsService) {
         this.videoService = videoService;
         this.videoUploadService = videoUploadService;
         this.commentService = commentService;
+        this.analyticsService = analyticsService;
     }
 
     /**
@@ -106,5 +109,16 @@ public class VideosController {
         CommentResponse created = commentService.addComment(id, authentication.getName(), request.text());
         // No Location header: comments have no route of their own, they are read with GET /api/videos/{id}
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    /**
+     * US-11: counts a view of a video, sent by the detail page when it is opened. Public: a visitor without a token
+     * counts as an anonymous view, a logged-in one as an authenticated view. Answers 204, or 404 if the video does not
+     * exist. GET /api/videos/{id} does not count views because the edit page also reads the video with it.
+     */
+    @PostMapping("/{id}/views")
+    public ResponseEntity<Void> recordView(@PathVariable Long id, Authentication authentication) {
+        analyticsService.recordView(id, authentication == null ? null : authentication.getName());
+        return ResponseEntity.noContent().build();
     }
 }
