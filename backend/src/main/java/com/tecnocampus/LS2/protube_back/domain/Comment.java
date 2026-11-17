@@ -8,13 +8,19 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import org.hibernate.Length;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * A comment of a video. US-05 only shows the comments imported from the video store; US-09 adds new ones.
+ * A comment of a video. US-05 only shows the comments imported from the video store; US-09 adds new ones and US-10
+ * adds replies (comments with a {@code parent}) and likes.
  */
 @Entity
 @Table(name = "comments")
@@ -38,6 +44,16 @@ public class Comment {
     private int likeCount;
 
     private Instant publishedAt;
+
+    // US-10: the top-level comment this one replies to; null for a top-level comment
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Comment parent;
+
+    // US-10: oldest first, so a conversation reads from top to bottom. Saved with the video, as every comment
+    @OneToMany(mappedBy = "parent")
+    @OrderBy("publishedAt ASC, id ASC")
+    private List<Comment> replies = new ArrayList<>();
 
     protected Comment() {
         // Required by JPA
@@ -77,5 +93,21 @@ public class Comment {
 
     public Instant getPublishedAt() {
         return publishedAt;
+    }
+
+    public Comment getParent() {
+        return parent;
+    }
+
+    public List<Comment> getReplies() {
+        return Collections.unmodifiableList(replies);
+    }
+
+    /**
+     * US-10: links a reply to this comment. The caller also adds it to the video with {@link Video#addComment}.
+     */
+    public void addReply(Comment reply) {
+        reply.parent = this;
+        replies.add(reply);
     }
 }

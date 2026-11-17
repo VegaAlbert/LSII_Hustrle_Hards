@@ -1,0 +1,6 @@
+node_modules/
+# Fresh video store created on every run by scripts/start-backend.mjs
+.store/
+test-results/
+playwright-report/
+blob-report/

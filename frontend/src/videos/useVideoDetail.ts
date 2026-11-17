@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { fetchVideo, isNotFound, type VideoComment, type VideoDetail } from './videosApi';
+import { fetchVideo, isNotFound, type CommentLike, type VideoComment, type VideoDetail } from './videosApi';
 
 type Status = 'loading' | 'success' | 'not-found' | 'error';
 
 /**
  * Loads one video with its comments. A missing video ('not-found') is told apart from other errors, which can be
  * retried with retry(). addComment() shows a comment just published (US-09) first, without loading the video again.
+ * US-10: addReply() shows a reply at the end of its comment and updateLike() shows a new like state, also without
+ * loading the video again.
  */
 export function useVideoDetail(id: number) {
   const [video, setVideo] = useState<VideoDetail | null>(null);
@@ -37,5 +39,28 @@ export function useVideoDetail(id: number) {
     setVideo((current) => (current ? { ...current, comments: [comment, ...current.comments] } : current));
   }, []);
 
-  return { video, status, retry, addComment };
+  // Replies are oldest first, as the backend returns them
+  const addReply = useCallback((parentId: number, reply: VideoComment) => {
+    setVideo((current) =>
+      current
+        ? {
+            ...current,
+            comments: current.comments.map((comment) =>
+              comment.id === parentId ? { ...comment, replies: [...comment.replies, reply] } : comment
+            ),
+          }
+        : current
+    );
+  }, []);
+
+  // The comment can be a top-level comment or a reply
+  const updateLike = useCallback((commentId: number, like: CommentLike) => {
+    const apply = (comment: VideoComment): VideoComment =>
+      comment.id === commentId
+        ? { ...comment, likeCount: like.likeCount, likedByMe: like.liked }
+        : { ...comment, replies: comment.replies.map(apply) };
+    setVideo((current) => (current ? { ...current, comments: current.comments.map(apply) } : current));
+  }, []);
+
+  return { video, status, retry, addComment, addReply, updateLike };
 }
