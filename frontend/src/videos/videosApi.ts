@@ -161,7 +161,7 @@ export type VideoChanges = Pick<UploadMetadata, 'title' | 'description' | 'tags'
  * US-07: saves the new metadata of a video of the logged-in user. The backend answers 403 for someone else's video.
  */
 export async function updateVideo(id: number, changes: VideoChanges): Promise<VideoDetail> {
-  const response = await axios.put<VideoDetail>(`${getEnv().API_BASE_URL}/videos/${id}`, changes);  
+  const response = await axios.put<VideoDetail>(`${getEnv().API_BASE_URL}/videos/${id}`, changes);
   return response.data;
 }
 
