@@ -4,13 +4,15 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AxiosError, type AxiosResponse } from 'axios';
 import CommentForm from '../CommentForm';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
-import { postComment, type VideoComment } from '../../videos/videosApi';
+import { postComment, postReply, type VideoComment } from '../../videos/videosApi';
 
 jest.mock('../../videos/videosApi', () => ({
   ...jest.requireActual('../../videos/videosApi'),
   postComment: jest.fn(),
+  postReply: jest.fn(),
 }));
 const mockedPostComment = postComment as jest.MockedFunction<typeof postComment>;
+const mockedPostReply = postReply as jest.MockedFunction<typeof postReply>;
 
 const alice = { id: 1, username: 'alice', email: 'alice@example.com' };
 
@@ -20,6 +22,8 @@ const saved: VideoComment = {
   text: 'Great song!',
   likeCount: 0,
   publishedAt: '2026-11-12T10:00:00Z',
+  likedByMe: false,
+  replies: [],
 };
 
 // Shows where the login link sends the user back to
@@ -53,6 +57,7 @@ const renderForm = (user: AuthContextValue['user'], onCommentAdded = jest.fn()) 
 describe('CommentForm', () => {
   beforeEach(() => {
     mockedPostComment.mockReset();
+    mockedPostReply.mockReset();
   });
 
   it('asks anonymous visitors to log in and brings them back to the video', async () => {
@@ -126,5 +131,54 @@ describe('CommentForm', () => {
 
     expect(screen.getByLabelText('Add a comment')).toHaveValue('');
     expect(mockedPostComment).not.toHaveBeenCalled();
+  });
+
+  describe('as a reply form (US-10)', () => {
+    const renderReplyForm = (onCancel = jest.fn()) => {
+      const onCommentAdded = jest.fn();
+      render(
+        <AuthContext.Provider
+          value={{ user: alice, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+        >
+          <MemoryRouter>
+            <CommentForm videoId={5} parentId={7} onCommentAdded={onCommentAdded} onCancel={onCancel} />
+          </MemoryRouter>
+        </AuthContext.Provider>
+      );
+      return { onCommentAdded, onCancel };
+    };
+
+    it('posts the trimmed reply to the comment', async () => {
+      const user = userEvent.setup();
+      mockedPostReply.mockResolvedValueOnce(saved);
+      const { onCommentAdded } = renderReplyForm();
+
+      await user.type(screen.getByLabelText('Add a reply'), '  Agree  ');
+      await user.click(screen.getByRole('button', { name: 'Reply' }));
+
+      expect(mockedPostReply).toHaveBeenCalledWith(5, 7, 'Agree');
+      expect(mockedPostComment).not.toHaveBeenCalled();
+      expect(onCommentAdded).toHaveBeenCalledWith(saved);
+    });
+
+    it('can be closed with Cancel even when empty', async () => {
+      const user = userEvent.setup();
+      const { onCancel } = renderReplyForm();
+
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      expect(onCancel).toHaveBeenCalled();
+    });
+
+    it('asks to log in again to reply when the session has expired', async () => {
+      const user = userEvent.setup();
+      mockedPostReply.mockRejectedValueOnce(httpError(401, {}));
+      renderReplyForm();
+
+      await user.type(screen.getByLabelText('Add a reply'), 'Hello');
+      await user.click(screen.getByRole('button', { name: 'Reply' }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Log in again to reply.');
+    });
   });
 });
