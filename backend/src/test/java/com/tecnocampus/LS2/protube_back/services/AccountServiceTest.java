@@ -6,6 +6,7 @@ import com.tecnocampus.LS2.protube_back.controller.dto.ChangePasswordRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.ChangeUsernameRequest;
 import com.tecnocampus.LS2.protube_back.domain.User;
 import com.tecnocampus.LS2.protube_back.repository.CommentRepository;
+import com.tecnocampus.LS2.protube_back.repository.SubscriptionRepository;
 import com.tecnocampus.LS2.protube_back.repository.UserRepository;
 import com.tecnocampus.LS2.protube_back.repository.VideoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +42,9 @@ class AccountServiceTest {
     CommentRepository commentRepository;
 
     @Mock
+    SubscriptionRepository subscriptionRepository;
+
+    @Mock
     PasswordEncoder passwordEncoder;
 
     @Mock
@@ -65,6 +69,7 @@ class AccountServiceTest {
         assertEquals("alicia", alice.getUsername());
         verify(videoRepository).renameAuthorOfUploads(alice, "alicia");
         verify(commentRepository).renameAuthor(alice, "alicia");
+        verify(subscriptionRepository).renameChannel("alice", "alicia");
         assertEquals("token-alicia", response.token());
         assertEquals("alicia", response.user().username());
     }
@@ -79,6 +84,7 @@ class AccountServiceTest {
         assertEquals("username", e.getField());
         assertEquals("alice", alice.getUsername());
         verify(videoRepository, never()).renameAuthorOfUploads(any(), any());
+        verify(subscriptionRepository, never()).renameChannel(any(), any());
     }
 
     @Test

@@ -311,8 +311,8 @@ class AccountControllerTest {
                 .andExpect(status().isOk());
         perform(bob, put("/api/favourites/" + alicesVideo.getId())).andExpect(status().isOk());
         perform(bob, post("/api/videos/" + alicesVideo.getId() + "/views")).andExpect(status().isNoContent());
-        perform(bob, put("/api/channels/alice/subscription")).andExpect(status().isOk());
-        perform(alice, put("/api/channels/bob/subscription")).andExpect(status().isOk());
+        perform(bob, put("/api/subscriptions/channel").param("name", "alice")).andExpect(status().isOk());
+        perform(alice, put("/api/subscriptions/channel").param("name", "bob")).andExpect(status().isOk());
 
         deleteAccount(alice, "{\"password\": \"password123\"}").andExpect(status().isNoContent());
 
@@ -377,5 +377,20 @@ class AccountControllerTest {
         entityManager.flush();
         entityManager.clear();
         assertEquals("alicia", commentRepository.findAll().get(0).getAuthor());
+    }
+
+    @Test
+    void renamedUserKeepsTheSubscribersOfItsChannel() throws Exception {
+        String alice = register("alice", "alice@mail.com");
+        String bob = register("bob", "bob@mail.com");
+        perform(bob, put("/api/subscriptions/channel").param("name", "alice")).andExpect(status().isOk());
+
+        change("username", alice, "{\"username\": \"alicia\"}").andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/subscriptions/channel").param("name", "alicia")
+                        .header("Authorization", "Bearer " + bob))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.subscribed").value(true))
+                .andExpect(jsonPath("$.subscribers").value(1));
     }
 }

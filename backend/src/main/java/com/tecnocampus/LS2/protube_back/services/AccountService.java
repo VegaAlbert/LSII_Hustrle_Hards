@@ -7,6 +7,7 @@ import com.tecnocampus.LS2.protube_back.controller.dto.ChangeUsernameRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.UserResponse;
 import com.tecnocampus.LS2.protube_back.domain.User;
 import com.tecnocampus.LS2.protube_back.repository.CommentRepository;
+import com.tecnocampus.LS2.protube_back.repository.SubscriptionRepository;
 import com.tecnocampus.LS2.protube_back.repository.UserRepository;
 import com.tecnocampus.LS2.protube_back.repository.VideoRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,14 +27,17 @@ public class AccountService {
     private final UserRepository userRepository;
     private final VideoRepository videoRepository;
     private final CommentRepository commentRepository;
+    private final SubscriptionRepository subscriptionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     public AccountService(UserRepository userRepository, VideoRepository videoRepository,
-                          CommentRepository commentRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+                          CommentRepository commentRepository, SubscriptionRepository subscriptionRepository,
+                          PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.videoRepository = videoRepository;
         this.commentRepository = commentRepository;
+        this.subscriptionRepository = subscriptionRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
@@ -47,10 +51,12 @@ public class AccountService {
             if (userRepository.existsByUsername(username)) {
                 throw new UserAlreadyExistsException("username", "error.username.taken", "Username is already taken");
             }
+            String oldUsername = user.getUsername();
             user.changeUsername(username);
-            // Uploaded videos and comments show the username as author
+            // Uploaded videos and comments show the username as author, and the channel of the user is its username
             videoRepository.renameAuthorOfUploads(user, username);
             commentRepository.renameAuthor(user, username);
+            subscriptionRepository.renameChannel(oldUsername, username);
         }
         return session(user);
     }

@@ -35,8 +35,13 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
             """)
     Page<Video> findVideosOfSubscribedChannels(@Param("subscriberId") Long subscriberId, Pageable pageable);
 
-    // Deleting an account: the channels it follows and the users following it
+    // Deleting an account: the channels it follows and the users following its channel, i.e. its username
     @Modifying(flushAutomatically = true)
-    @Query("DELETE FROM Subscription s WHERE s.subscriber = :user OR s.channel = :user")
-    int deleteAllOfUser(@Param("user") User user);
+    @Query("DELETE FROM Subscription s WHERE s.subscriber = :user OR s.channel = :channel")
+    int deleteAllOfUser(@Param("user") User user, @Param("channel") String channel);
+
+    // A rename: the subscribers of the channel keep following it under the new username
+    @Modifying(flushAutomatically = true)
+    @Query("UPDATE Subscription s SET s.channel = :newChannel WHERE s.channel = :oldChannel")
+    int renameChannel(@Param("oldChannel") String oldChannel, @Param("newChannel") String newChannel);
 }
