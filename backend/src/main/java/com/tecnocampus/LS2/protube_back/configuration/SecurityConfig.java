@@ -37,6 +37,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/me").authenticated()
                         // US-12: favourites always belong to the logged-in user
                         .requestMatchers("/api/favourites/**").authenticated()
+                        // US-13: anyone sees the subscribers of a channel, only logged-in users subscribe
+                        .requestMatchers(HttpMethod.PUT, "/api/channels/*/subscription").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/channels/*/subscription").authenticated()
+                        .requestMatchers("/api/subscriptions/**").authenticated()
                         // US-06: only logged-in users can upload
                         .requestMatchers(HttpMethod.POST, "/api/videos").authenticated()
                         // US-07: only logged-in users can edit (the service checks they own the video)

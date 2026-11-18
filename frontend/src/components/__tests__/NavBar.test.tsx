@@ -129,4 +129,32 @@ describe('NavBar', () => {
     // The menu closes after choosing an option
     expect(screen.queryByRole('button', { name: 'Favourites' })).not.toBeInTheDocument();
   });
+
+  it('opens the subscriptions from the user menu', () => {
+    const auth: AuthContextValue = {
+      user: { id: 1, username: 'alice', email: 'alice@mail.com' },
+      login: jest.fn(),
+      register: jest.fn(),
+      loginWithGoogle: jest.fn(),
+      logout: jest.fn(),
+    };
+    const onSubscriptions = jest.fn();
+    render(
+      <AuthContext.Provider value={auth}>
+        <NavBar
+          onHome={jest.fn()}
+          onLogin={jest.fn()}
+          onSettings={jest.fn()}
+          onUpload={jest.fn()}
+          onSubscriptions={onSubscriptions}
+        />
+      </AuthContext.Provider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'User menu for alice' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Subscriptions' }));
+
+    expect(onSubscriptions).toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'Subscriptions' })).not.toBeInTheDocument();
+  });
 });
