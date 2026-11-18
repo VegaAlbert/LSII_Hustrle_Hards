@@ -7,6 +7,8 @@ type Props = {
   onLogin: () => void;
   onSettings: () => void;
   onUpload: () => void;
+  // US-11: "Analytics" item of the user menu
+  onAnalytics?: () => void;
   // US-12: opens the favourite videos of the user
   onFavourites?: () => void;
   // US-13: opens the videos of the channels the user is subscribed to
@@ -15,7 +17,16 @@ type Props = {
   showLogin?: boolean;
 };
 
-const NavBar = ({ onHome, onLogin, onSettings, onUpload, onFavourites, onSubscriptions, showLogin = true }: Props) => {
+const NavBar = ({
+  onHome,
+  onLogin,
+  onSettings,
+  onUpload,
+  onFavourites,
+  onSubscriptions,
+  onAnalytics = () => {},
+  showLogin = true,
+}: Props) => {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -27,6 +38,11 @@ const NavBar = ({ onHome, onLogin, onSettings, onUpload, onFavourites, onSubscri
   const handleSubscriptions = () => {
     setMenuOpen(false);
     onSubscriptions?.();
+  };
+
+  const handleAnalytics = () => {
+    setMenuOpen(false);
+    onAnalytics();
   };
 
   const handleLogout = () => {
@@ -91,6 +107,11 @@ const NavBar = ({ onHome, onLogin, onSettings, onUpload, onFavourites, onSubscri
                     </button>
                   </li>
                 )}
+                <li>
+                  <button type="button" className="pt-menu-item" onClick={handleAnalytics}>
+                    Analytics
+                  </button>
+                </li>
                 <li>
                   <button type="button" className="pt-menu-item" onClick={handleLogout}>
                     Logout

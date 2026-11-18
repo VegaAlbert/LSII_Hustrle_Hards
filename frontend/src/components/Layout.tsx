@@ -15,6 +15,7 @@ const Layout = () => {
         onLogin={() => navigate('/login')}
         onSettings={() => navigate('/settings')}
         onUpload={() => navigate('/upload')}
+        onAnalytics={() => navigate('/analytics')}
         onFavourites={() => navigate('/favourites')}
         onSubscriptions={() => navigate('/subscriptions')}
         showLogin={pathname !== '/login'}

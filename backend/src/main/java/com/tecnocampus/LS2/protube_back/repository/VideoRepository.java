@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface VideoRepository extends JpaRepository<Video, Long> {
 
     boolean existsByStoreId(String storeId);
@@ -44,4 +46,21 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             """)
     Page<Video> search(@Param("exact") String exact, @Param("prefix") String prefix,
                        @Param("contains") String contains, Pageable pageable);
+
+    /**
+     * US-11: counters of every video uploaded by {@code username}, newest first, in a single query (the correlated
+     * subqueries avoid loading the comments and views of each video one by one).
+     */
+    @Query("""
+            SELECT new com.tecnocampus.LS2.protube_back.repository.VideoStatistics(
+                v.id, v.title, v.thumbnailFile, v.publishedAt,
+                (SELECT count(vw) FROM VideoView vw WHERE vw.video = v),
+                (SELECT count(vw) FROM VideoView vw WHERE vw.video = v AND vw.viewer IS NOT NULL),
+                (SELECT count(c) FROM Comment c WHERE c.video = v),
+                (SELECT coalesce(sum(c.likeCount), 0L) FROM Comment c WHERE c.video = v))
+            FROM Video v
+            WHERE v.uploader.username = :username
+            ORDER BY v.publishedAt DESC, v.id DESC
+            """)
+    List<VideoStatistics> findStatisticsByUploader(@Param("username") String username);
 }
