@@ -25,7 +25,14 @@ const comment = (
 const renderList = (comments: VideoComment[], form?: ReactNode) =>
   render(
     <AuthContext.Provider
-      value={{ user: null, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+      value={{
+        user: null,
+        login: jest.fn(),
+        register: jest.fn(),
+        loginWithGoogle: jest.fn(),
+        logout: jest.fn(),
+        updateSession: jest.fn(),
+      }}
     >
       <MemoryRouter>
         <CommentList videoId={5} comments={comments} form={form} onReplyAdded={jest.fn()} onLikeChanged={jest.fn()} />

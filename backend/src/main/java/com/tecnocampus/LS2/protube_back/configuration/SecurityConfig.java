@@ -35,6 +35,8 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/me").authenticated()
+                        // Account settings always belong to the logged-in user
+                        .requestMatchers("/api/account", "/api/account/**").authenticated()
                         // US-12: favourites always belong to the logged-in user
                         .requestMatchers("/api/favourites/**").authenticated()
                         // US-13: anyone sees the subscribers of a channel, only logged-in users subscribe

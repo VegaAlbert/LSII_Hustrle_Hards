@@ -14,4 +14,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
 
     boolean existsByEmail(String email);
+
+    // Emails are saved in lower case; ignoring the case also catches rows saved before that rule
+    Optional<User> findByEmailIgnoreCase(String email);
+
+    boolean existsByEmailIgnoreCase(String email);
+
+    Optional<User> findByGoogleId(String googleId);
 }

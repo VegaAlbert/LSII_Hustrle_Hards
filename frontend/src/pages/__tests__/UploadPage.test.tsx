@@ -31,7 +31,14 @@ const LoginPage = () => <p>Login page from {(useLocation().state as { from: stri
 const renderPage = (user: AuthContextValue['user'] = alice) =>
   render(
     <AuthContext.Provider
-      value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+      value={{
+        user,
+        login: jest.fn(),
+        register: jest.fn(),
+        loginWithGoogle: jest.fn(),
+        logout: jest.fn(),
+        updateSession: jest.fn(),
+      }}
     >
       <MemoryRouter initialEntries={['/upload']}>
         <Routes>

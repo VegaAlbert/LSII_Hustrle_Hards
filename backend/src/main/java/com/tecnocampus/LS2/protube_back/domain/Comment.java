@@ -37,6 +37,12 @@ public class Comment {
     @Column(nullable = false)
     private String author;
 
+    // Account that wrote the comment in ProTube, to rename or delete its comments with the account. Null for the
+    // comments imported from the store, whose author is only a name
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Column(nullable = false, length = Length.LONG32)
     private String text;
 
@@ -66,6 +72,14 @@ public class Comment {
         this.publishedAt = publishedAt;
     }
 
+    /**
+     * A comment written in ProTube by {@code user}, dated {@code publishedAt} and without likes.
+     */
+    public Comment(User user, String text, Instant publishedAt) {
+        this(user.getUsername(), text, 0, publishedAt);
+        this.user = user;
+    }
+
     // Set by Video.addComment so both sides of the relation stay consistent
     void setVideo(Video video) {
         this.video = video;
@@ -81,6 +95,10 @@ public class Comment {
 
     public String getAuthor() {
         return author;
+    }
+
+    public User getUser() {
+        return user;
     }
 
     public String getText() {

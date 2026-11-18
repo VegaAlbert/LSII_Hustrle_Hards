@@ -164,7 +164,7 @@ class AuthControllerTest {
 
     @Test
     void googleLoginCreatesAccountAndReturnsUsableToken() throws Exception {
-        when(googleTokenVerifier.verify("google-token")).thenReturn(new GoogleAccount("carol@gmail.com", "Carol"));
+        when(googleTokenVerifier.verify("google-token")).thenReturn(new GoogleAccount("g-carol", "carol@gmail.com", "Carol"));
 
         String response = mockMvc.perform(post("/api/auth/google")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -172,6 +172,8 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user.username").value("carol"))
                 .andExpect(jsonPath("$.user.email").value("carol@gmail.com"))
+                .andExpect(jsonPath("$.user.hasPassword").value(false))
+                .andExpect(jsonPath("$.user.googleLinked").value(true))
                 .andReturn().getResponse().getContentAsString();
         String token = objectMapper.readTree(response).get("token").asText();
 
@@ -183,13 +185,36 @@ class AuthControllerTest {
     @Test
     void googleLoginReusesAccountWithSameEmail() throws Exception {
         register("alice", "alice@mail.com");
-        when(googleTokenVerifier.verify("google-token")).thenReturn(new GoogleAccount("alice@mail.com", "Alice"));
+        when(googleTokenVerifier.verify("google-token")).thenReturn(new GoogleAccount("g-alice", "alice@mail.com", "Alice"));
 
         mockMvc.perform(post("/api/auth/google")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(googleBody("google-token")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.user.username").value("alice"));
+                .andExpect(jsonPath("$.user.username").value("alice"))
+                .andExpect(jsonPath("$.user.hasPassword").value(true))
+                .andExpect(jsonPath("$.user.googleLinked").value(true));
+
+        // Still one account: registering the email again is rejected
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerBody("alice2", "alice@mail.com", "password123")))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void registerRejectsEmailOfAnAccountCreatedWithGoogle() throws Exception {
+        when(googleTokenVerifier.verify("google-token")).thenReturn(new GoogleAccount("g-carol", "carol@gmail.com", "Carol"));
+        mockMvc.perform(post("/api/auth/google")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(googleBody("google-token")))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerBody("other", "Carol@Gmail.com", "password123")))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.fieldErrors.email").value("Email is already registered"));
     }
 
     @Test

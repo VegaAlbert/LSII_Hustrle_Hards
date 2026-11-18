@@ -87,7 +87,14 @@ const renderAt = (path: string, user: AuthContextValue['user'] = null) =>
   render(
     <I18nProvider>
       <AuthContext.Provider
-        value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+        value={{
+          user,
+          login: jest.fn(),
+          register: jest.fn(),
+          loginWithGoogle: jest.fn(),
+          logout: jest.fn(),
+          updateSession: jest.fn(),
+        }}
       >
         <MemoryRouter initialEntries={[path]}>
           <Routes>
@@ -240,6 +247,30 @@ describe('VideoDetailPage', () => {
     const player = (await screen.findByLabelText('Video player: Uptown Funk')) as HTMLVideoElement;
     fireEvent.loadedMetadata(player);
     expect(player.currentTime).toBe(42);
+  });
+
+  it('autoplays at normal speed by default', async () => {
+    localStorage.clear();
+    mockedFetchVideo.mockResolvedValueOnce(video);
+    renderAt('/videos/5');
+
+    const player = (await screen.findByLabelText('Video player: Uptown Funk')) as HTMLVideoElement;
+    fireEvent.loadedMetadata(player);
+    expect(player.autoplay).toBe(true);
+    expect(player.playbackRate).toBe(1);
+  });
+
+  it('follows the playback preferences saved in the settings', async () => {
+    localStorage.setItem('protube.preferences', JSON.stringify({ autoplay: false, playbackSpeed: 1.5 }));
+    mockedFetchVideo.mockResolvedValueOnce(video);
+    renderAt('/videos/5');
+
+    const player = (await screen.findByLabelText('Video player: Uptown Funk')) as HTMLVideoElement;
+    fireEvent.loadedMetadata(player);
+    expect(player.autoplay).toBe(false);
+    expect(player.playbackRate).toBe(1.5);
+    expect(player.defaultPlaybackRate).toBe(1.5);
+    localStorage.clear();
   });
 
   it('opens the share dialog with the link of the video', async () => {

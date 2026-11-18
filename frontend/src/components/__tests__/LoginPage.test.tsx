@@ -21,6 +21,7 @@ const renderLoginPage = (overrides: Partial<AuthContextValue> = {}, withI18n = f
     register: jest.fn().mockResolvedValue(undefined),
     loginWithGoogle: jest.fn().mockResolvedValue(undefined),
     logout: jest.fn(),
+    updateSession: jest.fn(),
     ...overrides,
   };
   const onSuccess = jest.fn();

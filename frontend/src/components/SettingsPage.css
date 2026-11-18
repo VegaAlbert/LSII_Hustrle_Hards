@@ -175,6 +175,45 @@
   pointer-events: none;
 }
 
+.settings-row-text small.settings-success {
+  color: var(--pt-success);
+}
+
+.settings-account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+.settings-account-form .form-label {
+  margin-bottom: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.settings-account-form .form-control {
+  border-color: var(--pt-border);
+  border-radius: var(--pt-radius-md);
+}
+
+.settings-danger-text {
+  font-size: 0.8rem;
+  color: var(--pt-danger);
+}
+
+.settings-account-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.settings-account-actions .btn-light {
+  border: 1px solid var(--pt-border);
+  border-radius: var(--pt-radius-pill);
+}
+
 .settings-actions {
   display: flex;
   justify-content: flex-end;

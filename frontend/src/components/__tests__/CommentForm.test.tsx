@@ -42,7 +42,14 @@ const httpError = (status: number, data: object) =>
 const renderForm = (user: AuthContextValue['user'], onCommentAdded = jest.fn()) => {
   render(
     <AuthContext.Provider
-      value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+      value={{
+        user,
+        login: jest.fn(),
+        register: jest.fn(),
+        loginWithGoogle: jest.fn(),
+        logout: jest.fn(),
+        updateSession: jest.fn(),
+      }}
     >
       <MemoryRouter initialEntries={['/videos/5?t=30']}>
         <Routes>
@@ -140,7 +147,14 @@ describe('CommentForm', () => {
       const onCommentAdded = jest.fn();
       render(
         <AuthContext.Provider
-          value={{ user: alice, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+          value={{
+            user: alice,
+            login: jest.fn(),
+            register: jest.fn(),
+            loginWithGoogle: jest.fn(),
+            logout: jest.fn(),
+            updateSession: jest.fn(),
+          }}
         >
           <MemoryRouter>
             <CommentForm videoId={5} parentId={7} onCommentAdded={onCommentAdded} onCancel={onCancel} />

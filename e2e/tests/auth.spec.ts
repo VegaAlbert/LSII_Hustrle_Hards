@@ -67,6 +67,23 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL(/\/login$/);
   });
 
+  test('registering an email that already has an account is rejected', async ({ page, request }) => {
+    const user = newUser();
+    const created = await request.post(`${BACKEND_URL}/api/auth/register`, { data: user });
+    expect(created.status()).toBe(201);
+
+    await page.goto('/login');
+    await page.getByRole('button', { name: 'Register', exact: true }).click();
+    await page.getByLabel('Username').fill(`${user.username}_2`);
+    // Same email with other capital letters: still the same account
+    await page.getByLabel('Email').fill(user.email.toUpperCase());
+    await page.getByLabel('Password', { exact: true }).fill(user.password);
+    await page.getByRole('button', { name: 'Register', exact: true }).click();
+
+    await expect(page.getByRole('alert')).toHaveText('Email is already registered');
+    await expect(page).toHaveURL(/\/login$/);
+  });
+
   test('an anonymous visitor who wants to upload is sent to the login page', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Create' }).click();

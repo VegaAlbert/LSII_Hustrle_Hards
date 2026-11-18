@@ -3,6 +3,7 @@ package com.tecnocampus.LS2.protube_back.controller;
 import com.tecnocampus.LS2.protube_back.controller.dto.ErrorResponse;
 import com.tecnocampus.LS2.protube_back.services.ChannelNotFoundException;
 import com.tecnocampus.LS2.protube_back.services.CommentNotFoundException;
+import com.tecnocampus.LS2.protube_back.services.InvalidAccountChangeException;
 import com.tecnocampus.LS2.protube_back.services.InvalidCredentialsException;
 import com.tecnocampus.LS2.protube_back.services.InvalidGoogleTokenException;
 import com.tecnocampus.LS2.protube_back.services.InvalidSubscriptionException;
@@ -136,6 +137,12 @@ public class ApiExceptionHandler {
         String message = text(e);
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(message, Map.of(e.getField(), message)));
+    }
+
+    @ExceptionHandler(InvalidAccountChangeException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidAccountChange(InvalidAccountChangeException e) {
+        String message = text(e);
+        return ResponseEntity.badRequest().body(new ErrorResponse(message, Map.of(e.getField(), message)));
     }
 
     @ExceptionHandler(RatingConflictException.class)
