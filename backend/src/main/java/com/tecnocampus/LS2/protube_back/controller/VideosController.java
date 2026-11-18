@@ -10,6 +10,7 @@ import com.tecnocampus.LS2.protube_back.controller.dto.UploadVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoDetailResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoRatingResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
+import com.tecnocampus.LS2.protube_back.services.AnalyticsService;
 import com.tecnocampus.LS2.protube_back.services.CommentService;
 import com.tecnocampus.LS2.protube_back.services.RatingService;
 import com.tecnocampus.LS2.protube_back.services.VideoService;
@@ -44,13 +45,16 @@ public class VideosController {
     private final VideoUploadService videoUploadService;
     private final CommentService commentService;
     private final RatingService ratingService;
+    private final AnalyticsService analyticsService;
 
     public VideosController(VideoService videoService, VideoUploadService videoUploadService,
-                            CommentService commentService, RatingService ratingService) {
+                            CommentService commentService, RatingService ratingService,
+                            AnalyticsService analyticsService) {
         this.videoService = videoService;
         this.videoUploadService = videoUploadService;
         this.commentService = commentService;
         this.ratingService = ratingService;
+        this.analyticsService = analyticsService;
     }
 
     /**
@@ -138,6 +142,17 @@ public class VideosController {
                                                          @Valid @RequestBody RateVideoRequest request,
                                                          Authentication authentication) {
         return ResponseEntity.ok(ratingService.rate(id, authentication.getName(), request.score().intValueExact()));
+    }
+
+    /**
+     * US-11: counts a view of a video, sent by the detail page when it is opened. Public: a visitor without a token
+     * counts as an anonymous view, a logged-in one as an authenticated view. Answers 204, or 404 if the video does not
+     * exist. GET /api/videos/{id} does not count views because the edit page also reads the video with it.
+     */
+    @PostMapping("/{id}/views")
+    public ResponseEntity<Void> recordView(@PathVariable Long id, Authentication authentication) {
+        analyticsService.recordView(id, authentication == null ? null : authentication.getName());
+        return ResponseEntity.noContent().build();
     }
 
     /**

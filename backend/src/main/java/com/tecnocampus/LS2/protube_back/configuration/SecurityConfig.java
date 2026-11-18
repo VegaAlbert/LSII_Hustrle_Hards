@@ -48,6 +48,9 @@ public class SecurityConfig {
                         // US-10: only logged-in users can reply to and like comments
                         .requestMatchers(HttpMethod.POST, "/api/videos/*/comments/*/replies").authenticated()
                         .requestMatchers("/api/videos/*/comments/*/like").authenticated()
+                        // US-11: anyone can count a view, but only logged-in users see their analytics
+                        .requestMatchers(HttpMethod.POST, "/api/videos/*/views").permitAll()
+                        .requestMatchers("/api/analytics", "/api/analytics/**").authenticated()
                         // Everything else stays public for now; protect new endpoints here as they are added
                         .anyRequest().permitAll())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
