@@ -12,6 +12,11 @@ jest.mock('../../analytics/analyticsApi', () => ({
 }));
 const mockedFetchMyAnalytics = fetchMyAnalytics as jest.MockedFunction<typeof fetchMyAnalytics>;
 
+// US-13: the subscribers card reads the count of the channel of the user
+jest.mock('../../subscriptions/subscriptionsApi', () => ({
+  fetchSubscriberCount: jest.fn().mockResolvedValue(7),
+}));
+
 const alice = { id: 1, username: 'alice', email: 'alice@example.com' };
 
 // 30 days of the chart: no views except 3 on the first day and 1 today
@@ -116,12 +121,15 @@ describe('AnalyticsPage', () => {
     renderPage();
 
     const totals = await screen.findByRole('list', { name: 'Totals' });
+    // The subscriber count is read on its own request
+    expect(await within(totals).findByText('7')).toBeInTheDocument();
     const cards = within(totals).getAllByRole('listitem');
     expect(cards.map((card) => card.textContent)).toEqual([
       'Videos2',
       'Total views1,234',
       'Comments5',
       'Comment likes12',
+      'Subscribers7',
     ]);
   });
 

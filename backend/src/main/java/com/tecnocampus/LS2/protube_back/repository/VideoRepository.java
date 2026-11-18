@@ -13,6 +13,9 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
     boolean existsByStoreId(String storeId);
 
+    // US-13: a channel exists when at least one video has it as author
+    boolean existsByAuthor(String author);
+
     /**
      * US-08: videos whose title, author or description contain the search text, most relevant first: exact title,
      * title starting with the text, title containing it, author containing it and finally only the description.
