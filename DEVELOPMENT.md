@@ -150,8 +150,9 @@ The MVP requires **more than 50% coverage** on both apps.
 
 ### End-to-end (Playwright)
 
-The E2E suite in `e2e/` drives Chromium through the golden paths of the MVP: authentication, upload and playback,
-search and comments. It needs Java 21, Maven and Node 22, and `npm ci` already run in `frontend/`.
+The E2E suite in `e2e/` drives Chromium through the golden paths of the MVP and the improvements: authentication,
+upload and playback, search, comments with replies and likes, editing a video, analytics, favourites, ratings,
+subscriptions and the theme. It needs Java 21, Maven and Node 22, and `npm ci` already run in `frontend/`.
 
 ```bash
 cd e2e
@@ -171,9 +172,10 @@ ports are reused; stop them for a clean database. Change ports or the Maven comm
 
 ### CI
 
-`.github/workflows/main.yml` runs on every PR and push to `main`:
+`.github/workflows/main.yml` runs on every PR and push to `main` and `develop`. A new push to the same PR cancels the
+run still in progress, and npm and Maven downloads are cached between runs.
 
-1. Frontend: `npm ci` → `npm run build` → `npm run test` → `npm run lint`
+1. Frontend: `npm ci` → `npm run build` → `npm run test` → `npm run lint` → `npx prettier --check .`
 2. Backend: `./mvnw clean verify -Pcoverage`
 3. Uploads both coverage reports as build artifacts.
 4. E2E job: `npm ci` (frontend and `e2e/`), installs Chromium, `npm run typecheck` and `npm test` in `e2e/`, and

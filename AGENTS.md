@@ -23,7 +23,8 @@ The Maven wrapper is not committed: use `mvn` locally (CI generates `./mvnw`).
   once, then `npm test` · one file: `npx playwright test tests/comments.spec.ts`
 
 Before opening a PR, run what CI runs (`.github/workflows/main.yml`): frontend `npm ci`, `npm run build`,
-`npm run test`, `npm run lint`; backend `mvn clean verify -Pcoverage`; e2e `npm run typecheck`, `npm test`.
+`npm run test`, `npm run lint`, `npx prettier --check .`; backend `mvn clean verify -Pcoverage`; e2e
+`npm run typecheck`, `npm test`.
 
 ## Environment
 
