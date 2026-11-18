@@ -12,6 +12,8 @@ type Props = {
   onAnalytics?: () => void;
   // US-12: opens the favourite videos of the user
   onFavourites?: () => void;
+  // US-13: opens the videos of the channels the user is subscribed to
+  onSubscriptions?: () => void;
   // Hidden while the login page is already open
   showLogin?: boolean;
 };
@@ -22,6 +24,7 @@ const NavBar = ({
   onSettings,
   onUpload,
   onFavourites,
+  onSubscriptions,
   onAnalytics = () => {},
   showLogin = true,
 }: Props) => {
@@ -31,6 +34,11 @@ const NavBar = ({
   const handleFavourites = () => {
     setMenuOpen(false);
     onFavourites?.();
+  };
+
+  const handleSubscriptions = () => {
+    setMenuOpen(false);
+    onSubscriptions?.();
   };
 
   const handleAnalytics = () => {
@@ -91,6 +99,13 @@ const NavBar = ({
                   <li>
                     <button type="button" className="pt-menu-item" onClick={handleFavourites}>
                       Favourites
+                    </button>
+                  </li>
+                )}
+                {onSubscriptions && (
+                  <li>
+                    <button type="button" className="pt-menu-item" onClick={handleSubscriptions}>
+                      Subscriptions
                     </button>
                   </li>
                 )}

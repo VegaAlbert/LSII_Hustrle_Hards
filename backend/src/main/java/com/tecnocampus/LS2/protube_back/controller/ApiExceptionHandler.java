@@ -1,10 +1,13 @@
 package com.tecnocampus.LS2.protube_back.controller;
 
 import com.tecnocampus.LS2.protube_back.controller.dto.ErrorResponse;
+import com.tecnocampus.LS2.protube_back.services.ChannelNotFoundException;
 import com.tecnocampus.LS2.protube_back.services.CommentNotFoundException;
 import com.tecnocampus.LS2.protube_back.services.InvalidCredentialsException;
 import com.tecnocampus.LS2.protube_back.services.InvalidGoogleTokenException;
+import com.tecnocampus.LS2.protube_back.services.InvalidSubscriptionException;
 import com.tecnocampus.LS2.protube_back.services.InvalidUploadException;
+import com.tecnocampus.LS2.protube_back.services.RatingConflictException;
 import com.tecnocampus.LS2.protube_back.services.UserAlreadyExistsException;
 import com.tecnocampus.LS2.protube_back.services.VideoAccessDeniedException;
 import com.tecnocampus.LS2.protube_back.services.VideoNotFoundException;
@@ -110,6 +113,11 @@ public class ApiExceptionHandler {
                 .body(new ErrorResponse(e.getMessage(), Map.of(e.getField(), e.getMessage())));
     }
 
+    @ExceptionHandler(RatingConflictException.class)
+    public ResponseEntity<ErrorResponse> handleRatingConflict(RatingConflictException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(e.getMessage()));
+    }
+
     @ExceptionHandler(VideoNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleVideoNotFound(VideoNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage()));
@@ -118,6 +126,16 @@ public class ApiExceptionHandler {
     @ExceptionHandler(CommentNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleCommentNotFound(CommentNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage()));
+    }
+
+    @ExceptionHandler(ChannelNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleChannelNotFound(ChannelNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidSubscriptionException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidSubscription(InvalidSubscriptionException e) {
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)

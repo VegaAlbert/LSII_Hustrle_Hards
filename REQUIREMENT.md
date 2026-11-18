@@ -218,6 +218,30 @@ until the profile page of US-03 exists).
 
 ---
 
+## Epic 9 — Subscriptions (improvement)
+
+### US-13: Subscribe to other users' channels
+
+**As a** user, **I want** to subscribe to other users' channels, **so that** I can follow the content I care about.
+
+**Scope:** the channel of a user is the set of videos they uploaded; a "Subscribe" button on the video page (and on
+the user profile once US-03 adds it); a `/subscriptions` page with the videos of the subscribed channels; the
+subscriber count in Analytics (US-11).
+
+**Acceptance criteria**
+
+* Given an authenticated user on a video uploaded by another user, when they subscribe or unsubscribe, then the state
+  persists (it is still shown after reloading the page or logging in again). Users cannot subscribe to their own
+  channel.
+* Given an authenticated user, when they open their subscriptions page, then the videos of the subscribed channels
+  are listed newest first; when there are none, an empty state is shown instead.
+* Given an authenticated user, when they open their analytics, then the number of subscribers of their channel is
+  shown.
+
+**Priority:** Could have (README improvement "Subscriptions to other users")
+
+---
+
 ## Non-functional & engineering requirements
 
 These are cross-cutting constraints that apply to the whole MVP rather than a single feature. They belong in the

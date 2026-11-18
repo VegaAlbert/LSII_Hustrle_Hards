@@ -22,6 +22,12 @@ jest.mock('../../videos/videosApi', () => ({
   recordView: jest.fn(),
   setCommentLike: jest.fn(),
 }));
+// The rating has its own tests (VideoRating.test.tsx): here it only needs to load without the backend
+jest.mock('../../ratings/ratingsApi', () => ({
+  ...jest.requireActual('../../ratings/ratingsApi'),
+  fetchRating: jest.fn().mockResolvedValue({ average: 4.5, count: 2, myScore: null }),
+  rateVideo: jest.fn(),
+}));
 const mockedRecordView = recordView as jest.MockedFunction<typeof recordView>;
 const mockedPostComment = postComment as jest.MockedFunction<typeof postComment>;
 const mockedPostReply = postReply as jest.MockedFunction<typeof postReply>;
@@ -31,6 +37,13 @@ const mockedSetCommentLike = setCommentLike as jest.MockedFunction<typeof setCom
 jest.mock('../../favourites/favouritesApi', () => ({
   fetchFavouriteState: jest.fn().mockResolvedValue({ videoId: 5, favourite: false }),
   setFavourite: jest.fn(),
+}));
+
+// US-13: the subscribe button asks for the subscribers of the channel of the uploader
+jest.mock('../../subscriptions/subscriptionsApi', () => ({
+  ...jest.requireActual('../../subscriptions/subscriptionsApi'),
+  fetchSubscription: jest.fn().mockResolvedValue({ channel: 'bob', subscribed: false, subscribers: 3 }),
+  setSubscription: jest.fn(),
 }));
 const mockedFetchVideo = fetchVideo as jest.MockedFunction<typeof fetchVideo>;
 const mockedIsNotFound = isNotFound as jest.MockedFunction<typeof isNotFound>;
@@ -110,6 +123,16 @@ describe('VideoDetailPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Uptown Funk' })).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('shows the average rating of the video', async () => {
+    mockedFetchVideo.mockResolvedValueOnce(video);
+
+    renderAt('/videos/5');
+
+    const rating = await screen.findByRole('region', { name: 'Rating' });
+    expect(await within(rating).findByText('4.5/5')).toBeInTheDocument();
+    expect(within(rating).getByText('(2 ratings)')).toBeInTheDocument();
   });
 
   it('plays the video and shows its information and comments', async () => {
@@ -363,5 +386,21 @@ describe('VideoDetailPage', () => {
     await user.click(await screen.findByRole('link', { name: 'Log in to comment' }));
 
     expect(screen.getByText('Login page')).toBeInTheDocument();
+  });
+
+  it('offers to subscribe to the channel of the user who uploaded the video', async () => {
+    mockedFetchVideo.mockResolvedValueOnce({ ...video, uploader: 'bob' });
+    renderAt('/videos/5', alice);
+
+    expect(await screen.findByText('3 subscribers')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Subscribe' })).toBeInTheDocument();
+  });
+
+  it('has no subscribe button for imported videos without uploader', async () => {
+    mockedFetchVideo.mockResolvedValueOnce(video);
+    renderAt('/videos/5', alice);
+
+    expect(await screen.findByRole('button', { name: 'Share' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Subscribe' })).not.toBeInTheDocument();
   });
 });

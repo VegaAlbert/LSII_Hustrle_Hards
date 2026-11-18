@@ -1,0 +1,111 @@
+/* ===== Video ratings ===== */
+
+.video-rating {
+  margin-bottom: 1rem;
+  padding: 1rem 1.5rem;
+  border: 1px solid var(--pt-border);
+  border-radius: var(--pt-radius-lg);
+  background: var(--pt-surface);
+}
+
+.video-rating-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+}
+
+/* Average: empty stars with the filled ones on top, cut at the average */
+.star-rating {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.star-rating-stars {
+  position: relative;
+  display: inline-block;
+  font-size: 1.25rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  color: var(--pt-border);
+}
+
+.star-rating-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  color: var(--pt-warning);
+}
+
+/* Picker */
+.video-rating-mine {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.star-input {
+  display: inline-flex;
+}
+
+.star-input-star {
+  padding: 0 0.15rem;
+  border: 0;
+  background: none;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--pt-border);
+  cursor: pointer;
+  transition:
+    color 0.1s ease,
+    transform 0.1s ease;
+}
+
+.star-input-star.is-on {
+  color: var(--pt-warning);
+}
+
+.star-input-star:hover:not(:disabled) {
+  transform: scale(1.15);
+}
+
+.star-input-star:focus-visible {
+  border-radius: var(--pt-radius-sm);
+  outline: none;
+  box-shadow: var(--pt-focus-ring);
+}
+
+.star-input-star:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.video-rating-feedback {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.video-rating-feedback.is-success {
+  color: var(--pt-success);
+}
+
+.video-rating-feedback.is-error {
+  color: var(--pt-danger);
+}
+
+@media (max-width: 575.98px) {
+  .video-rating {
+    padding: 1rem;
+  }
+
+  .video-rating-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -4,12 +4,15 @@ import com.tecnocampus.LS2.protube_back.controller.dto.CommentLikeResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.CommentResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.CreateCommentRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.PageResponse;
+import com.tecnocampus.LS2.protube_back.controller.dto.RateVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.UpdateVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.UploadVideoRequest;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoDetailResponse;
+import com.tecnocampus.LS2.protube_back.controller.dto.VideoRatingResponse;
 import com.tecnocampus.LS2.protube_back.controller.dto.VideoSummaryResponse;
 import com.tecnocampus.LS2.protube_back.services.AnalyticsService;
 import com.tecnocampus.LS2.protube_back.services.CommentService;
+import com.tecnocampus.LS2.protube_back.services.RatingService;
 import com.tecnocampus.LS2.protube_back.services.VideoService;
 import com.tecnocampus.LS2.protube_back.services.VideoUploadService;
 import jakarta.validation.Valid;
@@ -41,13 +44,16 @@ public class VideosController {
     private final VideoService videoService;
     private final VideoUploadService videoUploadService;
     private final CommentService commentService;
+    private final RatingService ratingService;
     private final AnalyticsService analyticsService;
 
     public VideosController(VideoService videoService, VideoUploadService videoUploadService,
-                            CommentService commentService, AnalyticsService analyticsService) {
+                            CommentService commentService, RatingService ratingService,
+                            AnalyticsService analyticsService) {
         this.videoService = videoService;
         this.videoUploadService = videoUploadService;
         this.commentService = commentService;
+        this.ratingService = ratingService;
         this.analyticsService = analyticsService;
     }
 
@@ -114,6 +120,28 @@ public class VideosController {
         CommentResponse created = commentService.addComment(id, authentication.getName(), request.text());
         // No Location header: comments have no route of their own, they are read with GET /api/videos/{id}
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    /**
+     * Video ratings: public average and number of ratings of a video, plus the score of the logged-in user when the
+     * request has a valid token. Answers 404 if the video does not exist.
+     */
+    @GetMapping("/{id}/rating")
+    public ResponseEntity<VideoRatingResponse> getRating(@PathVariable Long id, Authentication authentication) {
+        return ResponseEntity.ok(ratingService.getRating(id, authentication == null ? null : authentication.getName()));
+    }
+
+    /**
+     * Video ratings: rates a video from 1 to 5 stars as the logged-in user, or changes their previous rating. The user
+     * comes from the token, never from the body. Answers 200 with the new average, 400 for a missing, out of range or
+     * non-whole score, 401 without a valid token, 404 if the video does not exist and 409 if the same user rated the
+     * same video at the same time from somewhere else.
+     */
+    @PutMapping("/{id}/rating")
+    public ResponseEntity<VideoRatingResponse> rateVideo(@PathVariable Long id,
+                                                         @Valid @RequestBody RateVideoRequest request,
+                                                         Authentication authentication) {
+        return ResponseEntity.ok(ratingService.rate(id, authentication.getName(), request.score().intValueExact()));
     }
 
     /**
