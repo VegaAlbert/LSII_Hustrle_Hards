@@ -47,6 +47,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/videos/*").authenticated()
                         // US-09: only logged-in users can comment
                         .requestMatchers(HttpMethod.POST, "/api/videos/*/comments").authenticated()
+                        // Video ratings: anyone sees the average, only logged-in users rate
+                        .requestMatchers(HttpMethod.PUT, "/api/videos/*/rating").authenticated()
                         // US-10: only logged-in users can reply to and like comments
                         .requestMatchers(HttpMethod.POST, "/api/videos/*/comments/*/replies").authenticated()
                         .requestMatchers("/api/videos/*/comments/*/like").authenticated()

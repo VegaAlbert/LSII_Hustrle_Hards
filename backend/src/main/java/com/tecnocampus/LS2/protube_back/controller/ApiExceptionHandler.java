@@ -7,6 +7,7 @@ import com.tecnocampus.LS2.protube_back.services.InvalidCredentialsException;
 import com.tecnocampus.LS2.protube_back.services.InvalidGoogleTokenException;
 import com.tecnocampus.LS2.protube_back.services.InvalidSubscriptionException;
 import com.tecnocampus.LS2.protube_back.services.InvalidUploadException;
+import com.tecnocampus.LS2.protube_back.services.RatingConflictException;
 import com.tecnocampus.LS2.protube_back.services.UserAlreadyExistsException;
 import com.tecnocampus.LS2.protube_back.services.VideoAccessDeniedException;
 import com.tecnocampus.LS2.protube_back.services.VideoNotFoundException;
@@ -110,6 +111,11 @@ public class ApiExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUserAlreadyExists(UserAlreadyExistsException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(e.getMessage(), Map.of(e.getField(), e.getMessage())));
+    }
+
+    @ExceptionHandler(RatingConflictException.class)
+    public ResponseEntity<ErrorResponse> handleRatingConflict(RatingConflictException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(VideoNotFoundException.class)

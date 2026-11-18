@@ -22,6 +22,12 @@ jest.mock('../../videos/videosApi', () => ({
   recordView: jest.fn(),
   setCommentLike: jest.fn(),
 }));
+// The rating has its own tests (VideoRating.test.tsx): here it only needs to load without the backend
+jest.mock('../../ratings/ratingsApi', () => ({
+  ...jest.requireActual('../../ratings/ratingsApi'),
+  fetchRating: jest.fn().mockResolvedValue({ average: 4.5, count: 2, myScore: null }),
+  rateVideo: jest.fn(),
+}));
 const mockedRecordView = recordView as jest.MockedFunction<typeof recordView>;
 const mockedPostComment = postComment as jest.MockedFunction<typeof postComment>;
 const mockedPostReply = postReply as jest.MockedFunction<typeof postReply>;
@@ -117,6 +123,16 @@ describe('VideoDetailPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Uptown Funk' })).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('shows the average rating of the video', async () => {
+    mockedFetchVideo.mockResolvedValueOnce(video);
+
+    renderAt('/videos/5');
+
+    const rating = await screen.findByRole('region', { name: 'Rating' });
+    expect(await within(rating).findByText('4.5/5')).toBeInTheDocument();
+    expect(within(rating).getByText('(2 ratings)')).toBeInTheDocument();
   });
 
   it('plays the video and shows its information and comments', async () => {
