@@ -49,3 +49,62 @@ test.describe('Comment on a video', () => {
     );
   });
 });
+
+test.describe('Reply to and like comments', () => {
+  test('a user replies to a comment and the reply is nested under it and saved', async ({ page, request }) => {
+    const user = await loginAsNewUser(page, request);
+    const text = `Comment to reply (${Date.now()})`;
+    const reply = `A reply (${Date.now()})`;
+
+    await openVideoFromSearch(page, SEED_VIDEOS.city);
+    await page.getByLabel('Add a comment').fill(text);
+    await page.getByRole('button', { name: 'Comment', exact: true }).click();
+    await expect(page.getByRole('list', { name: 'Comments' }).getByRole('listitem').first()).toContainText(text);
+
+    await page.getByRole('button', { name: `Reply to @${user.username}` }).click();
+    await page.getByLabel('Add a reply').fill(reply);
+    await page.getByRole('button', { name: 'Reply', exact: true }).click();
+
+    const replies = page.getByRole('list', { name: `Replies to @${user.username}` });
+    await expect(replies.getByRole('listitem')).toHaveCount(1);
+    await expect(replies.getByRole('listitem')).toContainText(reply);
+
+    await page.reload();
+    await expect(replies.getByRole('listitem')).toContainText(reply);
+  });
+
+  test('a user likes a comment and unlikes it, and the count follows', async ({ page, request }) => {
+    const user = await loginAsNewUser(page, request);
+    const text = `Comment to like (${Date.now()})`;
+
+    await openVideoFromSearch(page, SEED_VIDEOS.mountain);
+    await page.getByLabel('Add a comment').fill(text);
+    await page.getByRole('button', { name: 'Comment', exact: true }).click();
+
+    const like = (count: string) => page.getByRole('button', { name: `Like comment by @${user.username}, ${count}` });
+    await like('0 likes').click();
+    await expect(like('1 like')).toHaveAttribute('aria-pressed', 'true');
+
+    // The like is stored by the backend
+    await page.reload();
+    await expect(like('1 like')).toHaveAttribute('aria-pressed', 'true');
+
+    await like('1 like').click();
+    await expect(like('0 likes')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  test('an anonymous visitor is sent to the login page to like a comment', async ({ page, request, browser }) => {
+    const author = await loginAsNewUser(page, request);
+    const text = `Comment for visitors (${Date.now()})`;
+    await openVideoFromSearch(page, SEED_VIDEOS.city);
+    await page.getByLabel('Add a comment').fill(text);
+    await page.getByRole('button', { name: 'Comment', exact: true }).click();
+    await expect(page.getByRole('list', { name: 'Comments' }).getByRole('listitem').first()).toContainText(text);
+
+    const visitor = await browser.newPage();
+    await openVideoFromSearch(visitor, SEED_VIDEOS.city);
+    await visitor.getByRole('button', { name: `Like comment by @${author.username}, 0 likes` }).click();
+    await expect(visitor).toHaveURL(/\/login$/);
+    await visitor.close();
+  });
+});
