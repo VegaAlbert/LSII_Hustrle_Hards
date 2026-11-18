@@ -120,6 +120,26 @@
   background: rgba(var(--pt-primary-rgb), 0.08);
 }
 
+/* Dark mode switch: the menu opens under its button */
+.pt-theme {
+  position: relative;
+}
+
+.pt-theme-menu {
+  min-width: 160px;
+}
+
+.pt-theme-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.pt-theme-option[aria-pressed='true'] {
+  font-weight: 600;
+  color: var(--pt-primary);
+}
+
 .pt-nav-actions {
   display: flex;
   align-items: center;
@@ -168,5 +188,30 @@
 @media (prefers-reduced-motion: reduce) {
   .pt-create-btn {
     transition: none;
+  }
+}
+
+/* Phones: tighter navbar so the theme switch, settings and user menu fit next to the brand */
+@media (max-width: 575.98px) {
+  .pt-navbar {
+    padding: 0 1rem;
+  }
+
+  .pt-nav-actions {
+    gap: 0.25rem;
+  }
+
+  .pt-create-btn {
+    padding: 0.45rem;
+  }
+
+  /* Only the + icon is shown; the text stays as the accessible name of the button */
+  .pt-create-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 }

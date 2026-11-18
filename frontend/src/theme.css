@@ -30,7 +30,8 @@
   --pt-share-reddit: #ff4500;
 }
 
-/* Light variant: only the neutral tokens change */
+/* Light variant: the neutral tokens change, plus the accents used as text (hashtags, success messages), which are
+   too light to read on a white background: these darker shades reach 4.5:1 (WCAG AA) */
 [data-bs-theme='light'] {
   --pt-bg-body: #f8f9fa;
   --pt-surface: #ffffff;
@@ -38,6 +39,8 @@
   --pt-text-primary: #212529;
   --pt-text-secondary: #6c757d;
   --pt-shadow: 0 12px 32px rgba(33, 37, 41, 0.12);
+  --pt-success: #0f766e;
+  --pt-info: #0b7a9e;
 }
 
 /* Bootstrap reads its own variables: point them to the ProTube tokens */
@@ -65,6 +68,15 @@
 body {
   background: var(--pt-bg-body);
   color: var(--pt-text-primary);
+}
+
+/* Dark mode: a short fade when switching themes, left out for users who ask for reduced motion */
+@media (prefers-reduced-motion: no-preference) {
+  body {
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
 }
 
 .text-muted {

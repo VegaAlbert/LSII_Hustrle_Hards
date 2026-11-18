@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import SettingsPage from '../SettingsPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
+import { ThemeProvider } from '../../theme/ThemeProvider';
+import { THEME_STORAGE_KEY } from '../../theme/themePreference';
 
 const renderSettings = (user: AuthContextValue['user'] = null) => {
   const auth: AuthContextValue = {
@@ -11,20 +13,25 @@ const renderSettings = (user: AuthContextValue['user'] = null) => {
     logout: jest.fn(),
   };
   render(
-    <AuthContext.Provider value={auth}>
-      <SettingsPage />
-    </AuthContext.Provider>
+    <ThemeProvider>
+      <AuthContext.Provider value={auth}>
+        <SettingsPage />
+      </AuthContext.Provider>
+    </ThemeProvider>
   );
 };
 
 describe('SettingsPage', () => {
-  it('shows every settings section and warns that nothing is saved yet', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('shows every settings section and warns that only the theme is saved yet', () => {
     renderSettings();
 
     for (const title of ['Appearance', 'Language', 'Playback', 'Notifications', 'Privacy']) {
       expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
     }
-    expect(screen.getByRole('note')).toHaveTextContent('not applied or saved yet');
+    expect(screen.getByRole('note')).toHaveTextContent('The theme is applied and saved on this device');
+    expect(screen.getByRole('note')).toHaveTextContent('The other settings are not applied or saved yet');
     expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
   });
 
@@ -40,6 +47,25 @@ describe('SettingsPage', () => {
     expect(screen.getByRole('heading', { name: 'Account' })).toBeInTheDocument();
     expect(screen.getByText('alice@mail.com')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Delete account' })).toBeDisabled();
+  });
+
+  it('applies and saves the theme chosen in Appearance', () => {
+    renderSettings();
+    expect(screen.getByRole('radio', { name: 'System' })).toBeChecked();
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Light' }));
+
+    expect(screen.getByRole('radio', { name: 'Light' })).toBeChecked();
+    expect(document.documentElement).toHaveAttribute('data-bs-theme', 'light');
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('light');
+  });
+
+  it('shows the theme saved in a previous visit', () => {
+    localStorage.setItem(THEME_STORAGE_KEY, 'dark');
+
+    renderSettings();
+
+    expect(screen.getByRole('radio', { name: 'Dark' })).toBeChecked();
   });
 
   it('updates the controls and resets them to the defaults', () => {
@@ -67,6 +93,7 @@ describe('SettingsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Reset to defaults' }));
 
     expect(screen.getByRole('radio', { name: 'System' })).toBeChecked();
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('system');
     expect(screen.getByLabelText('Interface language')).toHaveValue('en');
     expect(screen.getByLabelText('Autoplay')).toBeChecked();
     expect(screen.getByLabelText('New videos')).not.toBeChecked();

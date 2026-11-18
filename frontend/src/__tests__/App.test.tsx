@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import App, { AppRoutes } from '../App';
 import { AuthProvider } from '../auth/AuthProvider';
+import { ThemeProvider } from '../theme/ThemeProvider';
 import { fetchVideo, fetchVideos } from '../videos/videosApi';
 
 jest.mock('../videos/videosApi', () => ({
@@ -20,11 +21,13 @@ const mockedFetchVideo = fetchVideo as jest.MockedFunction<typeof fetchVideo>;
 
 const renderAt = (path: string) =>
   render(
-    <AuthProvider>
-      <MemoryRouter initialEntries={[path]}>
-        <AppRoutes />
-      </MemoryRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <MemoryRouter initialEntries={[path]}>
+          <AppRoutes />
+        </MemoryRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 
 describe('App', () => {
@@ -103,6 +106,38 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Settings' }));
 
     expect(screen.getByRole('heading', { name: 'Appearance' })).toBeInTheDocument();
+  });
+
+  it('keeps the dark theme chosen in the navbar on every page and after a reload', async () => {
+    const user = userEvent.setup();
+    const { unmount } = renderAt('/');
+
+    await user.click(screen.getByRole('button', { name: 'Theme: System' }));
+    await user.click(screen.getByRole('button', { name: 'Dark' }));
+    expect(document.documentElement).toHaveAttribute('data-bs-theme', 'dark');
+
+    // Navigating keeps it
+    await user.click(screen.getByRole('button', { name: 'Settings' }));
+    expect(screen.getByRole('radio', { name: 'Dark' })).toBeChecked();
+    await user.click(screen.getByRole('button', { name: 'Log in' }));
+    expect(document.documentElement).toHaveAttribute('data-bs-theme', 'dark');
+
+    // Reloading keeps it
+    unmount();
+    document.documentElement.removeAttribute('data-bs-theme');
+    renderAt('/');
+    expect(document.documentElement).toHaveAttribute('data-bs-theme', 'dark');
+    expect(screen.getByRole('button', { name: 'Theme: Dark' })).toBeInTheDocument();
+  });
+
+  it('switches to the light theme from the settings page', async () => {
+    const user = userEvent.setup();
+    renderAt('/settings');
+
+    await user.click(screen.getByRole('radio', { name: 'Light' }));
+
+    expect(document.documentElement).toHaveAttribute('data-bs-theme', 'light');
+    expect(screen.getByRole('button', { name: 'Theme: Light' })).toBeInTheDocument();
   });
 
   it('sends anonymous visitors of the analytics page to the login page', () => {
