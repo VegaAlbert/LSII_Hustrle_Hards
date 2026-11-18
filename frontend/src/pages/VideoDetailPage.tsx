@@ -8,6 +8,7 @@ import FavouriteButton from '../components/FavouriteButton';
 import ExpandableText from '../components/ExpandableText';
 import HashtagText from '../components/HashtagText';
 import ShareDialog from '../components/ShareDialog';
+import SubscribeButton from '../components/SubscribeButton';
 import VideoRating from '../components/VideoRating';
 import { formatDuration } from '../utils/formatDuration';
 import { extractHashtags, hashtagSearchUrl } from '../utils/hashtags';
@@ -139,6 +140,8 @@ const VideoDetail = ({ id }: { id: number }) => {
               <span>{formatDuration(video.durationSeconds)}</span>
             </p>
           </div>
+          {/* US-13: follow the channel of the user who uploaded the video (imported videos have none) */}
+          {video.uploader && <SubscribeButton channel={video.uploader} />}
         </div>
         <div className="video-actions">
           {/* US-12: save the video to watch it later */}
