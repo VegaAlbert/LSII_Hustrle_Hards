@@ -42,10 +42,10 @@ public class AuthService {
         String email = request.email().trim().toLowerCase(Locale.ROOT);
 
         if (userRepository.existsByUsername(username)) {
-            throw new UserAlreadyExistsException("username", "Username is already taken");
+            throw new UserAlreadyExistsException("username", "error.username.taken", "Username is already taken");
         }
         if (userRepository.existsByEmail(email)) {
-            throw new UserAlreadyExistsException("email", "Email is already registered");
+            throw new UserAlreadyExistsException("email", "error.email.taken", "Email is already registered");
         }
 
         User user = userRepository.save(new User(username, email, passwordEncoder.encode(request.password())));

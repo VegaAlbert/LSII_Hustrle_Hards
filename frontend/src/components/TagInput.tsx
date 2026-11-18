@@ -1,4 +1,5 @@
 import { useId, useState, type KeyboardEvent } from 'react';
+import { useTranslation } from '../i18n/i18nContext';
 
 // Same limits as UploadVideoRequest in the backend
 export const MAX_TAGS = 15;
@@ -15,6 +16,7 @@ type Props = {
  * Pasting "a, b, c" adds the three tags.
  */
 const TagInput = ({ tags, onChange, error }: Props) => {
+  const { t } = useTranslation();
   const [text, setText] = useState('');
   const id = useId();
   const full = tags.length >= MAX_TAGS;
@@ -52,7 +54,7 @@ const TagInput = ({ tags, onChange, error }: Props) => {
   return (
     <div>
       <label htmlFor={id} className="form-label">
-        Tags
+        {t('upload.tags')}
       </label>
       <div className={`tag-input${error ? ' is-invalid' : ''}`}>
         {tags.map((tag) => (
@@ -60,7 +62,7 @@ const TagInput = ({ tags, onChange, error }: Props) => {
             {tag}
             <button
               type="button"
-              aria-label={`Remove tag ${tag}`}
+              aria-label={t('upload.removeTag', { tag })}
               onClick={() => onChange(tags.filter((t) => t !== tag))}
             >
               ×
@@ -71,7 +73,7 @@ const TagInput = ({ tags, onChange, error }: Props) => {
           id={id}
           value={text}
           disabled={full}
-          placeholder={full ? 'Tag limit reached' : 'Add a tag and press Enter'}
+          placeholder={full ? t('upload.tagLimitReached') : t('upload.addTag')}
           aria-describedby={`${id}-hint`}
           onChange={(event) => handleChange(event.target.value)}
           onKeyDown={handleKeyDown}
@@ -82,7 +84,7 @@ const TagInput = ({ tags, onChange, error }: Props) => {
         />
       </div>
       <div id={`${id}-hint`} className="form-hint">
-        <span>{error ?? 'Tags help people find your video when they search.'}</span>
+        <span>{error ?? t('upload.tagsHint')}</span>
         <span>
           {tags.length}/{MAX_TAGS}
         </span>

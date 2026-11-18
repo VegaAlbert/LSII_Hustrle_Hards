@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ExpandableText from '../ExpandableText';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 describe('ExpandableText', () => {
   it('shows a short text without a toggle', () => {
@@ -32,5 +33,17 @@ describe('ExpandableText', () => {
     render(<ExpandableText text={'line\nline\nline\nline\nline'} />);
 
     expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument();
+  });
+
+  it('names the toggle in Spanish', () => {
+    localStorage.setItem('protube.language', 'es');
+    render(
+      <I18nProvider>
+        <ExpandableText text={'a'.repeat(300)} />
+      </I18nProvider>
+    );
+
+    expect(screen.getByRole('button', { name: 'Mostrar más' })).toBeInTheDocument();
+    localStorage.clear();
   });
 });

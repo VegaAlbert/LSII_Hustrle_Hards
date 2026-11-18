@@ -24,6 +24,17 @@ describe('videoFile', () => {
     expect(titleFromFileName('my_summer-trip.final.mp4')).toBe('my summer trip.final');
     expect(titleFromFileName(`${'a'.repeat(120)}.mp4`)).toHaveLength(100);
   });
+
+  it('explains a rejected file in the given language', () => {
+    expect(checkVideoFile(fileOf('video/quicktime'), 'es')).toBe('Elige un vídeo MP4 o WebM.');
+    expect(checkVideoFile(fileOf('video/mp4', MAX_VIDEO_BYTES + 1), 'ca')).toBe(
+      'El vídeo pot ocupar com a màxim 100 MB.'
+    );
+    expect(checkThumbnailFile(fileOf('image/gif'), 'ca')).toBe('Tria una imatge JPG, PNG o WebP.');
+    expect(checkThumbnailFile(fileOf('image/jpeg', 3 * 1024 * 1024), 'es')).toBe(
+      'La miniatura puede ocupar como máximo 2 MB.'
+    );
+  });
 });
 
 describe('readVideoFile', () => {

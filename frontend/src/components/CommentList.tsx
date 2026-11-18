@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from '../i18n/i18nContext';
 import type { CommentLike, VideoComment } from '../videos/videosApi';
 import CommentItem from './CommentItem';
 
@@ -18,20 +19,21 @@ type Props = {
  * nested under each comment (US-10). The count includes the replies.
  */
 const CommentList = ({ videoId, comments, form, onReplyAdded, onLikeChanged }: Props) => {
+  const { t } = useTranslation();
   const total = comments.reduce((count, comment) => count + 1 + comment.replies.length, 0);
 
   return (
     <section aria-labelledby="comments-title" className="comments mt-4">
       <h2 id="comments-title" className="section-title">
-        Comments <span className="count-pill">{total}</span>
+        {t('comments.title')} <span className="count-pill">{total}</span>
       </h2>
 
       {form}
 
       {comments.length === 0 ? (
-        <p className="comments-empty">No comments yet.</p>
+        <p className="comments-empty">{t('comments.empty')}</p>
       ) : (
-        <ul aria-label="Comments" className="list-unstyled d-flex flex-column gap-3 mb-0">
+        <ul aria-label={t('comments.listLabel')} className="list-unstyled d-flex flex-column gap-3 mb-0">
           {comments.map((comment) => (
             <CommentItem
               key={comment.id}

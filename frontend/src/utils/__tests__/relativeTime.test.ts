@@ -15,10 +15,21 @@ describe('formatRelativeTime', () => {
     [365 * 24 * 60 * 60, 'last year'],
     [4 * 365 * 24 * 60 * 60, '4 years ago'],
   ])('formats %i seconds ago as "%s"', (seconds, expected) => {
-    expect(formatRelativeTime(before(seconds), now)).toBe(expected);
+    expect(formatRelativeTime(before(seconds), 'en', now)).toBe(expected);
   });
 
   it('formats future dates too', () => {
-    expect(formatRelativeTime(new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(), now)).toBe('in 2 hours');
+    expect(formatRelativeTime(new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(), 'en', now)).toBe(
+      'in 2 hours'
+    );
+  });
+
+  it.each([
+    ['es', 30, 'justo ahora'],
+    ['es', 3 * 24 * 60 * 60, 'hace 3 días'],
+    ['ca', 30, 'ara mateix'],
+    ['ca', 3 * 24 * 60 * 60, 'fa 3 dies'],
+  ] as const)('formats in %s: %i seconds ago as "%s"', (language, seconds, expected) => {
+    expect(formatRelativeTime(before(seconds), language, now)).toBe(expected);
   });
 });

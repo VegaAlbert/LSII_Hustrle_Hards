@@ -1,5 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import GoogleLoginButton from '../GoogleLoginButton';
+import { I18nProvider } from '../../i18n/I18nProvider';
+import { LANGUAGE_STORAGE_KEY } from '../../i18n/languagePreference';
 import { getEnv } from '../../utils/Env';
 import { loadGoogleIdentity, type GoogleCredentialResponse } from '../../auth/googleIdentity';
 
@@ -70,5 +72,22 @@ describe('GoogleLoginButton', () => {
 
     await Promise.resolve();
     expect(initialize).not.toHaveBeenCalled();
+  });
+
+  it("shows the divider and Google's button in the user's language", async () => {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, 'ca');
+    mockedGetEnv.mockReturnValue({ API_BASE_URL: '/api', MEDIA_BASE_URL: '/media', GOOGLE_CLIENT_ID: 'client-id' });
+
+    render(
+      <I18nProvider>
+        <GoogleLoginButton onCredential={jest.fn()} onError={jest.fn()} />
+      </I18nProvider>
+    );
+
+    expect(screen.getByText('o')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(renderButton).toHaveBeenCalledWith(expect.any(HTMLElement), expect.objectContaining({ locale: 'ca' }))
+    );
+    localStorage.clear();
   });
 });

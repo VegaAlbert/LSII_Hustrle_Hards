@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import SearchBar from '../SearchBar';
 import { fetchVideos, type Page, type VideoSummary } from '../../videos/videosApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../videos/videosApi', () => ({
   ...jest.requireActual('../../videos/videosApi'),
@@ -182,5 +183,21 @@ describe('SearchBar', () => {
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
+  });
+
+  it('shows the search box in Catalan', () => {
+    localStorage.setItem('protube.language', 'ca');
+    render(
+      <I18nProvider>
+        <SearchBar onSearch={onSearch} />
+      </I18nProvider>
+    );
+
+    expect(screen.getByRole('combobox', { name: 'Cerca vídeos' })).toHaveAttribute(
+      'placeholder',
+      'Cerca per títol, autor o descripció'
+    );
+    expect(screen.getByRole('button', { name: 'Cerca' })).toBeInTheDocument();
+    localStorage.clear();
   });
 });

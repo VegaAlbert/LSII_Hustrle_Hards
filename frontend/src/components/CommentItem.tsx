@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { isUnauthorized } from '../auth/authApi';
 import { useAuth } from '../auth/authContext';
+import { useTranslation } from '../i18n/i18nContext';
 import { formatRelativeTime } from '../utils/relativeTime';
 import { setCommentLike, type CommentLike, type VideoComment } from '../videos/videosApi';
 import Avatar from './Avatar';
@@ -30,6 +31,7 @@ const ThumbIcon = () => (
  */
 const CommentItem = ({ videoId, comment, onReplyAdded, onLikeChanged, isReply = false }: Props) => {
   const { user } = useAuth();
+  const { t, language } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [replying, setReplying] = useState(false);
@@ -48,9 +50,7 @@ const CommentItem = ({ videoId, comment, onReplyAdded, onLikeChanged, isReply = 
     try {
       onLikeChanged(comment.id, await setCommentLike(videoId, comment.id, !comment.likedByMe));
     } catch (err: unknown) {
-      setLikeError(
-        isUnauthorized(err) ? 'Your session has expired. Log in again to like.' : 'Could not update the like.'
-      );
+      setLikeError(isUnauthorized(err) ? t('comments.likeSessionExpired') : t('comments.likeError'));
     } finally {
       setLiking(false);
     }
@@ -64,7 +64,7 @@ const CommentItem = ({ videoId, comment, onReplyAdded, onLikeChanged, isReply = 
     setReplying(true);
   };
 
-  const likesLabel = `${comment.likeCount} ${comment.likeCount === 1 ? 'like' : 'likes'}`;
+  const likesLabel = t('comments.likes', { count: comment.likeCount });
 
   return (
     <li className={isReply ? 'comment is-reply' : 'comment'}>
@@ -74,7 +74,7 @@ const CommentItem = ({ videoId, comment, onReplyAdded, onLikeChanged, isReply = 
           <span className="comment-author">@{comment.author}</span>
           {comment.publishedAt && (
             <time className="comment-time" dateTime={comment.publishedAt}>
-              {formatRelativeTime(comment.publishedAt)}
+              {formatRelativeTime(comment.publishedAt, language)}
             </time>
           )}
         </p>
@@ -88,7 +88,7 @@ const CommentItem = ({ videoId, comment, onReplyAdded, onLikeChanged, isReply = 
             type="button"
             className={comment.likedByMe ? 'comment-like is-liked' : 'comment-like'}
             aria-pressed={comment.likedByMe}
-            aria-label={`Like comment by @${comment.author}, ${likesLabel}`}
+            aria-label={t('comments.likeComment', { author: comment.author, likes: likesLabel })}
             onClick={toggleLike}
             disabled={liking}
           >
@@ -99,11 +99,11 @@ const CommentItem = ({ videoId, comment, onReplyAdded, onLikeChanged, isReply = 
             <button
               type="button"
               className="comment-reply-button"
-              aria-label={`Reply to @${comment.author}`}
+              aria-label={t('comments.replyTo', { author: comment.author })}
               onClick={openReplyForm}
               aria-expanded={replying}
             >
-              Reply
+              {t('comments.reply')}
             </button>
           )}
         </div>
@@ -128,7 +128,10 @@ const CommentItem = ({ videoId, comment, onReplyAdded, onLikeChanged, isReply = 
         )}
 
         {comment.replies.length > 0 && (
-          <ul aria-label={`Replies to @${comment.author}`} className="comment-replies list-unstyled mb-0">
+          <ul
+            aria-label={t('comments.repliesTo', { author: comment.author })}
+            className="comment-replies list-unstyled mb-0"
+          >
             {comment.replies.map((reply) => (
               <CommentItem
                 key={reply.id}

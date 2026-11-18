@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { isUnauthorized, toApiError } from '../auth/authApi';
 import { useAuth } from '../auth/authContext';
+import { useTranslation } from '../i18n/i18nContext';
 import { useVideoRating } from '../ratings/useVideoRating';
 import StarRating from './StarRating';
 import StarRatingInput from './StarRatingInput';
@@ -15,6 +16,7 @@ type Feedback = { kind: 'success' | 'error'; message: string } | null;
  */
 const VideoRating = ({ videoId }: { videoId: number }) => {
   const { user } = useAuth();
+  const { t, language } = useTranslation();
   const location = useLocation();
   const { rating, status, retry, rate } = useVideoRating(videoId, user?.username ?? null);
   const [saving, setSaving] = useState(false);
@@ -29,14 +31,14 @@ const VideoRating = ({ videoId }: { videoId: number }) => {
       await rate(score);
       setFeedback({
         kind: 'success',
-        message: hadRated ? 'Your rating was updated.' : 'Thanks! Your rating was saved.',
+        message: hadRated ? t('video.ratingUpdated') : t('video.ratingSaved'),
       });
     } catch (error: unknown) {
       setFeedback({
         kind: 'error',
         message: isUnauthorized(error)
-          ? 'Your session has expired. Log in again to rate this video.'
-          : `Could not save your rating. ${toApiError(error).message}`,
+          ? t('video.ratingSessionExpired')
+          : t('video.ratingSaveError', { reason: toApiError(error, language).message }),
       });
     } finally {
       setSaving(false);
@@ -46,19 +48,19 @@ const VideoRating = ({ videoId }: { videoId: number }) => {
   return (
     <section className="video-rating" aria-labelledby="rating-title">
       <h2 id="rating-title" className="section-label">
-        Rating
+        {t('video.ratingTitle')}
       </h2>
 
       {status === 'loading' && (
         <p role="status" className="text-muted mb-0">
-          Loading rating...
+          {t('video.ratingLoading')}
         </p>
       )}
       {status === 'error' && (
         <div role="alert" className="d-flex align-items-center gap-3">
-          <span>Could not load the rating.</span>
+          <span>{t('video.ratingLoadError')}</span>
           <button type="button" className="btn btn-outline-danger btn-sm" onClick={retry}>
-            Retry
+            {t('video.retry')}
           </button>
         </div>
       )}
@@ -68,12 +70,12 @@ const VideoRating = ({ videoId }: { videoId: number }) => {
 
           {user ? (
             <div className="video-rating-mine">
-              <span className="text-muted">{rating.myScore ? 'Your rating' : 'Rate this video'}</span>
+              <span className="text-muted">{rating.myScore ? t('video.yourRating') : t('video.rateThis')}</span>
               <StarRatingInput value={rating.myScore} onRate={handleRate} disabled={saving} />
             </div>
           ) : (
             <Link to="/login" state={{ from: `${location.pathname}${location.search}` }} className="pill-btn">
-              Log in to rate this video
+              {t('video.loginToRate')}
             </Link>
           )}
         </div>

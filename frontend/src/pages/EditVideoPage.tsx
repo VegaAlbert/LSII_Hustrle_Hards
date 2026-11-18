@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { isUnauthorized, toApiError } from '../auth/authApi';
 import { useAuth } from '../auth/authContext';
+import { useTranslation } from '../i18n/i18nContext';
+import type { Language } from '../settings/settings';
 import VideoMetadataFields from '../components/VideoMetadataFields';
 import { formatDuration } from '../utils/formatDuration';
 import { validateMetadata, type FieldErrors, type VideoMetadataValues } from '../videos/videoMetadata';
@@ -11,7 +13,13 @@ import NotFoundPage from './NotFoundPage';
 // Same form layout as the upload page
 import './UploadPage.css';
 
-const dateFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+// English keeps the day-month-year order ("18 November 2026")
+const formatDate = (isoDate: string, language: Language) =>
+  new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : language, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(isoDate));
 
 /**
  * US-07: page to edit the title, description, tags, category and age restriction of one of my videos, at
@@ -21,6 +29,7 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'lo
 const EditVideoPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
   const videoId = Number(id);
 
@@ -28,23 +37,24 @@ const EditVideoPage = () => {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
   if (!Number.isInteger(videoId) || videoId < 1) {
-    return <NotFoundPage title="Video not found" />;
+    return <NotFoundPage title={t('upload.videoNotFound')} />;
   }
   return <EditVideo key={videoId} id={videoId} username={user.username} />;
 };
 
 const EditVideo = ({ id, username }: { id: number; username: string }) => {
   const { video, status, retry } = useVideoDetail(id);
+  const { t } = useTranslation();
 
   if (status === 'not-found') {
-    return <NotFoundPage title="Video not found" />;
+    return <NotFoundPage title={t('upload.videoNotFound')} />;
   }
   if (status === 'error') {
     return (
       <div role="alert" className="alert alert-danger d-flex align-items-center gap-3">
-        <span>Could not load the video.</span>
+        <span>{t('upload.loadError')}</span>
         <button type="button" className="btn btn-outline-danger btn-sm" onClick={retry}>
-          Retry
+          {t('upload.retry')}
         </button>
       </div>
     );
@@ -52,7 +62,7 @@ const EditVideo = ({ id, username }: { id: number; username: string }) => {
   if (status === 'loading' || !video) {
     return (
       <p role="status" className="text-muted">
-        Loading video...
+        {t('upload.loadingVideo')}
       </p>
     );
   }
@@ -60,9 +70,9 @@ const EditVideo = ({ id, username }: { id: number; username: string }) => {
     return (
       <section className="upload-page text-start">
         <div role="alert" className="upload-error-card">
-          <p className="mb-2">You can only edit your own videos.</p>
+          <p className="mb-2">{t('upload.notOwner')}</p>
           <Link to={`/videos/${id}`} className="btn btn-primary">
-            Back to the video
+            {t('upload.backToVideo')}
           </Link>
         </div>
       </section>
@@ -81,6 +91,7 @@ const initialValues = (video: VideoDetail): VideoMetadataValues => ({
 
 const EditForm = ({ video }: { video: VideoDetail }) => {
   const navigate = useNavigate();
+  const { t, language } = useTranslation();
   const [original] = useState(() => initialValues(video));
   const [values, setValues] = useState(original);
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -90,7 +101,7 @@ const EditForm = ({ video }: { video: VideoDetail }) => {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    const found = validateMetadata(values);
+    const found = validateMetadata(values, language);
     setErrors(found);
     setSubmitError(null);
     if (Object.keys(found).length > 0) return;
@@ -108,10 +119,10 @@ const EditForm = ({ video }: { video: VideoDetail }) => {
     } catch (error: unknown) {
       setSaving(false);
       if (isUnauthorized(error)) {
-        setSubmitError('Your session has expired. Log in again to save your changes.');
+        setSubmitError(t('upload.sessionExpiredSave'));
         return;
       }
-      const apiError = toApiError(error);
+      const apiError = toApiError(error, language);
       setErrors(apiError.fieldErrors);
       setSubmitError(apiError.message);
     }
@@ -120,13 +131,13 @@ const EditForm = ({ video }: { video: VideoDetail }) => {
   return (
     <section className="upload-page text-start">
       <header className="upload-header">
-        <h1>Edit video</h1>
-        <p className="text-muted mb-0">Change the details of your video. The video file and its date stay the same.</p>
+        <h1>{t('upload.editTitle')}</h1>
+        <p className="text-muted mb-0">{t('upload.editSubtitle')}</p>
       </header>
 
       <form className="upload-layout" noValidate onSubmit={handleSubmit} aria-busy={saving}>
         <div className="upload-main">
-          <h2 className="section-label">Details</h2>
+          <h2 className="section-label">{t('upload.details')}</h2>
           <VideoMetadataFields
             values={values}
             onChange={(changes) => setValues((current) => ({ ...current, ...changes }))}
@@ -136,22 +147,26 @@ const EditForm = ({ video }: { video: VideoDetail }) => {
 
         <aside className="upload-aside">
           <div className="upload-preview">
-            <img src={toMediaUrl(video.thumbnailUrl)} alt={`Thumbnail of ${video.title}`} className="edit-thumbnail" />
+            <img
+              src={toMediaUrl(video.thumbnailUrl)}
+              alt={t('upload.thumbnailOf', { title: video.title })}
+              className="edit-thumbnail"
+            />
             <dl className="upload-file-facts">
               <div>
-                <dt>Video link</dt>
+                <dt>{t('upload.videoLink')}</dt>
                 <dd>
                   <Link to={`/videos/${video.id}`}>/videos/{video.id}</Link>
                 </dd>
               </div>
               <div>
-                <dt>Published</dt>
+                <dt>{t('upload.published')}</dt>
                 <dd>
-                  <time dateTime={video.publishedAt}>{dateFormat.format(new Date(video.publishedAt))}</time>
+                  <time dateTime={video.publishedAt}>{formatDate(video.publishedAt, language)}</time>
                 </dd>
               </div>
               <div>
-                <dt>Duration</dt>
+                <dt>{t('upload.duration')}</dt>
                 <dd>{formatDuration(video.durationSeconds)}</dd>
               </div>
             </dl>
@@ -165,10 +180,10 @@ const EditForm = ({ video }: { video: VideoDetail }) => {
             </p>
           )}
           <Link to={`/videos/${video.id}`} className="btn btn-outline-secondary">
-            Cancel
+            {t('upload.cancel')}
           </Link>
           <button type="submit" className="btn btn-primary" disabled={saving || !changed}>
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? t('upload.saving') : t('upload.save')}
           </button>
         </footer>
       </form>

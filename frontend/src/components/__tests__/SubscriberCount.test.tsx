@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import SubscriberCount from '../SubscriberCount';
 import { fetchSubscriberCount } from '../../subscriptions/subscriptionsApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../subscriptions/subscriptionsApi');
 const mockedFetchSubscriberCount = fetchSubscriberCount as jest.MockedFunction<typeof fetchSubscriberCount>;
@@ -22,5 +23,19 @@ describe('SubscriberCount', () => {
     render(<SubscriberCount />);
 
     expect(await screen.findByText('Not available')).toBeInTheDocument();
+  });
+
+  it('formats the number for the language of the user', async () => {
+    localStorage.setItem('protube.language', 'es');
+    mockedFetchSubscriberCount.mockResolvedValueOnce(12345);
+    render(
+      <I18nProvider>
+        <SubscriberCount />
+      </I18nProvider>
+    );
+
+    expect(screen.getByRole('region', { name: 'Suscriptores' })).toHaveTextContent('Cargando...');
+    expect(await screen.findByText('12.345')).toBeInTheDocument();
+    localStorage.clear();
   });
 });

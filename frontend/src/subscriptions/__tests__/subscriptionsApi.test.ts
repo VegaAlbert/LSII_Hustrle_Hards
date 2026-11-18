@@ -64,5 +64,8 @@ describe('subscriptionsApi', () => {
     expect(formatSubscribers(0)).toBe('0 subscribers');
     expect(formatSubscribers(1)).toBe('1 subscriber');
     expect(formatSubscribers(2)).toBe('2 subscribers');
+    expect(formatSubscribers(1234)).toBe('1,234 subscribers');
+    expect(formatSubscribers(1, 'es')).toBe('1 suscriptor');
+    expect(formatSubscribers(1234, 'ca')).toBe('1.234 subscriptors');
   });
 });

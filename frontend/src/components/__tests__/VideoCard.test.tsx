@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import VideoCard, { PREVIEW_DELAY_MS } from '../VideoCard';
 import type { VideoSummary } from '../../videos/videosApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 const video: VideoSummary = {
   id: 1,
@@ -128,5 +129,21 @@ describe('VideoCard', () => {
       // @ts-expect-error jsdom has no matchMedia: remove the mock again
       delete window.matchMedia;
     });
+  });
+
+  it('shows the publication date in Spanish', () => {
+    jest.useFakeTimers({ now: new Date('2024-01-04T00:00:00Z') });
+    localStorage.setItem('protube.language', 'es');
+    render(
+      <I18nProvider>
+        <VideoCard video={{ ...video, ageRestricted: true }} />
+      </I18nProvider>,
+      { wrapper: MemoryRouter }
+    );
+
+    expect(screen.getByText('hace 3 días')).toBeInTheDocument();
+    expect(screen.getByTitle('Vídeo con restricción de edad')).toBeInTheDocument();
+    localStorage.clear();
+    jest.useRealTimers();
   });
 });

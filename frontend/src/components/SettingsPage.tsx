@@ -3,27 +3,33 @@ import { useAuth } from '../auth/authContext';
 import {
   DEFAULT_SETTINGS,
   LANGUAGES,
+  type Language,
   PLAYBACK_SPEEDS,
   THEME_OPTIONS,
   type Settings,
   type TextSize,
+  type Theme,
   type VideoQuality,
 } from '../settings/settings';
+import { useTranslation } from '../i18n/i18nContext';
+import type { MessageKey } from '../i18n/messages';
 import { useTheme } from '../theme/themeContext';
 import './SettingsPage.css';
 
-const TEXT_SIZES: { value: TextSize; label: string }[] = [
-  { value: 'small', label: 'Small' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'large', label: 'Large' },
+const TEXT_SIZES: { value: TextSize; label: MessageKey }[] = [
+  { value: 'small', label: 'settings.textSmall' },
+  { value: 'medium', label: 'settings.textMedium' },
+  { value: 'large', label: 'settings.textLarge' },
 ];
 
-const QUALITIES: { value: VideoQuality; label: string }[] = [
-  { value: 'auto', label: 'Auto' },
-  { value: '1080p', label: '1080p' },
-  { value: '720p', label: '720p' },
-  { value: '480p', label: '480p' },
-];
+const THEME_LABELS: Record<Theme, MessageKey> = {
+  light: 'nav.themeLight',
+  dark: 'nav.themeDark',
+  system: 'nav.themeSystem',
+};
+
+// Resolutions are the same in every language; only "Auto" is translated
+const QUALITIES: VideoQuality[] = ['auto', '1080p', '720p', '480p'];
 
 type SectionProps = { id: string; title: string; description: string; children: ReactNode };
 
@@ -89,25 +95,28 @@ const Segmented = <T extends string>({ name, label, options, value, onChange }: 
   </div>
 );
 
-const SECTIONS = [
-  { id: 'appearance', label: 'Appearance' },
-  { id: 'language', label: 'Language' },
-  { id: 'playback', label: 'Playback' },
-  { id: 'notifications', label: 'Notifications' },
-  { id: 'privacy', label: 'Privacy' },
-  { id: 'account', label: 'Account', requiresUser: true },
+const SECTIONS: { id: string; label: MessageKey; requiresUser?: boolean }[] = [
+  { id: 'appearance', label: 'settings.appearance' },
+  { id: 'language', label: 'settings.language' },
+  { id: 'playback', label: 'settings.playback' },
+  { id: 'notifications', label: 'settings.notifications' },
+  { id: 'privacy', label: 'settings.privacy' },
+  { id: 'account', label: 'settings.account', requiresUser: true },
 ];
 
 const SettingsPage = () => {
   const { user } = useAuth();
   // The theme lives in ThemeProvider (applied and saved at once); settings.theme is not used
   const { preference: theme, setPreference: setTheme } = useTheme();
+  // The language lives in I18nProvider (applied and saved at once); settings.language is not used
+  const { t, language, setLanguage } = useTranslation();
   // Not applied nor saved yet: each other setting only changes this state
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
 
   const resetToDefaults = () => {
     setSettings(DEFAULT_SETTINGS);
     setTheme(DEFAULT_SETTINGS.theme);
+    setLanguage(DEFAULT_SETTINGS.language);
   };
 
   const update = <K extends keyof Settings>(key: K, value: Settings[K]) =>
@@ -119,11 +128,11 @@ const SettingsPage = () => {
     <div className="settings-page">
       <div className="settings-layout">
         <aside className="settings-nav">
-          <h1>Settings</h1>
-          <nav aria-label="Settings sections">
+          <h1>{t('settings.title')}</h1>
+          <nav aria-label={t('settings.sectionsNav')}>
             {sections.map((section) => (
               <a key={section.id} href={`#${section.id}`}>
-                {section.label}
+                {t(section.label)}
               </a>
             ))}
           </nav>
@@ -131,51 +140,56 @@ const SettingsPage = () => {
 
         <div className="settings-content">
           <div className="settings-notice" role="note">
-            <strong>Preview</strong> The theme is applied and saved on this device. The other settings are not applied
-            or saved yet.
+            <strong>{t('settings.noticeTitle')}</strong> {t('settings.notice')}
           </div>
 
-          <Section id="appearance" title="Appearance" description="Choose how ProTube looks to you.">
-            <Row label="Theme" hint="System follows your device setting.">
-              <Segmented name="theme" label="Theme" options={THEME_OPTIONS} value={theme} onChange={setTheme} />
+          <Section id="appearance" title={t('settings.appearance')} description={t('settings.appearanceDescription')}>
+            <Row label={t('settings.theme')} hint={t('settings.themeHint')}>
+              <Segmented
+                name="theme"
+                label={t('settings.theme')}
+                options={THEME_OPTIONS.map((option) => ({ value: option.value, label: t(THEME_LABELS[option.value]) }))}
+                value={theme}
+                onChange={setTheme}
+              />
             </Row>
-            <Row label="Text size">
+            <Row label={t('settings.textSize')}>
               <Segmented
                 name="textSize"
-                label="Text size"
-                options={TEXT_SIZES}
+                label={t('settings.textSize')}
+                options={TEXT_SIZES.map((size) => ({ value: size.value, label: t(size.label) }))}
                 value={settings.textSize}
                 onChange={(value) => update('textSize', value)}
               />
             </Row>
           </Section>
 
-          <Section id="language" title="Language" description="Language used across the interface.">
-            <Row label="Interface language" htmlFor="setting-language">
+          <Section id="language" title={t('settings.language')} description={t('settings.languageDescription')}>
+            <Row label={t('settings.interfaceLanguage')} htmlFor="setting-language">
               <select
                 id="setting-language"
                 className="form-select"
-                value={settings.language}
-                onChange={(e) => update('language', e.target.value as Settings['language'])}
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as Language)}
               >
-                {LANGUAGES.map((language) => (
-                  <option key={language.value} value={language.value}>
-                    {language.label}
+                {LANGUAGES.map((option) => (
+                  <option key={option.value} value={option.value} lang={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
             </Row>
           </Section>
 
-          <Section id="playback" title="Playback" description="Default behaviour of the video player.">
-            <Row label="Autoplay" hint="Start videos automatically when they open." htmlFor="setting-autoplay">
+          <Section id="playback" title={t('settings.playback')} description={t('settings.playbackDescription')}>
+            <Row label={t('settings.autoplay')} hint={t('settings.autoplayHint')} htmlFor="setting-autoplay">
               <Toggle
                 id="setting-autoplay"
                 checked={settings.autoplay}
                 onChange={(value) => update('autoplay', value)}
               />
             </Row>
-            <Row label="Default quality" htmlFor="setting-quality">
+            <Row label={t('settings.quality')} htmlFor="setting-quality">
               <select
                 id="setting-quality"
                 className="form-select"
@@ -183,13 +197,13 @@ const SettingsPage = () => {
                 onChange={(e) => update('videoQuality', e.target.value as VideoQuality)}
               >
                 {QUALITIES.map((quality) => (
-                  <option key={quality.value} value={quality.value}>
-                    {quality.label}
+                  <option key={quality} value={quality}>
+                    {quality === 'auto' ? t('settings.qualityAuto') : quality}
                   </option>
                 ))}
               </select>
             </Row>
-            <Row label="Playback speed" htmlFor="setting-speed">
+            <Row label={t('settings.speed')} htmlFor="setting-speed">
               <select
                 id="setting-speed"
                 className="form-select"
@@ -198,17 +212,21 @@ const SettingsPage = () => {
               >
                 {PLAYBACK_SPEEDS.map((speed) => (
                   <option key={speed} value={speed}>
-                    {speed === 1 ? 'Normal' : `${speed}x`}
+                    {speed === 1 ? t('settings.speedNormal') : `${speed.toLocaleString(language)}x`}
                   </option>
                 ))}
               </select>
             </Row>
           </Section>
 
-          <Section id="notifications" title="Notifications" description="Decide which emails you want to receive.">
+          <Section
+            id="notifications"
+            title={t('settings.notifications')}
+            description={t('settings.notificationsDescription')}
+          >
             <Row
-              label="Comments on my videos"
-              hint="Email me when someone comments on a video I uploaded."
+              label={t('settings.emailComment')}
+              hint={t('settings.emailCommentHint')}
               htmlFor="setting-email-comment"
             >
               <Toggle
@@ -217,7 +235,7 @@ const SettingsPage = () => {
                 onChange={(value) => update('emailOnComment', value)}
               />
             </Row>
-            <Row label="New videos" hint="Email me a summary of new uploads." htmlFor="setting-email-video">
+            <Row label={t('settings.emailVideo')} hint={t('settings.emailVideoHint')} htmlFor="setting-email-video">
               <Toggle
                 id="setting-email-video"
                 checked={settings.emailOnNewVideo}
@@ -226,15 +244,15 @@ const SettingsPage = () => {
             </Row>
           </Section>
 
-          <Section id="privacy" title="Privacy" description="Control what other people can see.">
-            <Row label="Public profile" hint="Other users can see your profile and videos." htmlFor="setting-public">
+          <Section id="privacy" title={t('settings.privacy')} description={t('settings.privacyDescription')}>
+            <Row label={t('settings.publicProfile')} hint={t('settings.publicProfileHint')} htmlFor="setting-public">
               <Toggle
                 id="setting-public"
                 checked={settings.publicProfile}
                 onChange={(value) => update('publicProfile', value)}
               />
             </Row>
-            <Row label="Watch history" hint="Keep a list of the videos you watched." htmlFor="setting-history">
+            <Row label={t('settings.watchHistory')} hint={t('settings.watchHistoryHint')} htmlFor="setting-history">
               <Toggle
                 id="setting-history"
                 checked={settings.watchHistory}
@@ -244,25 +262,25 @@ const SettingsPage = () => {
           </Section>
 
           {user && (
-            <Section id="account" title="Account" description="Manage your ProTube account.">
-              <Row label="Username" hint={user.username}>
+            <Section id="account" title={t('settings.account')} description={t('settings.accountDescription')}>
+              <Row label={t('settings.username')} hint={user.username}>
                 <button type="button" className="btn btn-outline-secondary btn-sm" disabled>
-                  Edit profile
+                  {t('settings.editProfile')}
                 </button>
               </Row>
-              <Row label="Email" hint={user.email}>
+              <Row label={t('settings.email')} hint={user.email}>
                 <button type="button" className="btn btn-outline-secondary btn-sm" disabled>
-                  Change email
+                  {t('settings.changeEmail')}
                 </button>
               </Row>
-              <Row label="Password">
+              <Row label={t('settings.password')}>
                 <button type="button" className="btn btn-outline-secondary btn-sm" disabled>
-                  Change password
+                  {t('settings.changePassword')}
                 </button>
               </Row>
-              <Row label="Delete account" hint="Permanently remove your account and videos.">
+              <Row label={t('settings.deleteAccount')} hint={t('settings.deleteAccountHint')}>
                 <button type="button" className="btn btn-outline-danger btn-sm" disabled>
-                  Delete account
+                  {t('settings.deleteAccount')}
                 </button>
               </Row>
             </Section>
@@ -270,10 +288,10 @@ const SettingsPage = () => {
 
           <div className="settings-actions">
             <button type="button" className="btn btn-light" onClick={resetToDefaults}>
-              Reset to defaults
+              {t('settings.reset')}
             </button>
-            <button type="button" className="settings-save" disabled title="Coming soon">
-              Save changes
+            <button type="button" className="settings-save" disabled title={t('settings.comingSoon')}>
+              {t('settings.saveChanges')}
             </button>
           </div>
         </div>
