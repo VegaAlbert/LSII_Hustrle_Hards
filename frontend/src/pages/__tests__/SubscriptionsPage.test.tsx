@@ -39,7 +39,14 @@ const LoginStub = () => {
 const renderPage = (user: AuthContextValue['user']) =>
   render(
     <AuthContext.Provider
-      value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+      value={{
+        user,
+        login: jest.fn(),
+        register: jest.fn(),
+        loginWithGoogle: jest.fn(),
+        logout: jest.fn(),
+        updateSession: jest.fn(),
+      }}
     >
       <MemoryRouter initialEntries={['/subscriptions']}>
         <Routes>

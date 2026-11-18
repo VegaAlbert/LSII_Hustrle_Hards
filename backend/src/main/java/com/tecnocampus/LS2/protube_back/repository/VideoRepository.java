@@ -1,15 +1,24 @@
 package com.tecnocampus.LS2.protube_back.repository;
 
+import com.tecnocampus.LS2.protube_back.domain.User;
 import com.tecnocampus.LS2.protube_back.domain.Video;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
 public interface VideoRepository extends JpaRepository<Video, Long> {
+
+    /**
+     * Uploaded videos keep the username of the uploader as author: renames it when the user changes the username.
+     */
+    @Modifying
+    @Query("UPDATE Video v SET v.author = :author WHERE v.uploader = :uploader")
+    int renameAuthorOfUploads(@Param("uploader") User uploader, @Param("author") String author);
 
     boolean existsByStoreId(String storeId);
 
@@ -63,4 +72,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
             ORDER BY v.publishedAt DESC, v.id DESC
             """)
     List<VideoStatistics> findStatisticsByUploader(@Param("username") String username);
+
+    // Deleting an account: the videos it uploaded
+    List<Video> findByUploader(User uploader);
 }

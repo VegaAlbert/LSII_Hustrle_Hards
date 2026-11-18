@@ -1,11 +1,12 @@
 package com.tecnocampus.LS2.protube_back.repository;
 
 import com.tecnocampus.LS2.protube_back.domain.Favourite;
+import com.tecnocampus.LS2.protube_back.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 
 public interface FavouriteRepository extends JpaRepository<Favourite, Long> {
@@ -24,4 +25,12 @@ public interface FavouriteRepository extends JpaRepository<Favourite, Long> {
     @Query(value = "SELECT f FROM Favourite f JOIN FETCH f.video WHERE f.user.id = :userId",
             countQuery = "SELECT COUNT(f) FROM Favourite f WHERE f.user.id = :userId")
     Page<Favourite> findByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    // Deleting an account: its favourites and the favourites other users saved of its videos
+    @Modifying(flushAutomatically = true)
+    @Query("""
+            DELETE FROM Favourite f
+            WHERE f.user = :user OR f.video IN (SELECT v FROM Video v WHERE v.uploader = :user)
+            """)
+    int deleteAllOfUser(@Param("user") User user);
 }

@@ -1,29 +1,17 @@
 import { useState, type ReactNode } from 'react';
 import { useAuth } from '../auth/authContext';
 import {
-  DEFAULT_SETTINGS,
+  DEFAULT_PENDING_SETTINGS,
   LANGUAGES,
   PLAYBACK_SPEEDS,
+  TEXT_SIZES,
   THEME_OPTIONS,
-  type Settings,
-  type TextSize,
-  type VideoQuality,
+  type PendingSettings,
 } from '../settings/settings';
+import { usePreferences } from '../settings/usePreferences';
 import { useTheme } from '../theme/themeContext';
+import AccountSettings from './AccountSettings';
 import './SettingsPage.css';
-
-const TEXT_SIZES: { value: TextSize; label: string }[] = [
-  { value: 'small', label: 'Small' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'large', label: 'Large' },
-];
-
-const QUALITIES: { value: VideoQuality; label: string }[] = [
-  { value: 'auto', label: 'Auto' },
-  { value: '1080p', label: '1080p' },
-  { value: '720p', label: '720p' },
-  { value: '480p', label: '480p' },
-];
 
 type SectionProps = { id: string; title: string; description: string; children: ReactNode };
 
@@ -93,24 +81,26 @@ const SECTIONS = [
   { id: 'appearance', label: 'Appearance' },
   { id: 'language', label: 'Language' },
   { id: 'playback', label: 'Playback' },
-  { id: 'notifications', label: 'Notifications' },
   { id: 'privacy', label: 'Privacy' },
   { id: 'account', label: 'Account', requiresUser: true },
 ];
 
 const SettingsPage = () => {
   const { user } = useAuth();
-  // The theme lives in ThemeProvider (applied and saved at once); settings.theme is not used
+  // The theme lives in ThemeProvider (applied and saved at once)
   const { preference: theme, setPreference: setTheme } = useTheme();
-  // Not applied nor saved yet: each other setting only changes this state
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  // Text size and playback: applied and saved at once on this device
+  const { preferences, update: updatePreference, reset: resetPreferences } = usePreferences();
+  // Not applied nor saved yet: language and privacy only change this state
+  const [settings, setSettings] = useState<PendingSettings>(DEFAULT_PENDING_SETTINGS);
 
   const resetToDefaults = () => {
-    setSettings(DEFAULT_SETTINGS);
-    setTheme(DEFAULT_SETTINGS.theme);
+    setSettings(DEFAULT_PENDING_SETTINGS);
+    resetPreferences();
+    setTheme('system');
   };
 
-  const update = <K extends keyof Settings>(key: K, value: Settings[K]) =>
+  const update = <K extends keyof PendingSettings>(key: K, value: PendingSettings[K]) =>
     setSettings((current) => ({ ...current, [key]: value }));
 
   const sections = SECTIONS.filter((section) => !section.requiresUser || user);
@@ -131,8 +121,8 @@ const SettingsPage = () => {
 
         <div className="settings-content">
           <div className="settings-notice" role="note">
-            <strong>Preview</strong> The theme is applied and saved on this device. The other settings are not applied
-            or saved yet.
+            <strong>Saved on this device</strong> Theme, text size and playback changes apply at once. Language and
+            privacy are not saved yet.
           </div>
 
           <Section id="appearance" title="Appearance" description="Choose how ProTube looks to you.">
@@ -144,8 +134,8 @@ const SettingsPage = () => {
                 name="textSize"
                 label="Text size"
                 options={TEXT_SIZES}
-                value={settings.textSize}
-                onChange={(value) => update('textSize', value)}
+                value={preferences.textSize}
+                onChange={(value) => updatePreference('textSize', value)}
               />
             </Row>
           </Section>
@@ -156,7 +146,7 @@ const SettingsPage = () => {
                 id="setting-language"
                 className="form-select"
                 value={settings.language}
-                onChange={(e) => update('language', e.target.value as Settings['language'])}
+                onChange={(e) => update('language', e.target.value as PendingSettings['language'])}
               >
                 {LANGUAGES.map((language) => (
                   <option key={language.value} value={language.value}>
@@ -171,30 +161,16 @@ const SettingsPage = () => {
             <Row label="Autoplay" hint="Start videos automatically when they open." htmlFor="setting-autoplay">
               <Toggle
                 id="setting-autoplay"
-                checked={settings.autoplay}
-                onChange={(value) => update('autoplay', value)}
+                checked={preferences.autoplay}
+                onChange={(value) => updatePreference('autoplay', value)}
               />
             </Row>
-            <Row label="Default quality" htmlFor="setting-quality">
-              <select
-                id="setting-quality"
-                className="form-select"
-                value={settings.videoQuality}
-                onChange={(e) => update('videoQuality', e.target.value as VideoQuality)}
-              >
-                {QUALITIES.map((quality) => (
-                  <option key={quality.value} value={quality.value}>
-                    {quality.label}
-                  </option>
-                ))}
-              </select>
-            </Row>
-            <Row label="Playback speed" htmlFor="setting-speed">
+            <Row label="Playback speed" hint="Speed videos start at." htmlFor="setting-speed">
               <select
                 id="setting-speed"
                 className="form-select"
-                value={settings.playbackSpeed}
-                onChange={(e) => update('playbackSpeed', Number(e.target.value))}
+                value={preferences.playbackSpeed}
+                onChange={(e) => updatePreference('playbackSpeed', Number(e.target.value))}
               >
                 {PLAYBACK_SPEEDS.map((speed) => (
                   <option key={speed} value={speed}>
@@ -202,27 +178,6 @@ const SettingsPage = () => {
                   </option>
                 ))}
               </select>
-            </Row>
-          </Section>
-
-          <Section id="notifications" title="Notifications" description="Decide which emails you want to receive.">
-            <Row
-              label="Comments on my videos"
-              hint="Email me when someone comments on a video I uploaded."
-              htmlFor="setting-email-comment"
-            >
-              <Toggle
-                id="setting-email-comment"
-                checked={settings.emailOnComment}
-                onChange={(value) => update('emailOnComment', value)}
-              />
-            </Row>
-            <Row label="New videos" hint="Email me a summary of new uploads." htmlFor="setting-email-video">
-              <Toggle
-                id="setting-email-video"
-                checked={settings.emailOnNewVideo}
-                onChange={(value) => update('emailOnNewVideo', value)}
-              />
             </Row>
           </Section>
 
@@ -245,35 +200,13 @@ const SettingsPage = () => {
 
           {user && (
             <Section id="account" title="Account" description="Manage your ProTube account.">
-              <Row label="Username" hint={user.username}>
-                <button type="button" className="btn btn-outline-secondary btn-sm" disabled>
-                  Edit profile
-                </button>
-              </Row>
-              <Row label="Email" hint={user.email}>
-                <button type="button" className="btn btn-outline-secondary btn-sm" disabled>
-                  Change email
-                </button>
-              </Row>
-              <Row label="Password">
-                <button type="button" className="btn btn-outline-secondary btn-sm" disabled>
-                  Change password
-                </button>
-              </Row>
-              <Row label="Delete account" hint="Permanently remove your account and videos.">
-                <button type="button" className="btn btn-outline-danger btn-sm" disabled>
-                  Delete account
-                </button>
-              </Row>
+              <AccountSettings user={user} />
             </Section>
           )}
 
           <div className="settings-actions">
             <button type="button" className="btn btn-light" onClick={resetToDefaults}>
               Reset to defaults
-            </button>
-            <button type="button" className="settings-save" disabled title="Coming soon">
-              Save changes
             </button>
           </div>
         </div>

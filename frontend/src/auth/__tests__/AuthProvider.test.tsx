@@ -18,8 +18,12 @@ const user = { id: 1, username: 'alice', email: 'alice@mail.com' };
 const tokenExpiringIn = (ms: number) =>
   `header.${btoa(JSON.stringify({ exp: Math.floor((Date.now() + ms) / 1000) }))}.signature`;
 
+// Session returned by a change in the account settings
+const renamedToken = tokenExpiringIn(60_000);
+const renamedUser = { ...user, username: 'alicia' };
+
 function Consumer() {
-  const { user, login, register, loginWithGoogle, logout } = useAuth();
+  const { user, login, register, loginWithGoogle, logout, updateSession } = useAuth();
   return (
     <>
       <span data-testid="user">{user?.username ?? 'anonymous'}</span>
@@ -27,6 +31,7 @@ function Consumer() {
       <button onClick={() => register('alice', 'alice@mail.com', 'password123')}>register</button>
       <button onClick={() => loginWithGoogle('google-id-token')}>google</button>
       <button onClick={logout}>logout</button>
+      <button onClick={() => updateSession({ token: renamedToken, user: renamedUser })}>update</button>
     </>
   );
 }
@@ -72,6 +77,20 @@ describe('AuthProvider', () => {
     fireEvent.click(screen.getByText('register'));
 
     await waitFor(() => expect(screen.getByTestId('user')).toHaveTextContent('alice'));
+  });
+
+  it('replaces the session after a change in the account settings', async () => {
+    mockedApi.login.mockResolvedValueOnce({ token: tokenExpiringIn(60_000), user });
+    mockedApi.fetchCurrentUser.mockResolvedValue(renamedUser);
+    renderWithProvider();
+    fireEvent.click(screen.getByText('login'));
+    await waitFor(() => expect(screen.getByTestId('user')).toHaveTextContent('alice'));
+
+    fireEvent.click(screen.getByText('update'));
+
+    await waitFor(() => expect(screen.getByTestId('user')).toHaveTextContent('alicia'));
+    expect(loadSession()?.token).toBe(renamedToken);
+    expect(axios.defaults.headers.common.Authorization).toBe(`Bearer ${renamedToken}`);
   });
 
   it('logs in with Google', async () => {

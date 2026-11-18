@@ -1,11 +1,13 @@
 package com.tecnocampus.LS2.protube_back.repository;
 
 import com.tecnocampus.LS2.protube_back.domain.CommentLike;
+import com.tecnocampus.LS2.protube_back.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.Set;
 
 public interface CommentLikeRepository extends JpaRepository<CommentLike, Long> {
@@ -22,4 +24,13 @@ public interface CommentLikeRepository extends JpaRepository<CommentLike, Long> 
      */
     @Query("SELECT l.comment.id FROM CommentLike l WHERE l.comment.video.id = :videoId AND l.user.username = :username")
     Set<Long> findLikedCommentIds(@Param("videoId") Long videoId, @Param("username") String username);
+
+    // Deleting an account: its likes and the likes of the comments deleted with it
+    @Modifying(flushAutomatically = true)
+    @Query("DELETE FROM CommentLike l WHERE l.user = :user")
+    int deleteByUser(@Param("user") User user);
+
+    @Modifying
+    @Query("DELETE FROM CommentLike l WHERE l.comment.id IN :commentIds")
+    int deleteByCommentIdIn(@Param("commentIds") Collection<Long> commentIds);
 }

@@ -44,7 +44,8 @@ public class AuthService {
         if (userRepository.existsByUsername(username)) {
             throw new UserAlreadyExistsException("username", "Username is already taken");
         }
-        if (userRepository.existsByEmail(email)) {
+        // US-01: one account per email, whether it was created with this form or with Google
+        if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new UserAlreadyExistsException("email", "Email is already registered");
         }
 
@@ -65,20 +66,36 @@ public class AuthService {
     }
 
     /**
-     * "Sign in with Google": logs in the account with the same (verified) email, or creates one the first time.
-     * Accounts created this way get a random password, so they can only log in with Google.
+     * "Sign in with Google". Never creates a second account for an email that is already registered (US-01):
+     * <ol>
+     *     <li>the account already linked to this Google account logs in, even if its email was changed later;</li>
+     *     <li>otherwise the account with the same (verified by Google) email is linked to it and logs in;</li>
+     *     <li>otherwise a new account is created. It gets a random password, so until the user sets one in the
+     *     settings it can only log in with Google.</li>
+     * </ol>
      */
     @Transactional
     public AuthResponse loginWithGoogle(String credential) {
         GoogleAccount account = googleTokenVerifier.verify(credential);
 
-        User user = userRepository.findByEmail(account.email())
-                .orElseGet(() -> userRepository.save(new User(
+        User user = userRepository.findByGoogleId(account.subject())
+                .or(() -> userRepository.findByEmailIgnoreCase(account.email()).map(existing -> link(existing, account)))
+                .orElseGet(() -> userRepository.save(User.fromGoogle(
                         uniqueUsernameFor(account.email()),
                         account.email(),
-                        passwordEncoder.encode(UUID.randomUUID().toString()))));
+                        passwordEncoder.encode(UUID.randomUUID().toString()),
+                        account.subject())));
 
         return new AuthResponse(jwtService.generateToken(user.getUsername()), UserResponse.from(user));
+    }
+
+    private User link(User user, GoogleAccount account) {
+        if (user.getGoogleId() != null) {
+            // The email now belongs to another Google account than the one linked before
+            throw new UserAlreadyExistsException("email", "Email is already registered with another Google account");
+        }
+        user.linkGoogleAccount(account.subject());
+        return user;
     }
 
     /**

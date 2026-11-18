@@ -10,6 +10,7 @@ import HashtagText from '../components/HashtagText';
 import ShareDialog from '../components/ShareDialog';
 import SubscribeButton from '../components/SubscribeButton';
 import VideoRating from '../components/VideoRating';
+import { loadPreferences } from '../settings/preferences';
 import { formatDuration } from '../utils/formatDuration';
 import { extractHashtags, hashtagSearchUrl } from '../utils/hashtags';
 import { formatRelativeTime } from '../utils/relativeTime';
@@ -59,6 +60,8 @@ const VideoDetail = ({ id }: { id: number }) => {
   // Second the player was at when "Share" was clicked; null while the dialog is closed
   const [sharingAt, setSharingAt] = useState<number | null>(null);
   const start = startTime(searchParams.get('t'));
+  // Playback preferences of the settings page, read once when the video opens
+  const [{ autoplay, playbackSpeed }] = useState(loadPreferences);
   // US-11: the view is counted once per visit, even when StrictMode runs the effect twice in development
   const viewRecorded = useRef(false);
 
@@ -105,8 +108,11 @@ const VideoDetail = ({ id }: { id: number }) => {
             poster={toMediaUrl(video.thumbnailUrl)}
             aria-label={`Video player: ${video.title}`}
             controls
-            autoPlay
+            autoPlay={autoplay}
             onLoadedMetadata={(event) => {
+              // Loading the media resets the speed to defaultPlaybackRate, so both are set here
+              event.currentTarget.defaultPlaybackRate = playbackSpeed;
+              event.currentTarget.playbackRate = playbackSpeed;
               if (start > 0) event.currentTarget.currentTime = start;
             }}
           />

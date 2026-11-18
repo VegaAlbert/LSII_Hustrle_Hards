@@ -80,6 +80,9 @@ public class GoogleTokenVerifier {
         if (email == null || !Boolean.TRUE.equals(jwt.getClaimAsBoolean("email_verified"))) {
             throw new InvalidGoogleTokenException("Your Google account has no verified email");
         }
-        return new GoogleAccount(email.toLowerCase(Locale.ROOT), jwt.getClaimAsString("name"));
+        if (jwt.getSubject() == null) {
+            throw new InvalidGoogleTokenException("Invalid Google credential");
+        }
+        return new GoogleAccount(jwt.getSubject(), email.toLowerCase(Locale.ROOT), jwt.getClaimAsString("name"));
     }
 }

@@ -79,7 +79,14 @@ const CurrentPath = () => <p>Page {useLocation().pathname}</p>;
 const renderPage = (user: AuthContextValue['user'] = alice) =>
   render(
     <AuthContext.Provider
-      value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+      value={{
+        user,
+        login: jest.fn(),
+        register: jest.fn(),
+        loginWithGoogle: jest.fn(),
+        logout: jest.fn(),
+        updateSession: jest.fn(),
+      }}
     >
       <MemoryRouter initialEntries={['/analytics']}>
         <Routes>

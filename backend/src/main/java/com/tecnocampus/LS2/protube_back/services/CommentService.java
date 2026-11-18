@@ -40,11 +40,9 @@ public class CommentService {
     @Transactional
     public CommentResponse addComment(Long videoId, String username, String text) {
         Video video = findVideo(videoId);
-        if (!userRepository.existsByUsername(username)) {
-            throw new InvalidCredentialsException();
-        }
+        User author = findUser(username);
 
-        Comment comment = new Comment(username, text.trim(), 0, Instant.now());
+        Comment comment = new Comment(author, text.trim(), Instant.now());
         // Links both sides of the relation, so the video shows it if it is read again in this transaction
         video.addComment(comment);
         return CommentResponse.from(commentRepository.save(comment));
@@ -62,12 +60,10 @@ public class CommentService {
     public CommentResponse addReply(Long videoId, Long commentId, String username, String text) {
         Video video = findVideo(videoId);
         Comment comment = findComment(videoId, commentId);
-        if (!userRepository.existsByUsername(username)) {
-            throw new InvalidCredentialsException();
-        }
+        User author = findUser(username);
 
         Comment parent = comment.getParent() != null ? comment.getParent() : comment;
-        Comment reply = new Comment(username, text.trim(), 0, Instant.now());
+        Comment reply = new Comment(author, text.trim(), Instant.now());
         // A reply also belongs to the video, so it is saved and deleted with it like any other comment
         video.addComment(reply);
         parent.addReply(reply);

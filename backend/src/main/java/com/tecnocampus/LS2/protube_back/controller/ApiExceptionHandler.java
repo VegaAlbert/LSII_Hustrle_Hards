@@ -3,6 +3,7 @@ package com.tecnocampus.LS2.protube_back.controller;
 import com.tecnocampus.LS2.protube_back.controller.dto.ErrorResponse;
 import com.tecnocampus.LS2.protube_back.services.ChannelNotFoundException;
 import com.tecnocampus.LS2.protube_back.services.CommentNotFoundException;
+import com.tecnocampus.LS2.protube_back.services.InvalidAccountChangeException;
 import com.tecnocampus.LS2.protube_back.services.InvalidCredentialsException;
 import com.tecnocampus.LS2.protube_back.services.InvalidGoogleTokenException;
 import com.tecnocampus.LS2.protube_back.services.InvalidSubscriptionException;
@@ -110,6 +111,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleUserAlreadyExists(UserAlreadyExistsException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(e.getMessage(), Map.of(e.getField(), e.getMessage())));
+    }
+
+    @ExceptionHandler(InvalidAccountChangeException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidAccountChange(InvalidAccountChangeException e) {
+        return ResponseEntity.badRequest()
                 .body(new ErrorResponse(e.getMessage(), Map.of(e.getField(), e.getMessage())));
     }
 

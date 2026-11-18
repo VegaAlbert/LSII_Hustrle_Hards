@@ -30,7 +30,14 @@ const LoginPage = () => <p>Login page from {(useLocation().state as { from: stri
 const renderRating = (user: AuthContextValue['user'] = alice) =>
   render(
     <AuthContext.Provider
-      value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+      value={{
+        user,
+        login: jest.fn(),
+        register: jest.fn(),
+        loginWithGoogle: jest.fn(),
+        logout: jest.fn(),
+        updateSession: jest.fn(),
+      }}
     >
       <MemoryRouter initialEntries={['/videos/5']}>
         <Routes>

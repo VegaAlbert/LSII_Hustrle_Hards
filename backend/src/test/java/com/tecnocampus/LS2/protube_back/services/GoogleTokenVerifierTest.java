@@ -62,8 +62,16 @@ class GoogleTokenVerifierTest {
     void acceptsValidTokenAndReturnsAccount() throws Exception {
         GoogleAccount account = verifier.verify(sign(validClaims().build()));
 
+        assertEquals("1234567890", account.subject());
         assertEquals("alice@gmail.com", account.email());
         assertEquals("Alice", account.name());
+    }
+
+    @Test
+    void rejectsTokenWithoutSubject() throws Exception {
+        String token = sign(validClaims().subject(null).build());
+
+        assertThrows(InvalidGoogleTokenException.class, () -> verifier.verify(token));
     }
 
     @Test
