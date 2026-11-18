@@ -224,13 +224,14 @@ until the profile page of US-03 exists).
 
 **As a** user, **I want** to subscribe to other users' channels, **so that** I can follow the content I care about.
 
-**Scope:** the channel of a user is the set of videos they uploaded; a "Subscribe" button on the video page (and on
-the user profile once US-03 adds it); a `/subscriptions` page with the videos of the subscribed channels; the
-subscriber count in Analytics (US-11).
+**Scope:** a channel is the author of videos: the username of the user who uploaded them, or the channel an imported
+video came from, so every video can be followed; a "Subscribe" button on the video page (and on the user profile once
+US-03 adds it); a `/subscriptions` page with the videos of the subscribed channels; the subscriber count in Analytics
+(US-11).
 
 **Acceptance criteria**
 
-* Given an authenticated user on a video uploaded by another user, when they subscribe or unsubscribe, then the state
+* Given an authenticated user on any video, when they subscribe to or unsubscribe from its channel, then the state
   persists (it is still shown after reloading the page or logging in again). Users cannot subscribe to their own
   channel.
 * Given an authenticated user, when they open their subscriptions page, then the videos of the subscribed channels

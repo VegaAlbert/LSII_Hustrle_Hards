@@ -18,15 +18,15 @@ describe('subscriptionsApi', () => {
     mockedAxios.get.mockResolvedValueOnce({ data: state });
 
     await expect(fetchSubscription('bob')).resolves.toEqual(state);
-    expect(mockedAxios.get).toHaveBeenCalledWith('other/channels/bob/subscription');
+    expect(mockedAxios.get).toHaveBeenCalledWith('other/subscriptions/channel', { params: { name: 'bob' } });
   });
 
-  it('encodes the channel name in the URL', async () => {
+  it('sends channel names with spaces or slashes as a query parameter', async () => {
     mockedAxios.get.mockResolvedValueOnce({ data: {} });
 
-    await fetchSubscription('a b/c');
+    await fetchSubscription('AC/DC Live');
 
-    expect(mockedAxios.get).toHaveBeenCalledWith('other/channels/a%20b%2Fc/subscription');
+    expect(mockedAxios.get).toHaveBeenCalledWith('other/subscriptions/channel', { params: { name: 'AC/DC Live' } });
   });
 
   it('subscribes with a PUT', async () => {
@@ -34,7 +34,7 @@ describe('subscriptionsApi', () => {
     mockedAxios.put.mockResolvedValueOnce({ data: state });
 
     await expect(setSubscription('bob', true)).resolves.toEqual(state);
-    expect(mockedAxios.put).toHaveBeenCalledWith('other/channels/bob/subscription');
+    expect(mockedAxios.put).toHaveBeenCalledWith('other/subscriptions/channel', null, { params: { name: 'bob' } });
   });
 
   it('unsubscribes with a DELETE', async () => {
@@ -42,7 +42,7 @@ describe('subscriptionsApi', () => {
     mockedAxios.delete.mockResolvedValueOnce({ data: state });
 
     await expect(setSubscription('bob', false)).resolves.toEqual(state);
-    expect(mockedAxios.delete).toHaveBeenCalledWith('other/channels/bob/subscription');
+    expect(mockedAxios.delete).toHaveBeenCalledWith('other/subscriptions/channel', { params: { name: 'bob' } });
   });
 
   it('fetches one page of videos of the subscribed channels', async () => {

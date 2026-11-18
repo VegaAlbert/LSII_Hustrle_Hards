@@ -153,8 +153,8 @@ const VideoDetail = ({ id }: { id: number }) => {
               <span>{formatDuration(video.durationSeconds)}</span>
             </p>
           </div>
-          {/* US-13: follow the channel of the user who uploaded the video (imported videos have none) */}
-          {video.uploader && <SubscribeButton channel={video.uploader} />}
+          {/* US-13: follow the channel of the video, its author (uploads take the username of the uploader) */}
+          {video.author && <SubscribeButton channel={video.author} />}
         </div>
         <div className="video-actions">
           {/* US-12: save the video to watch it later */}

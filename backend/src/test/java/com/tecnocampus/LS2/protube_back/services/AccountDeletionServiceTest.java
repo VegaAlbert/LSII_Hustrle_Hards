@@ -108,7 +108,7 @@ class AccountDeletionServiceTest {
         verify(commentLikeRepository).deleteByUser(alice);
         verify(ratingRepository).deleteAllOfUser(alice);
         verify(favouriteRepository).deleteAllOfUser(alice);
-        verify(subscriptionRepository).deleteAllOfUser(alice);
+        verify(subscriptionRepository).deleteAllOfUser(alice, "alice");
         verify(videoViewRepository).anonymizeViewsOf(alice);
         assertFalse(Files.exists(store.resolve("upload-1.mp4")));
         assertFalse(Files.exists(store.resolve("upload-1-thumbnail.webp")));

@@ -3,7 +3,8 @@ import { useTranslation } from '../i18n/i18nContext';
 import { fetchSubscriberCount } from '../subscriptions/subscriptionsApi';
 
 /**
- * US-13: number of users subscribed to the channel of the logged-in user, shown in their analytics.
+ * US-13: number of users subscribed to the channel of the logged-in user, as one more card of the totals on the
+ * Analytics page (it renders an `<li>`, so it goes inside that list).
  */
 const SubscriberCount = () => {
   const { t, language } = useTranslation();
@@ -29,12 +30,10 @@ const SubscriberCount = () => {
   else if (count !== null) value = new Intl.NumberFormat(language).format(count);
 
   return (
-    <section aria-labelledby="subscribers-title" className="subscriber-stat">
-      <h2 id="subscribers-title" className="subscriber-stat-label">
-        {t('video.subscribersTitle')}
-      </h2>
-      <p className="subscriber-stat-value mb-0">{value}</p>
-    </section>
+    <li className="analytics-card">
+      <span className="analytics-card-label">{t('video.subscribersTitle')}</span>
+      <strong className="analytics-card-value">{value}</strong>
+    </li>
   );
 };
 

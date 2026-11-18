@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import VideoDetailPage from '../VideoDetailPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 import { I18nProvider } from '../../i18n/I18nProvider';
+import { fetchSubscription } from '../../subscriptions/subscriptionsApi';
 import {
   fetchVideo,
   isNotFound,
@@ -40,12 +41,13 @@ jest.mock('../../favourites/favouritesApi', () => ({
   setFavourite: jest.fn(),
 }));
 
-// US-13: the subscribe button asks for the subscribers of the channel of the uploader
+// US-13: the subscribe button asks for the subscribers of the channel (the author) of the video
 jest.mock('../../subscriptions/subscriptionsApi', () => ({
   ...jest.requireActual('../../subscriptions/subscriptionsApi'),
-  fetchSubscription: jest.fn().mockResolvedValue({ channel: 'bob', subscribed: false, subscribers: 3 }),
+  fetchSubscription: jest.fn().mockResolvedValue({ channel: 'Mark Ronson', subscribed: false, subscribers: 3 }),
   setSubscription: jest.fn(),
 }));
+const mockedFetchSubscription = fetchSubscription as jest.MockedFunction<typeof fetchSubscription>;
 const mockedFetchVideo = fetchVideo as jest.MockedFunction<typeof fetchVideo>;
 const mockedIsNotFound = isNotFound as jest.MockedFunction<typeof isNotFound>;
 
@@ -422,16 +424,17 @@ describe('VideoDetailPage', () => {
     expect(screen.getByText('Login page')).toBeInTheDocument();
   });
 
-  it('offers to subscribe to the channel of the user who uploaded the video', async () => {
-    mockedFetchVideo.mockResolvedValueOnce({ ...video, uploader: 'bob' });
+  it('offers to subscribe to the channel of the video, also for imported videos', async () => {
+    mockedFetchVideo.mockResolvedValueOnce(video);
     renderAt('/videos/5', alice);
 
     expect(await screen.findByText('3 subscribers')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Subscribe' })).toBeInTheDocument();
+    expect(mockedFetchSubscription).toHaveBeenCalledWith('Mark Ronson');
   });
 
-  it('has no subscribe button for imported videos without uploader', async () => {
-    mockedFetchVideo.mockResolvedValueOnce(video);
+  it('has no subscribe button for videos without author', async () => {
+    mockedFetchVideo.mockResolvedValueOnce({ ...video, author: null });
     renderAt('/videos/5', alice);
 
     expect(await screen.findByRole('button', { name: 'Share' })).toBeInTheDocument();

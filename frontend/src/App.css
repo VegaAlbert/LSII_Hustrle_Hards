@@ -789,23 +789,3 @@
   cursor: progress;
   opacity: 0.7;
 }
-
-.subscriber-stat {
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--pt-border);
-  border-radius: var(--pt-radius-lg);
-  background: var(--pt-surface);
-}
-
-.subscriber-stat-label {
-  margin-bottom: 0.25rem;
-  color: var(--pt-text-secondary);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.subscriber-stat-value {
-  color: var(--pt-text-primary);
-  font-size: 1.75rem;
-  font-weight: 700;
-}

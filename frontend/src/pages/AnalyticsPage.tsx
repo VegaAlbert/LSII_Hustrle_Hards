@@ -2,6 +2,7 @@ import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/authContext';
 import type { Analytics, DailyViews } from '../analytics/analyticsApi';
 import { useMyAnalytics } from '../analytics/useMyAnalytics';
+import SubscriberCount from '../components/SubscriberCount';
 import { useTranslation } from '../i18n/i18nContext';
 import type { Language } from '../settings/settings';
 import { toMediaUrl } from '../videos/videosApi';
@@ -113,6 +114,8 @@ const AnalyticsDashboard = ({ analytics }: { analytics: Analytics }) => {
         <StatCard label={t('analytics.totalViews')} value={analytics.totalViews} accent="views" />
         <StatCard label={t('analytics.comments')} value={analytics.totalComments} />
         <StatCard label={t('analytics.commentLikes')} value={analytics.totalCommentLikes} />
+        {/* US-13: users subscribed to my channel */}
+        <SubscriberCount />
       </ul>
 
       <div className="analytics-row">

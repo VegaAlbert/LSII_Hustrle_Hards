@@ -91,7 +91,7 @@ public class AccountDeletionService {
         }
         ratingRepository.deleteAllOfUser(user);
         favouriteRepository.deleteAllOfUser(user);
-        subscriptionRepository.deleteAllOfUser(user);
+        subscriptionRepository.deleteAllOfUser(user, user.getUsername());
         videoViewRepository.deleteViewsOfVideosOf(user);
         videoViewRepository.anonymizeViewsOf(user);
 

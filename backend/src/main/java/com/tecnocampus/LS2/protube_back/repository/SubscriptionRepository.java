@@ -12,30 +12,36 @@ import org.springframework.data.repository.query.Param;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
 
-    boolean existsBySubscriberIdAndChannelId(Long subscriberId, Long channelId);
+    boolean existsBySubscriberIdAndChannel(Long subscriberId, String channel);
 
-    long countByChannelId(Long channelId);
+    long countByChannel(String channel);
 
     // Returns how many rows were deleted (0 if the user was not subscribed)
     @Modifying
-    @Query("DELETE FROM Subscription s WHERE s.subscriber.id = :subscriberId AND s.channel.id = :channelId")
-    int deleteBySubscriberIdAndChannelId(@Param("subscriberId") Long subscriberId, @Param("channelId") Long channelId);
+    @Query("DELETE FROM Subscription s WHERE s.subscriber.id = :subscriberId AND s.channel = :channel")
+    int deleteBySubscriberIdAndChannel(@Param("subscriberId") Long subscriberId, @Param("channel") String channel);
 
     /**
-     * Videos uploaded by the channels {@code subscriberId} is subscribed to, in the order of {@code pageable}.
+     * Videos whose author is one of the channels {@code subscriberId} is subscribed to, in the order of
+     * {@code pageable}.
      */
     @Query(value = """
             SELECT v FROM Video v
-            WHERE v.uploader IN (SELECT s.channel FROM Subscription s WHERE s.subscriber.id = :subscriberId)
+            WHERE v.author IN (SELECT s.channel FROM Subscription s WHERE s.subscriber.id = :subscriberId)
             """,
             countQuery = """
             SELECT COUNT(v) FROM Video v
-            WHERE v.uploader IN (SELECT s.channel FROM Subscription s WHERE s.subscriber.id = :subscriberId)
+            WHERE v.author IN (SELECT s.channel FROM Subscription s WHERE s.subscriber.id = :subscriberId)
             """)
     Page<Video> findVideosOfSubscribedChannels(@Param("subscriberId") Long subscriberId, Pageable pageable);
 
-    // Deleting an account: the channels it follows and the users following it
+    // Deleting an account: the channels it follows and the users following its channel, i.e. its username
     @Modifying(flushAutomatically = true)
-    @Query("DELETE FROM Subscription s WHERE s.subscriber = :user OR s.channel = :user")
-    int deleteAllOfUser(@Param("user") User user);
+    @Query("DELETE FROM Subscription s WHERE s.subscriber = :user OR s.channel = :channel")
+    int deleteAllOfUser(@Param("user") User user, @Param("channel") String channel);
+
+    // A rename: the subscribers of the channel keep following it under the new username
+    @Modifying(flushAutomatically = true)
+    @Query("UPDATE Subscription s SET s.channel = :newChannel WHERE s.channel = :oldChannel")
+    int renameChannel(@Param("oldChannel") String oldChannel, @Param("newChannel") String newChannel);
 }

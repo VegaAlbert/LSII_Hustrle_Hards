@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
-import { loginAsNewUser, newUser, registerNewUser, uploadVideoAs, userMenu } from './support';
+import { loginAsNewUser, openVideoFromSearch, registerNewUser, SEED_VIDEOS, uploadVideoAs, userMenu } from './support';
 
 /**
  * Registers a new user (the owner of a channel) and uploads a video as that user through the API, as the subject of
@@ -45,10 +45,27 @@ test.describe('Subscribe to a channel', () => {
     await expect(page.getByText('There are no videos from your subscriptions yet.')).toBeVisible();
   });
 
-  test('an anonymous visitor is asked to log in to subscribe', async ({ page, request }) => {
-    const { videoId } = await channelWithAVideo(request);
+  test('a logged-in user subscribes to the channel of an imported video', async ({ page, request }) => {
+    const user = await loginAsNewUser(page, request);
 
-    await page.goto(`/videos/${videoId}`);
+    // Imported videos have no uploader, but their author is a channel too. Other tests may follow the same seed
+    // channel at the same time, so the number of subscribers is not checked here
+    await openVideoFromSearch(page, SEED_VIDEOS.city);
+    await page.getByRole('button', { name: 'Subscribe', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Subscribed' })).toHaveAttribute('aria-pressed', 'true');
+
+    // Both seed videos come from the same channel, so both are listed
+    await userMenu(page, user.username).click();
+    await page.getByRole('button', { name: 'Subscriptions' }).click();
+    const list = page.getByRole('list', {
+      name: 'Videos from your subscriptions',
+    });
+    await expect(list.getByRole('link', { name: SEED_VIDEOS.city })).toBeVisible();
+    await expect(list.getByRole('link', { name: SEED_VIDEOS.mountain })).toBeVisible();
+  });
+
+  test('an anonymous visitor is asked to log in to subscribe', async ({ page }) => {
+    await openVideoFromSearch(page, SEED_VIDEOS.mountain);
     await page.getByRole('button', { name: 'Subscribe', exact: true }).click();
 
     await expect(page).toHaveURL(/\/login$/);
