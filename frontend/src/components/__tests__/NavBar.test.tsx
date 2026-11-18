@@ -96,6 +96,42 @@ describe('NavBar', () => {
     expect(screen.queryByText('Logout')).not.toBeInTheDocument();
   });
 
+  it('opens the analytics page from the user menu', () => {
+    const auth: AuthContextValue = {
+      user: { id: 1, username: 'alice', email: 'alice@mail.com' },
+      login: jest.fn(),
+      register: jest.fn(),
+      loginWithGoogle: jest.fn(),
+      logout: jest.fn(),
+    };
+    const onAnalytics = jest.fn();
+    render(
+      <ThemeProvider>
+        <AuthContext.Provider value={auth}>
+          <NavBar
+            onHome={jest.fn()}
+            onLogin={jest.fn()}
+            onSettings={jest.fn()}
+            onUpload={jest.fn()}
+            onAnalytics={onAnalytics}
+          />
+        </AuthContext.Provider>
+      </ThemeProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'User menu for alice' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Analytics' }));
+
+    expect(onAnalytics).toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'Analytics' })).not.toBeInTheDocument();
+  });
+
+  it('does not offer analytics to anonymous visitors', () => {
+    renderNavBar(null);
+
+    expect(screen.queryByRole('button', { name: 'Analytics' })).not.toBeInTheDocument();
+  });
+
   it('opens the favourites from the user menu', () => {
     const { onFavourites } = renderNavBar({ id: 1, username: 'alice', email: 'alice@mail.com' });
 
