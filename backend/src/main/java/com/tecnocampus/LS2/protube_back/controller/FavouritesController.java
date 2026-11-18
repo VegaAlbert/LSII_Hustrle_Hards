@@ -35,10 +35,10 @@ public class FavouritesController {
     @GetMapping
     public ResponseEntity<PageResponse<VideoSummaryResponse>> getFavourites(
             @RequestParam(defaultValue = "0")
-            @Min(value = 0, message = "Page must be 0 or greater") int page,
+            @Min(value = 0, message = "{validation.page.min}") int page,
             @RequestParam(defaultValue = "12")
-            @Min(value = 1, message = "Size must be between 1 and 50")
-            @Max(value = 50, message = "Size must be between 1 and 50") int size,
+            @Min(value = 1, message = "{validation.size.range}")
+            @Max(value = 50, message = "{validation.size.range}") int size,
             Authentication authentication) {
         return ResponseEntity.ok(favouriteService.getFavourites(authentication.getName(), page, size));
     }

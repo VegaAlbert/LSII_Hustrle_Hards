@@ -12,6 +12,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import SubscriptionsPage from './pages/SubscriptionsPage';
 import UploadPage from './pages/UploadPage';
 import { ThemeProvider } from './theme/ThemeProvider';
+import { I18nProvider } from './i18n/I18nProvider';
 import VideoDetailPage from './pages/VideoDetailPage';
 
 // After logging in, go back to the page that sent the user here (e.g. /upload), or home
@@ -44,11 +45,13 @@ export const AppRoutes = () => (
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </AuthProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </AuthProvider>
+      </I18nProvider>
     </ThemeProvider>
   );
 }

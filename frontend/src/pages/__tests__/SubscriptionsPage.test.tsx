@@ -5,6 +5,7 @@ import SubscriptionsPage from '../SubscriptionsPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 import { fetchSubscriptionVideos } from '../../subscriptions/subscriptionsApi';
 import type { VideoSummary } from '../../videos/videosApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../subscriptions/subscriptionsApi');
 const mockedFetchVideos = fetchSubscriptionVideos as jest.MockedFunction<typeof fetchSubscriptionVideos>;
@@ -38,17 +39,19 @@ const LoginStub = () => {
 
 const renderPage = (user: AuthContextValue['user']) =>
   render(
-    <AuthContext.Provider
-      value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
-    >
-      <MemoryRouter initialEntries={['/subscriptions']}>
-        <Routes>
-          <Route path="/subscriptions" element={<SubscriptionsPage />} />
-          <Route path="/login" element={<LoginStub />} />
-          <Route path="/" element={<p>Home page</p>} />
-        </Routes>
-      </MemoryRouter>
-    </AuthContext.Provider>
+    <I18nProvider>
+      <AuthContext.Provider
+        value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+      >
+        <MemoryRouter initialEntries={['/subscriptions']}>
+          <Routes>
+            <Route path="/subscriptions" element={<SubscriptionsPage />} />
+            <Route path="/login" element={<LoginStub />} />
+            <Route path="/" element={<p>Home page</p>} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </I18nProvider>
   );
 
 describe('SubscriptionsPage', () => {
@@ -112,5 +115,16 @@ describe('SubscriptionsPage', () => {
 
     expect(await screen.findByText('Video 1')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+  it('shows the page in Spanish', async () => {
+    localStorage.setItem('protube.language', 'es');
+    mockedFetchVideos.mockResolvedValueOnce(page([], 0, 0));
+
+    renderPage(alice);
+
+    expect(await screen.findByText('Todavía no hay vídeos de tus suscripciones.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Suscripciones' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Explorar vídeos' })).toBeInTheDocument();
+    localStorage.clear();
   });
 });

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Avatar from './Avatar';
+import { useTranslation } from '../i18n/i18nContext';
 import { formatDuration } from '../utils/formatDuration';
 import { formatRelativeTime } from '../utils/relativeTime';
 import { toMediaUrl, type VideoSummary } from '../videos/videosApi';
@@ -19,6 +20,7 @@ const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion:
  * showing how far the preview has played.
  */
 const VideoCard = ({ video }: Props) => {
+  const { t, language } = useTranslation();
   const [previewing, setPreviewing] = useState(false);
   const [progress, setProgress] = useState(0);
   const timer = useRef<number | undefined>(undefined);
@@ -72,7 +74,7 @@ const VideoCard = ({ video }: Props) => {
           </>
         )}
         {video.ageRestricted && (
-          <span className="age-badge video-card-age" title="Age-restricted video">
+          <span className="age-badge video-card-age" title={t('videos.ageRestricted')}>
             18+
           </span>
         )}
@@ -91,7 +93,7 @@ const VideoCard = ({ video }: Props) => {
           </h2>
           {video.author && <p className="video-card-meta">{video.author}</p>}
           <p className="video-card-meta">
-            <time dateTime={video.publishedAt}>{formatRelativeTime(video.publishedAt)}</time>
+            <time dateTime={video.publishedAt}>{formatRelativeTime(video.publishedAt, language)}</time>
           </p>
         </div>
       </div>

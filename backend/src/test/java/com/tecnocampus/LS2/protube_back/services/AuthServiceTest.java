@@ -171,7 +171,8 @@ class AuthServiceTest {
 
     @Test
     void googleLoginShouldFailWithInvalidCredential() {
-        when(googleTokenVerifier.verify("bad")).thenThrow(new InvalidGoogleTokenException("Invalid Google credential"));
+        when(googleTokenVerifier.verify("bad")).thenThrow(
+                new InvalidGoogleTokenException("error.google.invalid", "Invalid Google credential"));
 
         assertThrows(InvalidGoogleTokenException.class, () -> authService.loginWithGoogle("bad"));
         verify(userRepository, never()).save(any());

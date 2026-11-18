@@ -1,0 +1,58 @@
+import { defineMessages } from '../defineMessages';
+
+// Video categories: same keys as the VideoCategory enum of the backend
+export const categories = defineMessages(
+  {
+    FILM_AND_ANIMATION: 'Film & Animation',
+    AUTOS_AND_VEHICLES: 'Autos & Vehicles',
+    MUSIC: 'Music',
+    PETS_AND_ANIMALS: 'Pets & Animals',
+    SPORTS: 'Sports',
+    TRAVEL_AND_EVENTS: 'Travel & Events',
+    GAMING: 'Gaming',
+    PEOPLE_AND_BLOGS: 'People & Blogs',
+    COMEDY: 'Comedy',
+    ENTERTAINMENT: 'Entertainment',
+    NEWS_AND_POLITICS: 'News & Politics',
+    HOWTO_AND_STYLE: 'Howto & Style',
+    EDUCATION: 'Education',
+    SCIENCE_AND_TECHNOLOGY: 'Science & Technology',
+    NONPROFITS_AND_ACTIVISM: 'Nonprofits & Activism',
+  },
+  {
+    es: {
+      FILM_AND_ANIMATION: 'Cine y animación',
+      AUTOS_AND_VEHICLES: 'Motor y vehículos',
+      MUSIC: 'Música',
+      PETS_AND_ANIMALS: 'Mascotas y animales',
+      SPORTS: 'Deportes',
+      TRAVEL_AND_EVENTS: 'Viajes y eventos',
+      GAMING: 'Videojuegos',
+      PEOPLE_AND_BLOGS: 'Gente y blogs',
+      COMEDY: 'Humor',
+      ENTERTAINMENT: 'Entretenimiento',
+      NEWS_AND_POLITICS: 'Noticias y política',
+      HOWTO_AND_STYLE: 'Consejos y estilo',
+      EDUCATION: 'Educación',
+      SCIENCE_AND_TECHNOLOGY: 'Ciencia y tecnología',
+      NONPROFITS_AND_ACTIVISM: 'ONG y activismo',
+    },
+    ca: {
+      FILM_AND_ANIMATION: 'Cinema i animació',
+      AUTOS_AND_VEHICLES: 'Motor i vehicles',
+      MUSIC: 'Música',
+      PETS_AND_ANIMALS: 'Mascotes i animals',
+      SPORTS: 'Esports',
+      TRAVEL_AND_EVENTS: 'Viatges i esdeveniments',
+      GAMING: 'Videojocs',
+      PEOPLE_AND_BLOGS: 'Gent i blogs',
+      COMEDY: 'Humor',
+      ENTERTAINMENT: 'Entreteniment',
+      NEWS_AND_POLITICS: 'Notícies i política',
+      HOWTO_AND_STYLE: 'Consells i estil',
+      EDUCATION: 'Educació',
+      SCIENCE_AND_TECHNOLOGY: 'Ciència i tecnologia',
+      NONPROFITS_AND_ACTIVISM: 'ONG i activisme',
+    },
+  }
+);

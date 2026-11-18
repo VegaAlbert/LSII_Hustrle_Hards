@@ -1,0 +1,58 @@
+import { defineMessages } from '../defineMessages';
+
+// US-12 favourites and US-13 subscriptions pages: lists of videos of the logged-in user
+export const library = defineMessages(
+  {
+    favouritesTitle: 'Favourites',
+    favouritesEmpty: 'You have no favourite videos yet.',
+    favouritesEmptyHint: 'Use “Save to favourites” on a video to watch it later.',
+    favouritesList: 'Favourite videos',
+    favouritesLoading: 'Loading favourites...',
+    favouritesError: 'Could not load your favourites.',
+    subscriptionsTitle: 'Subscriptions',
+    subscriptionsEmpty: 'There are no videos from your subscriptions yet.',
+    subscriptionsEmptyHint: 'Use “Subscribe” on a video to follow the channel of its author.',
+    subscriptionsList: 'Videos from your subscriptions',
+    subscriptionsLoading: 'Loading subscriptions...',
+    subscriptionsError: 'Could not load your subscriptions.',
+    browseVideos: 'Browse videos',
+    retry: 'Retry',
+    loadMore: 'Load more',
+  },
+  {
+    es: {
+      favouritesTitle: 'Favoritos',
+      favouritesEmpty: 'Todavía no tienes vídeos favoritos.',
+      favouritesEmptyHint: 'Usa «Guardar en favoritos» en un vídeo para verlo más tarde.',
+      favouritesList: 'Vídeos favoritos',
+      favouritesLoading: 'Cargando favoritos...',
+      favouritesError: 'No se han podido cargar tus favoritos.',
+      subscriptionsTitle: 'Suscripciones',
+      subscriptionsEmpty: 'Todavía no hay vídeos de tus suscripciones.',
+      subscriptionsEmptyHint: 'Usa «Suscribirse» en un vídeo para seguir el canal de su autor.',
+      subscriptionsList: 'Vídeos de tus suscripciones',
+      subscriptionsLoading: 'Cargando suscripciones...',
+      subscriptionsError: 'No se han podido cargar tus suscripciones.',
+      browseVideos: 'Explorar vídeos',
+      retry: 'Reintentar',
+      loadMore: 'Cargar más',
+    },
+    ca: {
+      favouritesTitle: 'Preferits',
+      favouritesEmpty: 'Encara no tens cap vídeo preferit.',
+      favouritesEmptyHint: "Fes servir «Desa a preferits» en un vídeo per veure'l més tard.",
+      favouritesList: 'Vídeos preferits',
+      favouritesLoading: 'Carregant els preferits...',
+      favouritesError: "No s'han pogut carregar els teus preferits.",
+      subscriptionsTitle: 'Subscripcions',
+      subscriptionsEmpty: 'Encara no hi ha vídeos de les teves subscripcions.',
+      subscriptionsEmptyHint: "Fes servir «Subscriu-t'hi» en un vídeo per seguir el canal del seu autor.",
+      subscriptionsList: 'Vídeos de les teves subscripcions',
+      subscriptionsLoading: 'Carregant les subscripcions...',
+      subscriptionsError: "No s'han pogut carregar les teves subscripcions.",
+      browseVideos: 'Explora vídeos',
+      retry: 'Torna-ho a provar',
+      loadMore: 'Carrega’n més',
+    },
+  }
+);

@@ -7,9 +7,9 @@ import jakarta.validation.constraints.Size;
  * Body of POST /api/videos/{id}/comments (US-09).
  */
 public record CreateCommentRequest(
-        @NotBlank(message = "Comment is required")
+        @NotBlank(message = "{validation.comment.required}")
         @Size(max = CreateCommentRequest.MAX_LENGTH,
-                message = "Comment must be at most " + CreateCommentRequest.MAX_LENGTH + " characters")
+                message = "{validation.comment.size}")
         String text) {
 
     public static final int MAX_LENGTH = 1000;

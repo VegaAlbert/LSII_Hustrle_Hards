@@ -11,11 +11,11 @@ import java.util.List;
  * uploaded (see UploadVideoRequest). Every field is replaced, so the frontend sends the whole form.
  */
 public record UpdateVideoRequest(
-        @NotBlank(message = "Title is required")
-        @Size(max = 100, message = "Title must be at most 100 characters") String title,
-        @Size(max = 5000, message = "Description must be at most 5000 characters") String description,
-        @Size(max = 15, message = "At most 15 tags")
-        List<@Size(max = 30, message = "Each tag must be at most 30 characters") String> tags,
+        @NotBlank(message = "{validation.title.required}")
+        @Size(max = 100, message = "{validation.title.size}") String title,
+        @Size(max = 5000, message = "{validation.description.size}") String description,
+        @Size(max = 15, message = "{validation.tags.size}")
+        List<@Size(max = 30, message = "{validation.tag.size}") String> tags,
         VideoCategory category,
         boolean ageRestricted) {
 }

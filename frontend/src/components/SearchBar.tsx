@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useTranslation } from '../i18n/i18nContext';
 import { useVideoSuggestions } from '../videos/useVideoSuggestions';
 import type { VideoSummary } from '../videos/videosApi';
 
@@ -17,6 +18,7 @@ const optionId = (video: VideoSummary) => `video-suggestion-${video.id}`;
  * video again.
  */
 const SearchBar = ({ initialQuery = '', onSearch }: Props) => {
+  const { t } = useTranslation();
   const [text, setText] = useState(initialQuery);
   // The list only opens when the user types, not for the initial query
   const [open, setOpen] = useState(false);
@@ -69,7 +71,7 @@ const SearchBar = ({ initialQuery = '', onSearch }: Props) => {
   return (
     <form role="search" className="d-flex gap-2 mb-4" onSubmit={handleSubmit}>
       <label htmlFor="video-search" className="visually-hidden">
-        Search videos
+        {t('videos.searchLabel')}
       </label>
       <div className="position-relative flex-grow-1">
         <input
@@ -77,7 +79,7 @@ const SearchBar = ({ initialQuery = '', onSearch }: Props) => {
           type="search"
           role="combobox"
           className="form-control"
-          placeholder="Search by title, author or description"
+          placeholder={t('videos.searchPlaceholder')}
           autoComplete="off"
           maxLength={100}
           aria-autocomplete="list"
@@ -97,7 +99,7 @@ const SearchBar = ({ initialQuery = '', onSearch }: Props) => {
           <ul
             id={LIST_ID}
             role="listbox"
-            aria-label="Suggestions"
+            aria-label={t('videos.suggestions')}
             className="list-group position-absolute w-100 mt-1 shadow"
             style={{ zIndex: 1000 }}
           >
@@ -120,7 +122,7 @@ const SearchBar = ({ initialQuery = '', onSearch }: Props) => {
         )}
       </div>
       <button type="submit" className="btn btn-primary">
-        Search
+        {t('videos.search')}
       </button>
     </form>
   );

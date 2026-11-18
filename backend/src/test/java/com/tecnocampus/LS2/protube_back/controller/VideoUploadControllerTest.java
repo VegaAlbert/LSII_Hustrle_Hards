@@ -9,6 +9,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -63,6 +64,9 @@ class VideoUploadControllerTest {
 
     @Autowired
     JwtService jwtService;
+
+    @Autowired
+    MessageSource messageSource;
 
     String token;
 
@@ -187,7 +191,7 @@ class VideoUploadControllerTest {
     @Test
     void mapsTooBigUploadsTo413() {
         ResponseEntity<ErrorResponse> response =
-                new ApiExceptionHandler().handleUploadTooBig(new MaxUploadSizeExceededException(100));
+                new ApiExceptionHandler(messageSource).handleUploadTooBig(new MaxUploadSizeExceededException(100));
 
         assertEquals(HttpStatus.PAYLOAD_TOO_LARGE, response.getStatusCode());
         assertEquals("The video must be at most 100 MB", response.getBody().fieldErrors().get("video"));
@@ -196,7 +200,8 @@ class VideoUploadControllerTest {
     @Test
     void mapsStorageErrorsTo500() {
         ResponseEntity<ErrorResponse> response =
-                new ApiExceptionHandler().handleVideoStorage(new VideoStorageException(new IOException("disk full")));
+                new ApiExceptionHandler(messageSource)
+                        .handleVideoStorage(new VideoStorageException(new IOException("disk full")));
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Could not store the video. Please try again later.", response.getBody().message());

@@ -1,7 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { usePopupMenu } from '../hooks/usePopupMenu';
+import { useTranslation } from '../i18n/i18nContext';
+import type { MessageKey } from '../i18n/messages';
 import { THEME_OPTIONS, type Theme } from '../settings/settings';
 import { useTheme } from '../theme/themeContext';
 import ThemeIcon from './ThemeIcon';
+
+const THEME_LABEL_KEYS: Record<Theme, MessageKey> = {
+  light: 'nav.themeLight',
+  dark: 'nav.themeDark',
+  system: 'nav.themeSystem',
+};
 
 /**
  * Dark mode switch of the navbar: a sun or moon button (the theme in use) that opens Light / Dark / System. Closes
@@ -9,34 +17,13 @@ import ThemeIcon from './ThemeIcon';
  */
 const ThemeMenu = () => {
   const { preference, theme, setPreference } = useTheme();
-  const [open, setOpen] = useState(false);
-  const container = useRef<HTMLDivElement>(null);
-  const button = useRef<HTMLButtonElement>(null);
-  const current = THEME_OPTIONS.find((option) => option.value === preference)?.label ?? 'System';
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (event: PointerEvent) => {
-      if (!container.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setOpen(false);
-        button.current?.focus();
-      }
-    };
-    document.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [open]);
+  const { t } = useTranslation();
+  const { open, toggle, close, container, button } = usePopupMenu();
+  const current = t(THEME_LABEL_KEYS[preference]);
 
   const choose = (value: Theme) => {
     setPreference(value);
-    setOpen(false);
-    button.current?.focus();
+    close();
   };
 
   return (
@@ -45,16 +32,16 @@ const ThemeMenu = () => {
         ref={button}
         type="button"
         className="pt-icon-btn"
-        aria-label={`Theme: ${current}`}
-        title={`Theme: ${current}`}
+        aria-label={t('nav.themeCurrent', { theme: current })}
+        title={t('nav.themeCurrent', { theme: current })}
         aria-expanded={open}
         aria-haspopup="true"
-        onClick={() => setOpen((value) => !value)}
+        onClick={toggle}
       >
         <ThemeIcon theme={theme} size={22} />
       </button>
       {open && (
-        <ul className="pt-menu pt-theme-menu" role="group" aria-label="Theme">
+        <ul className="pt-menu pt-theme-menu" role="group" aria-label={t('nav.theme')}>
           {THEME_OPTIONS.map((option) => (
             <li key={option.value}>
               <button
@@ -64,7 +51,7 @@ const ThemeMenu = () => {
                 onClick={() => choose(option.value)}
               >
                 <ThemeIcon theme={option.value} size={18} />
-                {option.label}
+                {t(THEME_LABEL_KEYS[option.value])}
               </button>
             </li>
           ))}

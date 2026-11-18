@@ -2,6 +2,7 @@ import { useId, useState, type FormEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { isUnauthorized, toApiError } from '../auth/authApi';
 import { useAuth } from '../auth/authContext';
+import { useTranslation } from '../i18n/i18nContext';
 import { MAX_COMMENT_LENGTH, postComment, postReply, type VideoComment } from '../videos/videosApi';
 import Avatar from './Avatar';
 
@@ -21,10 +22,11 @@ type Props = {
  */
 const CommentForm = ({ videoId, onCommentAdded, parentId, onCancel }: Props) => {
   const { user } = useAuth();
+  const { t, language } = useTranslation();
   const location = useLocation();
   const isReply = parentId !== undefined;
   const textareaId = useId();
-  const label = isReply ? 'Add a reply' : 'Add a comment';
+  const label = isReply ? t('comments.addReply') : t('comments.addComment');
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,9 +39,9 @@ const CommentForm = ({ videoId, onCommentAdded, parentId, onCancel }: Props) => 
   if (!user) {
     return (
       <div className="comment-login-prompt">
-        <span>Log in to comment on this video.</span>
+        <span>{t('comments.loginPrompt')}</span>
         <Link to="/login" state={loginState} className="btn btn-primary btn-sm">
-          Log in to comment
+          {t('comments.loginToComment')}
         </Link>
       </div>
     );
@@ -61,7 +63,7 @@ const CommentForm = ({ videoId, onCommentAdded, parentId, onCancel }: Props) => 
       if (isUnauthorized(err)) {
         setSessionExpired(true);
       } else {
-        const apiError = toApiError(err);
+        const apiError = toApiError(err, language);
         setError(apiError.fieldErrors.text ?? apiError.message);
       }
     } finally {
@@ -80,7 +82,7 @@ const CommentForm = ({ videoId, onCommentAdded, parentId, onCancel }: Props) => 
           id={textareaId}
           className="form-control"
           rows={2}
-          placeholder={`${label}...`}
+          placeholder={t('comments.placeholder', { label })}
           // A reply form is opened on purpose, so the user can type right away
           autoFocus={isReply}
           maxLength={MAX_COMMENT_LENGTH}
@@ -94,11 +96,11 @@ const CommentForm = ({ videoId, onCommentAdded, parentId, onCancel }: Props) => 
         )}
         {sessionExpired && (
           <p role="alert" className="text-danger small mt-2 mb-0">
-            Your session has expired.{' '}
+            {t('comments.sessionExpired')}{' '}
             <Link to="/login" state={loginState}>
-              Log in again
+              {t('comments.logInAgain')}
             </Link>{' '}
-            to {isReply ? 'reply' : 'comment'}.
+            {isReply ? t('comments.toReply') : t('comments.toComment')}
           </p>
         )}
         <div className="comment-form-actions">
@@ -112,10 +114,12 @@ const CommentForm = ({ videoId, onCommentAdded, parentId, onCancel }: Props) => 
             // A reply form can always be closed; the comment form only clears its text
             disabled={submitting || (!isReply && text.length === 0)}
           >
-            Cancel
+            {t('comments.cancel')}
           </button>
           <button type="submit" className="btn btn-primary btn-sm" disabled={!canSubmit}>
-            {isReply ? (submitting ? 'Replying...' : 'Reply') : submitting ? 'Commenting...' : 'Comment'}
+            {isReply
+              ? t(submitting ? 'comments.replying' : 'comments.reply')
+              : t(submitting ? 'comments.commenting' : 'comments.comment')}
           </button>
         </div>
       </div>

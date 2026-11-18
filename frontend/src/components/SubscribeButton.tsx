@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { isUnauthorized } from '../auth/authApi';
 import { useAuth } from '../auth/authContext';
+import { useTranslation } from '../i18n/i18nContext';
 import {
   fetchSubscription,
   formatSubscribers,
@@ -20,6 +21,7 @@ type Props = {
  */
 const SubscribeButton = ({ channel }: Props) => {
   const { user } = useAuth();
+  const { t, language } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [state, setState] = useState<SubscriptionState | null>(null);
@@ -58,11 +60,7 @@ const SubscribeButton = ({ channel }: Props) => {
     try {
       setState(await setSubscription(channel, !subscribed));
     } catch (err: unknown) {
-      setError(
-        isUnauthorized(err)
-          ? 'Your session has expired. Log in again to subscribe.'
-          : 'Could not update your subscription.'
-      );
+      setError(isUnauthorized(err) ? t('video.subscribeSessionExpired') : t('video.subscribeError'));
     } finally {
       setBusy(false);
     }
@@ -70,7 +68,7 @@ const SubscribeButton = ({ channel }: Props) => {
 
   return (
     <div className="subscribe-box">
-      {state && <span className="subscriber-count">{formatSubscribers(state.subscribers)}</span>}
+      {state && <span className="subscriber-count">{formatSubscribers(state.subscribers, language)}</span>}
       {!ownChannel && (
         <button
           type="button"
@@ -80,7 +78,7 @@ const SubscribeButton = ({ channel }: Props) => {
           onClick={toggle}
           disabled={busy}
         >
-          {subscribed ? 'Subscribed' : 'Subscribe'}
+          {subscribed ? t('video.subscribed') : t('video.subscribe')}
         </button>
       )}
       {error && (
