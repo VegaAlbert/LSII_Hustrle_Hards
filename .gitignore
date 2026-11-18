@@ -14,3 +14,4 @@ backend/mvnw.cmd
 ### Local config and data ###
 .env
 /videos
+.scannerwork/

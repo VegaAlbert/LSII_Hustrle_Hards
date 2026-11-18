@@ -14,7 +14,8 @@ export default {
     '\\.css$': '<rootDir>/src/test/styleMock.ts',
   },
   collectCoverage: true,
-  coverageReporters: ['json', 'html'],
+  // lcov is read by SonarQube (sonar-project.properties)
+  coverageReporters: ['json', 'html', 'lcov'],
   coverageThreshold: {
     global: {
       branches: 75,

@@ -13,10 +13,16 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      # Empty until the SonarCloud secret is configured: the analysis step is then skipped
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Full history, so SonarCloud can tell new code from old code
+          fetch-depth: 0
 
       - name: Set up Node.js for frontend
         uses: actions/setup-node@v4
@@ -69,6 +75,16 @@ jobs:
           name: backend-coverage-report
           path: backend/target/site/jacoco/
           if-no-files-found: error
+
+      # Code smells, bugs and coverage (sonar-project.properties), with the reports generated above
+      - name: SonarCloud analysis
+        if: ${{ env.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_HOST_URL: https://sonarcloud.io
+        with:
+          args: >
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
 
   e2e:
     # NFR-02: golden paths in a real browser against a fresh backend (dev profile, in-memory H2) and frontend

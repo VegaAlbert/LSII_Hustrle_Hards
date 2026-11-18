@@ -21,6 +21,9 @@ The Maven wrapper is not committed: use `mvn` locally (CI generates `./mvnw`).
 * Frontend checks: `npm run lint`, `npm run format`, `npm run build`
 * E2E (starts its own backend on 8081 and frontend on 5174): `cd e2e && npm ci && npx playwright install chromium`
   once, then `npm test` · one file: `npx playwright test tests/comments.spec.ts`
+* SonarQube (after the backend and frontend tests): `docker compose --profile sonar up -d sonarqube`, then
+  `SONAR_TOKEN=<token> docker compose --profile sonar run --rm sonar-scanner` → http://localhost:9000. In CI it runs
+  on SonarCloud once the `SONAR_TOKEN` secret exists (see DEVELOPMENT.md).
 
 Before opening a PR, run what CI runs (`.github/workflows/main.yml`): frontend `npm ci`, `npm run build`,
 `npm run test`, `npm run lint`; backend `mvn clean verify -Pcoverage`; e2e `npm run typecheck`, `npm test`.
