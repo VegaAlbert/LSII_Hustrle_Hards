@@ -70,6 +70,7 @@ export ENV_PROTUBE_STORE_DIR=/home/me/protube/videos/
 ### Google login
 
 "Sign in with Google" is optional: without a client id the app works as before and the Google button is hidden.
+Step-by-step setup for teammates, with troubleshooting: [docs/GOOGLE_LOGIN.md](./docs/GOOGLE_LOGIN.md).
 The frontend gets an ID token from Google and sends it to `POST /api/auth/google`; the backend checks it was signed
 by Google for our client id, then logs in the account with the same email (or creates it) and returns the usual
 ProTube JWT. Only the **client id** is needed (it is public, there is no client secret).

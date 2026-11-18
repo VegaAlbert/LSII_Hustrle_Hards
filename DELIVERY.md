@@ -1,0 +1,1 @@
+//Document per les necessitats de la entrega del projecte.
