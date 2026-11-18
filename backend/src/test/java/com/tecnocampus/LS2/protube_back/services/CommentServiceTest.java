@@ -57,7 +57,7 @@ class CommentServiceTest {
     void savesTheTrimmedCommentOfTheUserDatedNowWithoutLikes() {
         Video video = video();
         when(videoRepository.findById(5L)).thenReturn(Optional.of(video));
-        when(userRepository.existsByUsername("alice")).thenReturn(true);
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(new User("alice", "alice@example.com", "hash")));
         when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> invocation.getArgument(0));
         Instant before = Instant.now();
 
@@ -67,6 +67,8 @@ class CommentServiceTest {
         verify(commentRepository).save(saved.capture());
         Comment comment = saved.getValue();
         assertEquals("alice", comment.getAuthor());
+        // Linked to the account, so it is renamed and deleted with it
+        assertEquals("alice", comment.getUser().getUsername());
         assertEquals("Great song!", comment.getText());
         assertEquals(0, comment.getLikeCount());
         assertFalse(comment.getPublishedAt().isBefore(before));
@@ -90,7 +92,7 @@ class CommentServiceTest {
     @Test
     void throwsWhenTheUserOfTheTokenNoLongerExists() {
         when(videoRepository.findById(5L)).thenReturn(Optional.of(video()));
-        when(userRepository.existsByUsername("ghost")).thenReturn(false);
+        when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
 
         assertThrows(InvalidCredentialsException.class, () -> commentService.addComment(5L, "ghost", "Hi"));
         verify(commentRepository, never()).save(any());
@@ -105,7 +107,7 @@ class CommentServiceTest {
         video.addComment(comment);
         when(videoRepository.findById(5L)).thenReturn(Optional.of(video));
         when(commentRepository.findByIdAndVideoId(3L, 5L)).thenReturn(Optional.of(comment));
-        when(userRepository.existsByUsername("alice")).thenReturn(true);
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(new User("alice", "alice@example.com", "hash")));
         when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         CommentResponse response = commentService.addReply(5L, 3L, "alice", "  Agree!  ");
@@ -114,6 +116,7 @@ class CommentServiceTest {
         verify(commentRepository).save(saved.capture());
         Comment reply = saved.getValue();
         assertEquals("alice", reply.getAuthor());
+        assertEquals("alice", reply.getUser().getUsername());
         assertEquals("Agree!", reply.getText());
         assertEquals(0, reply.getLikeCount());
         assertSame(comment, reply.getParent());
@@ -133,7 +136,7 @@ class CommentServiceTest {
         comment.addReply(firstReply);
         when(videoRepository.findById(5L)).thenReturn(Optional.of(video));
         when(commentRepository.findByIdAndVideoId(4L, 5L)).thenReturn(Optional.of(firstReply));
-        when(userRepository.existsByUsername("alice")).thenReturn(true);
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(new User("alice", "alice@example.com", "hash")));
         when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         commentService.addReply(5L, 4L, "alice", "Me too");
@@ -168,7 +171,7 @@ class CommentServiceTest {
     void replyThrowsWhenTheUserOfTheTokenNoLongerExists() {
         when(videoRepository.findById(5L)).thenReturn(Optional.of(video()));
         when(commentRepository.findByIdAndVideoId(3L, 5L)).thenReturn(Optional.of(comment()));
-        when(userRepository.existsByUsername("ghost")).thenReturn(false);
+        when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
 
         assertThrows(InvalidCredentialsException.class, () -> commentService.addReply(5L, 3L, "ghost", "Hi"));
         verify(commentRepository, never()).save(any());

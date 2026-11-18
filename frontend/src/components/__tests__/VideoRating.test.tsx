@@ -32,7 +32,14 @@ const renderRating = (user: AuthContextValue['user'] = alice) =>
   render(
     <I18nProvider>
       <AuthContext.Provider
-        value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+        value={{
+          user,
+          login: jest.fn(),
+          register: jest.fn(),
+          loginWithGoogle: jest.fn(),
+          logout: jest.fn(),
+          updateSession: jest.fn(),
+        }}
       >
         <MemoryRouter initialEntries={['/videos/5']}>
           <Routes>

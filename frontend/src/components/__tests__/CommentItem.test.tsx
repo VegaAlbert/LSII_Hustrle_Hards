@@ -45,7 +45,14 @@ const renderItem = (user: AuthContextValue['user'], comment = bobComment()) => {
   const onLikeChanged = jest.fn();
   render(
     <AuthContext.Provider
-      value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+      value={{
+        user,
+        login: jest.fn(),
+        register: jest.fn(),
+        loginWithGoogle: jest.fn(),
+        logout: jest.fn(),
+        updateSession: jest.fn(),
+      }}
     >
       <MemoryRouter initialEntries={['/videos/5']}>
         <Routes>

@@ -21,6 +21,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => setSession(null), []);
 
+  const updateSession = useCallback((next: Session) => setSession(next), []);
+
   const login = useCallback(async (username: string, password: string) => {
     setSession(await authApi.login(username, password));
   }, []);
@@ -82,8 +84,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [token, logout]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user: session?.user ?? null, login, register, loginWithGoogle, logout }),
-    [session, login, register, loginWithGoogle, logout]
+    () => ({ user: session?.user ?? null, login, register, loginWithGoogle, logout, updateSession }),
+    [session, login, register, loginWithGoogle, logout, updateSession]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

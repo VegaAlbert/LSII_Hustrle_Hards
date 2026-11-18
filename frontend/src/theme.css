@@ -147,3 +147,13 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Text size of the settings page (src/settings/preferences.ts): every size of the app is in rem, so scaling the
+   root font size scales all the text. Medium keeps the browser default */
+html[data-text-size='small'] {
+  font-size: 87.5%;
+}
+
+html[data-text-size='large'] {
+  font-size: 112.5%;
+}

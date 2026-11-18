@@ -1,6 +1,7 @@
 // User preferences shown in the settings page.
-// The theme (ThemeProvider, dark mode) and the language (I18nProvider) are applied and saved on this device. The rest
-// are only kept in the page state for now: applying and saving each one is still to be done.
+// The theme (ThemeProvider, dark mode), the language (I18nProvider) and the preferences of preferences.ts (text size
+// and playback) are applied and saved on this device. Privacy is only kept in the page state for now: applying and
+// saving it is still to be done.
 // Labels shown to users live in src/i18n/messages; LANGUAGES keeps each language name in that language.
 
 export type Theme = 'light' | 'dark' | 'system';
@@ -12,30 +13,20 @@ export const THEME_OPTIONS: { value: Theme; label: string }[] = [
 ];
 export type Language = 'en' | 'es' | 'ca';
 export type TextSize = 'small' | 'medium' | 'large';
-export type VideoQuality = 'auto' | '1080p' | '720p' | '480p';
 
-export type Settings = {
-  theme: Theme;
-  textSize: TextSize;
-  language: Language;
-  autoplay: boolean;
-  videoQuality: VideoQuality;
-  playbackSpeed: number;
-  emailOnComment: boolean;
-  emailOnNewVideo: boolean;
+export const TEXT_SIZES: { value: TextSize; label: string }[] = [
+  { value: 'small', label: 'Small' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'large', label: 'Large' },
+];
+
+// Not saved yet (see the note above)
+export type PendingSettings = {
   publicProfile: boolean;
   watchHistory: boolean;
 };
 
-export const DEFAULT_SETTINGS: Settings = {
-  theme: 'system',
-  textSize: 'medium',
-  language: 'en',
-  autoplay: true,
-  videoQuality: 'auto',
-  playbackSpeed: 1,
-  emailOnComment: true,
-  emailOnNewVideo: false,
+export const DEFAULT_PENDING_SETTINGS: PendingSettings = {
   publicProfile: true,
   watchHistory: true,
 };

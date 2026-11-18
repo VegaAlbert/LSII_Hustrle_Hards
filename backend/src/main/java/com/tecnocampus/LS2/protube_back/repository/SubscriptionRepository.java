@@ -1,6 +1,7 @@
 package com.tecnocampus.LS2.protube_back.repository;
 
 import com.tecnocampus.LS2.protube_back.domain.Subscription;
+import com.tecnocampus.LS2.protube_back.domain.User;
 import com.tecnocampus.LS2.protube_back.domain.Video;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,4 +33,9 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
             WHERE v.uploader IN (SELECT s.channel FROM Subscription s WHERE s.subscriber.id = :subscriberId)
             """)
     Page<Video> findVideosOfSubscribedChannels(@Param("subscriberId") Long subscriberId, Pageable pageable);
+
+    // Deleting an account: the channels it follows and the users following it
+    @Modifying(flushAutomatically = true)
+    @Query("DELETE FROM Subscription s WHERE s.subscriber = :user OR s.channel = :user")
+    int deleteAllOfUser(@Param("user") User user);
 }

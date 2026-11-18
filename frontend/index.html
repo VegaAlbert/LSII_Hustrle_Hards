@@ -20,6 +20,15 @@
         }
         document.documentElement.setAttribute('data-bs-theme', theme);
         document.documentElement.style.colorScheme = theme;
+        // Text size of the settings, for the same reason. Same key and values as src/settings/preferences.ts
+        try {
+          var size = JSON.parse(localStorage.getItem('protube.preferences') || '{}').textSize;
+          if (size === 'small' || size === 'large') {
+            document.documentElement.setAttribute('data-text-size', size);
+          }
+        } catch (e) {
+          // Storage blocked or broken value: default text size
+        }
       })();
       // i18n: sets the language of the page before it is drawn (screen readers, hyphenation). Same key and rules as
       // src/i18n/languagePreference.ts: saved language, else the first browser language ProTube speaks, else English

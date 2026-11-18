@@ -7,6 +7,11 @@ export type User = {
   id: number;
   username: string;
   email: string;
+  // false for accounts created with Google that have not set a password yet. Missing in sessions saved before
+  // these fields existed: treated as true until GET /auth/me refreshes the user
+  hasPassword?: boolean;
+  // Whether the account can log in with Google
+  googleLinked?: boolean;
 };
 
 export type AuthResponse = {

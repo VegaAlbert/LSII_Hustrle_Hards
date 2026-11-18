@@ -10,6 +10,7 @@ const renderNavBar = (user: AuthContextValue['user'], showLogin?: boolean) => {
     register: jest.fn(),
     loginWithGoogle: jest.fn(),
     logout: jest.fn(),
+    updateSession: jest.fn(),
   };
   const onHome = jest.fn();
   const onLogin = jest.fn();
@@ -103,6 +104,7 @@ describe('NavBar', () => {
       register: jest.fn(),
       loginWithGoogle: jest.fn(),
       logout: jest.fn(),
+      updateSession: jest.fn(),
     };
     const onAnalytics = jest.fn();
     render(
@@ -150,6 +152,7 @@ describe('NavBar', () => {
       register: jest.fn(),
       loginWithGoogle: jest.fn(),
       logout: jest.fn(),
+      updateSession: jest.fn(),
     };
     const onSubscriptions = jest.fn();
     render(
