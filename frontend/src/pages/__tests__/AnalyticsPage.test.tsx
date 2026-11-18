@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import AnalyticsPage from '../AnalyticsPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 import { fetchMyAnalytics, type Analytics } from '../../analytics/analyticsApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../analytics/analyticsApi', () => ({
   ...jest.requireActual('../../analytics/analyticsApi'),
@@ -83,16 +84,18 @@ const CurrentPath = () => <p>Page {useLocation().pathname}</p>;
 
 const renderPage = (user: AuthContextValue['user'] = alice) =>
   render(
-    <AuthContext.Provider
-      value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
-    >
-      <MemoryRouter initialEntries={['/analytics']}>
-        <Routes>
-          <Route path="/analytics" element={<AnalyticsPage />} />
-          <Route path="*" element={<CurrentPath />} />
-        </Routes>
-      </MemoryRouter>
-    </AuthContext.Provider>
+    <I18nProvider>
+      <AuthContext.Provider
+        value={{ user, login: jest.fn(), register: jest.fn(), loginWithGoogle: jest.fn(), logout: jest.fn() }}
+      >
+        <MemoryRouter initialEntries={['/analytics']}>
+          <Routes>
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="*" element={<CurrentPath />} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </I18nProvider>
   );
 
 describe('AnalyticsPage', () => {
@@ -215,5 +218,32 @@ describe('AnalyticsPage', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Your session has expired.');
     expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute('href', '/login');
+  });
+  describe('in other languages', () => {
+    afterEach(() => localStorage.clear());
+
+    it('shows the dashboard in Spanish with Spanish numbers and dates', async () => {
+      localStorage.setItem('protube.language', 'es');
+      mockedFetchMyAnalytics.mockResolvedValueOnce(analytics);
+
+      renderPage();
+
+      const totals = await screen.findByRole('list', { name: 'Totales' });
+      expect(within(totals).getByText('Visualizaciones totales').nextSibling).toHaveTextContent('1234');
+      expect(screen.getByRole('heading', { name: 'Estadísticas' })).toBeInTheDocument();
+      expect(screen.getByText('Registrados: 35,2 % · Anónimos: 64,8 %')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Visualizaciones de los últimos 30 días' })).toBeInTheDocument();
+      expect(screen.getByText('17 nov: 1 visualización')).toBeInTheDocument();
+    });
+
+    it('shows the empty state in Catalan', async () => {
+      localStorage.setItem('protube.language', 'ca');
+      mockedFetchMyAnalytics.mockResolvedValueOnce(empty);
+
+      renderPage();
+
+      expect(await screen.findByRole('heading', { name: 'Encara no hi ha estadístiques' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Penja un vídeo' })).toHaveAttribute('href', '/upload');
+    });
   });
 });

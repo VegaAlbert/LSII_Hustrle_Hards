@@ -6,6 +6,7 @@ import UploadPage from '../UploadPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 import { readVideoFile } from '../../videos/videoFile';
 import { uploadVideo, type VideoDetail } from '../../videos/videosApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../videos/videoFile', () => ({
   ...jest.requireActual('../../videos/videoFile'),
@@ -39,7 +40,8 @@ const renderPage = (user: AuthContextValue['user'] = alice) =>
           <Route path="/videos/:id" element={<VideoPage />} />
         </Routes>
       </MemoryRouter>
-    </AuthContext.Provider>
+    </AuthContext.Provider>,
+    { wrapper: I18nProvider }
   );
 
 const chooseVideo = async (user: ReturnType<typeof userEvent.setup>, file: File = videoFile) => {
@@ -250,5 +252,38 @@ describe('UploadPage', () => {
     await user.click(screen.getByRole('button', { name: 'Choose another file' }));
 
     expect(screen.getByText('Drag and drop a video file to upload')).toBeInTheDocument();
+  });
+
+  describe('in another language', () => {
+    afterEach(() => localStorage.clear());
+
+    it('asks for a video file in Spanish', () => {
+      localStorage.setItem('protube.language', 'es');
+      renderPage();
+
+      expect(screen.getByRole('heading', { name: 'Subir vídeo' })).toBeInTheDocument();
+      expect(screen.getByText('Arrastra y suelta un archivo de vídeo para subirlo')).toBeInTheDocument();
+    });
+
+    it('rejects a wrong file and shows the form in Catalan', async () => {
+      const user = userEvent.setup({ applyAccept: false });
+      localStorage.setItem('protube.language', 'ca');
+      renderPage();
+
+      await user.upload(
+        screen.getByLabelText('Selecciona un fitxer de vídeo'),
+        new File(['x'], 'clip.mov', { type: 'video/quicktime' })
+      );
+      expect(screen.getByRole('alert')).toHaveTextContent('Tria un vídeo MP4 o WebM.');
+
+      await user.upload(screen.getByLabelText('Selecciona un fitxer de vídeo'), videoFile);
+
+      expect(await screen.findByLabelText('Títol (obligatori)')).toHaveValue('my summer trip');
+      expect(
+        await screen.findByRole('button', { name: 'Fes servir el fotograma 1 com a miniatura' })
+      ).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'Viatges i esdeveniments' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Publica' })).toBeInTheDocument();
+    });
   });
 });

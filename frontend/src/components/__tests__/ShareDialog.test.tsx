@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ShareDialog from '../ShareDialog';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 const url = 'http://localhost/videos/5';
 
@@ -50,5 +51,22 @@ describe('ShareDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Copy' }));
 
     expect(screen.getByRole('button', { name: 'Copy' })).toBeInTheDocument();
+  });
+
+  it('is shown in Catalan', async () => {
+    const user = userEvent.setup();
+    localStorage.setItem('protube.language', 'ca');
+    render(
+      <I18nProvider>
+        <ShareDialog url={url} title="Trip" currentTime={83.6} onClose={jest.fn()} />
+      </I18nProvider>
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Comparteix' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Comparteix a Correu' })).toBeInTheDocument();
+    await user.click(screen.getByLabelText('Comença a 1:23'));
+    expect(screen.getByLabelText('Enllaç del vídeo')).toHaveValue(`${url}?t=83`);
+    expect(screen.getByRole('button', { name: 'Tanca' })).toBeInTheDocument();
+    localStorage.clear();
   });
 });

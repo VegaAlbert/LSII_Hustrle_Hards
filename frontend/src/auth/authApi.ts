@@ -1,4 +1,6 @@
 import axios, { AxiosError } from 'axios';
+import { translate } from '../i18n/translate';
+import type { Language } from '../settings/settings';
 import { getEnv } from '../utils/Env';
 
 export type User = {
@@ -50,15 +52,17 @@ export function isUnauthorized(error: unknown): boolean {
 }
 
 /**
- * Converts any error thrown by the calls above into a message (and field errors) ready to show in a form.
+ * Converts any error thrown by the calls above into a message (and field errors) ready to show in a form. The
+ * backend already answers in the language of the Accept-Language header; `language` is only used for the messages
+ * written here (no connection, no message in the answer).
  */
-export function toApiError(error: unknown): ApiError {
+export function toApiError(error: unknown, language: Language = 'en'): ApiError {
   const response = (error as AxiosError<Partial<ApiError>>).response;
   if (!response) {
-    return { message: 'Could not connect to the server. Please try again later.', fieldErrors: {} };
+    return { message: translate(language, 'common.connectionError'), fieldErrors: {} };
   }
   return {
-    message: response.data?.message ?? 'Unexpected error. Please try again.',
+    message: response.data?.message ?? translate(language, 'common.unexpectedError'),
     fieldErrors: response.data?.fieldErrors ?? {},
   };
 }

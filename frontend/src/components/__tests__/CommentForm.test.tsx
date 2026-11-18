@@ -5,6 +5,7 @@ import { AxiosError, type AxiosResponse } from 'axios';
 import CommentForm from '../CommentForm';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 import { postComment, postReply, type VideoComment } from '../../videos/videosApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../videos/videosApi', () => ({
   ...jest.requireActual('../../videos/videosApi'),
@@ -49,7 +50,8 @@ const renderForm = (user: AuthContextValue['user'], onCommentAdded = jest.fn()) 
           <Route path="/login" element={<LoginStub />} />
         </Routes>
       </MemoryRouter>
-    </AuthContext.Provider>
+    </AuthContext.Provider>,
+    { wrapper: I18nProvider }
   );
   return onCommentAdded;
 };
@@ -179,6 +181,27 @@ describe('CommentForm', () => {
       await user.click(screen.getByRole('button', { name: 'Reply' }));
 
       expect(await screen.findByRole('alert')).toHaveTextContent('Log in again to reply.');
+    });
+  });
+
+  describe('in another language', () => {
+    afterEach(() => localStorage.clear());
+
+    it('asks anonymous visitors to log in in Spanish', () => {
+      localStorage.setItem('protube.language', 'es');
+      renderForm(null);
+
+      expect(screen.getByText('Inicia sesión para comentar este vídeo.')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Inicia sesión para comentar' })).toBeInTheDocument();
+    });
+
+    it('labels the form and its buttons in Catalan', () => {
+      localStorage.setItem('protube.language', 'ca');
+      renderForm(alice);
+
+      expect(screen.getByLabelText('Afegeix un comentari')).toHaveAttribute('placeholder', 'Afegeix un comentari...');
+      expect(screen.getByRole('button', { name: 'Comenta' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Cancel·la' })).toBeInTheDocument();
     });
   });
 });

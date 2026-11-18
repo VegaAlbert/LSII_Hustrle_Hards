@@ -21,6 +21,27 @@
         document.documentElement.setAttribute('data-bs-theme', theme);
         document.documentElement.style.colorScheme = theme;
       })();
+      // i18n: sets the language of the page before it is drawn (screen readers, hyphenation). Same key and rules as
+      // src/i18n/languagePreference.ts: saved language, else the first browser language ProTube speaks, else English
+      (function () {
+        var supported = ['en', 'es', 'ca'];
+        var language = 'en';
+        try {
+          var saved = localStorage.getItem('protube.language');
+          var browser = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
+          var candidates = saved ? [saved].concat(browser) : browser;
+          for (var i = 0; i < candidates.length; i++) {
+            var base = String(candidates[i]).toLowerCase().split('-')[0];
+            if (supported.indexOf(base) !== -1) {
+              language = base;
+              break;
+            }
+          }
+        } catch (e) {
+          // Storage blocked: keep English
+        }
+        document.documentElement.lang = language;
+      })();
     </script>
     <link rel="icon" type="image/svg+xml" href="/protube-favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

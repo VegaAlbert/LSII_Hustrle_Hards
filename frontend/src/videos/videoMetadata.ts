@@ -1,3 +1,5 @@
+import { translate } from '../i18n/translate';
+import type { Language } from '../settings/settings';
 import type { VideoCategory } from './categories';
 
 // Same limits as UploadVideoRequest and UpdateVideoRequest in the backend
@@ -16,14 +18,18 @@ export type VideoMetadataValues = {
 export type FieldErrors = Record<string, string>;
 
 /**
- * Errors of the fields the browser can check before sending the form; the backend applies the same rules.
+ * Errors, in the given language, of the fields the browser can check before sending the form; the backend applies
+ * the same rules.
  */
-export function validateMetadata(values: VideoMetadataValues): FieldErrors {
+export function validateMetadata(values: VideoMetadataValues, language: Language = 'en'): FieldErrors {
   const errors: FieldErrors = {};
-  if (!values.title.trim()) errors.title = 'Title is required';
-  else if (values.title.length > MAX_TITLE) errors.title = `Title must be at most ${MAX_TITLE} characters`;
+  // Limits passed as text so they read "5000", like the backend message, and not "5,000"
+  if (!values.title.trim()) errors.title = translate(language, 'upload.titleRequired');
+  else if (values.title.length > MAX_TITLE) {
+    errors.title = translate(language, 'upload.titleTooLong', { max: String(MAX_TITLE) });
+  }
   if (values.description.length > MAX_DESCRIPTION) {
-    errors.description = `Description must be at most ${MAX_DESCRIPTION} characters`;
+    errors.description = translate(language, 'upload.descriptionTooLong', { max: String(MAX_DESCRIPTION) });
   }
   return errors;
 }

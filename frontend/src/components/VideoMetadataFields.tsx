@@ -1,7 +1,8 @@
 import { useId, type ReactNode } from 'react';
 import TagInput from './TagInput';
+import { useTranslation } from '../i18n/i18nContext';
 import { extractHashtags } from '../utils/hashtags';
-import { VIDEO_CATEGORIES, type VideoCategory } from '../videos/categories';
+import { categoryLabel, VIDEO_CATEGORIES, type VideoCategory } from '../videos/categories';
 import { MAX_DESCRIPTION, MAX_TITLE, type FieldErrors, type VideoMetadataValues } from '../videos/videoMetadata';
 
 type Props = {
@@ -17,6 +18,7 @@ type Props = {
  * (US-06) and the edit page (US-07), so both forms look and validate the same.
  */
 const VideoMetadataFields = ({ values, onChange, errors, afterDescription }: Props) => {
+  const { t, language } = useTranslation();
   const ids = useId();
   const hashtags = extractHashtags(values.description);
 
@@ -24,14 +26,14 @@ const VideoMetadataFields = ({ values, onChange, errors, afterDescription }: Pro
     <>
       <div className="upload-field">
         <label htmlFor={`${ids}-title`} className="form-label">
-          Title (required)
+          {t('upload.titleLabel')}
         </label>
         <input
           id={`${ids}-title`}
           className={`form-control${errors.title ? ' is-invalid' : ''}`}
           value={values.title}
           maxLength={MAX_TITLE}
-          placeholder="Add a title that describes your video"
+          placeholder={t('upload.titlePlaceholder')}
           aria-describedby={`${ids}-title-hint`}
           aria-invalid={Boolean(errors.title)}
           onChange={(event) => onChange({ title: event.target.value })}
@@ -46,7 +48,7 @@ const VideoMetadataFields = ({ values, onChange, errors, afterDescription }: Pro
 
       <div className="upload-field">
         <label htmlFor={`${ids}-description`} className="form-label">
-          Description
+          {t('upload.description')}
         </label>
         <textarea
           id={`${ids}-description`}
@@ -54,7 +56,7 @@ const VideoMetadataFields = ({ values, onChange, errors, afterDescription }: Pro
           rows={6}
           value={values.description}
           maxLength={MAX_DESCRIPTION}
-          placeholder="Tell viewers about your video. Add #hashtags so people can find it."
+          placeholder={t('upload.descriptionPlaceholder')}
           aria-describedby={`${ids}-description-hint`}
           aria-invalid={Boolean(errors.description)}
           onChange={(event) => onChange({ description: event.target.value })}
@@ -67,7 +69,7 @@ const VideoMetadataFields = ({ values, onChange, errors, afterDescription }: Pro
         </div>
         {hashtags.length > 0 && (
           <p className="upload-hashtags">
-            <span className="text-muted">Hashtags: </span>
+            <span className="text-muted">{t('upload.hashtags')}</span>
             {hashtags.map((tag) => (
               <span key={tag} className="hashtag-chip">
                 #{tag}
@@ -85,7 +87,7 @@ const VideoMetadataFields = ({ values, onChange, errors, afterDescription }: Pro
 
       <div className="upload-field">
         <label htmlFor={`${ids}-category`} className="form-label">
-          Category
+          {t('upload.category')}
         </label>
         <select
           id={`${ids}-category`}
@@ -93,20 +95,18 @@ const VideoMetadataFields = ({ values, onChange, errors, afterDescription }: Pro
           value={values.category}
           onChange={(event) => onChange({ category: event.target.value as VideoCategory | '' })}
         >
-          <option value="">No category</option>
+          <option value="">{t('upload.noCategory')}</option>
           {VIDEO_CATEGORIES.map((item) => (
-            <option key={item.value} value={item.value}>
-              {item.label}
+            <option key={item} value={item}>
+              {categoryLabel(item, language)}
             </option>
           ))}
         </select>
       </div>
 
       <fieldset className="upload-field">
-        <legend className="form-label">Age restriction</legend>
-        <p className="text-muted small mb-2">
-          Age-restricted videos are only shown to logged-in viewers who confirm they are over 18.
-        </p>
+        <legend className="form-label">{t('upload.ageRestriction')}</legend>
+        <p className="text-muted small mb-2">{t('upload.ageRestrictionHint')}</p>
         <div className="form-check">
           <input
             id={`${ids}-age-no`}
@@ -117,7 +117,7 @@ const VideoMetadataFields = ({ values, onChange, errors, afterDescription }: Pro
             onChange={() => onChange({ ageRestricted: false })}
           />
           <label htmlFor={`${ids}-age-no`} className="form-check-label">
-            No, it is suitable for everyone
+            {t('upload.ageNo')}
           </label>
         </div>
         <div className="form-check">
@@ -130,7 +130,7 @@ const VideoMetadataFields = ({ values, onChange, errors, afterDescription }: Pro
             onChange={() => onChange({ ageRestricted: true })}
           />
           <label htmlFor={`${ids}-age-yes`} className="form-check-label">
-            Yes, restrict my video to viewers over 18
+            {t('upload.ageYes')}
           </label>
         </div>
       </fieldset>

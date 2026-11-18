@@ -64,7 +64,8 @@ public class SubscriptionService {
         requireChannel(channel);
         User subscriber = findUser(username);
         if (subscriber.getUsername().equals(channel)) {
-            throw new InvalidSubscriptionException("You cannot subscribe to your own channel");
+            throw new InvalidSubscriptionException("error.subscription.self",
+                    "You cannot subscribe to your own channel");
         }
         if (!subscriptionRepository.existsBySubscriberIdAndChannel(subscriber.getId(), channel)) {
             subscriptionRepository.save(new Subscription(subscriber, channel, Instant.now()));

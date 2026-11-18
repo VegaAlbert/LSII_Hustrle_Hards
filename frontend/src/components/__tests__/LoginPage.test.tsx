@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import LoginPage from '../LoginPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
+import { I18nProvider } from '../../i18n/I18nProvider';
+import { LANGUAGE_STORAGE_KEY } from '../../i18n/languagePreference';
 
 // Google's real button needs Google's script; this stand-in hands over a fake credential when clicked
 jest.mock('../GoogleLoginButton', () => ({
@@ -12,7 +14,7 @@ jest.mock('../GoogleLoginButton', () => ({
   ),
 }));
 
-const renderLoginPage = (overrides: Partial<AuthContextValue> = {}) => {
+const renderLoginPage = (overrides: Partial<AuthContextValue> = {}, withI18n = false) => {
   const auth: AuthContextValue = {
     user: null,
     login: jest.fn().mockResolvedValue(undefined),
@@ -22,11 +24,12 @@ const renderLoginPage = (overrides: Partial<AuthContextValue> = {}) => {
     ...overrides,
   };
   const onSuccess = jest.fn();
-  render(
+  const page = (
     <AuthContext.Provider value={auth}>
       <LoginPage onSuccess={onSuccess} />
     </AuthContext.Provider>
   );
+  render(withI18n ? <I18nProvider>{page}</I18nProvider> : page);
   return { auth, onSuccess };
 };
 
@@ -175,5 +178,31 @@ describe('LoginPage', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid Google credential');
     expect(onSuccess).not.toHaveBeenCalled();
+  });
+
+  describe('in another language', () => {
+    afterEach(() => localStorage.clear());
+
+    it('shows the form and its validation errors in Spanish', () => {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, 'es');
+      renderLoginPage({}, true);
+
+      expect(screen.getByRole('heading', { name: 'Iniciar sesión' })).toBeInTheDocument();
+      submit('Entrar');
+
+      expect(screen.getByText('El nombre de usuario es obligatorio')).toBeInTheDocument();
+      expect(screen.getByText('La contraseña es obligatoria')).toBeInTheDocument();
+    });
+
+    it('shows the registration form in Catalan', () => {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, 'ca');
+      renderLoginPage({}, true);
+
+      submit("Registra't");
+
+      expect(screen.getByRole('heading', { name: 'Crea un compte' })).toBeInTheDocument();
+      expect(screen.getByLabelText('Correu electrònic')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Mostra la contrasenya' })).toBeInTheDocument();
+    });
   });
 });

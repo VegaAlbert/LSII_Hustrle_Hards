@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { useTranslation } from '../i18n/i18nContext';
 import { formatDuration } from '../utils/formatDuration';
 import { shareUrl } from '../utils/shareUrl';
 
@@ -11,15 +12,15 @@ type Props = {
   onClose: () => void;
 };
 
-const networks = (link: string, title: string) => {
+const networks = (link: string, title: string, emailLabel: string) => {
   const url = encodeURIComponent(link);
   const text = encodeURIComponent(title);
   return [
-    { name: 'WhatsApp', href: `https://wa.me/?text=${text}%20${url}` },
-    { name: 'X', href: `https://x.com/intent/post?url=${url}&text=${text}` },
-    { name: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${url}` },
-    { name: 'Reddit', href: `https://www.reddit.com/submit?url=${url}&title=${text}` },
-    { name: 'Email', href: `mailto:?subject=${text}&body=${url}` },
+    { name: 'WhatsApp', icon: 'whatsapp', href: `https://wa.me/?text=${text}%20${url}` },
+    { name: 'X', icon: 'x', href: `https://x.com/intent/post?url=${url}&text=${text}` },
+    { name: 'Facebook', icon: 'facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${url}` },
+    { name: 'Reddit', icon: 'reddit', href: `https://www.reddit.com/submit?url=${url}&title=${text}` },
+    { name: emailLabel, icon: 'email', href: `mailto:?subject=${text}&body=${url}` },
   ];
 };
 
@@ -27,6 +28,7 @@ const networks = (link: string, title: string) => {
  * "Share" dialog of the video page: social networks, the link to copy and an optional start time.
  */
 const ShareDialog = ({ url, title, currentTime, onClose }: Props) => {
+  const { t } = useTranslation();
   const titleId = useId();
   const [startAtEnabled, setStartAtEnabled] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -62,17 +64,28 @@ const ShareDialog = ({ url, title, currentTime, onClose }: Props) => {
         onClick={(event) => event.stopPropagation()}
       >
         <div className="share-header">
-          <h2 id={titleId}>Share</h2>
-          <button ref={closeButton} type="button" className="pt-icon-btn" aria-label="Close" onClick={onClose}>
+          <h2 id={titleId}>{t('video.share')}</h2>
+          <button
+            ref={closeButton}
+            type="button"
+            className="pt-icon-btn"
+            aria-label={t('video.close')}
+            onClick={onClose}
+          >
             ×
           </button>
         </div>
 
         <ul className="share-networks">
-          {networks(link, title).map((network) => (
-            <li key={network.name}>
-              <a href={network.href} target="_blank" rel="noopener noreferrer" aria-label={`Share on ${network.name}`}>
-                <span className={`share-network-icon is-${network.name.toLowerCase()}`} aria-hidden="true">
+          {networks(link, title, t('video.email')).map((network) => (
+            <li key={network.icon}>
+              <a
+                href={network.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t('video.shareOn', { network: network.name })}
+              >
+                <span className={`share-network-icon is-${network.icon}`} aria-hidden="true">
                   {network.name.charAt(0)}
                 </span>
                 {network.name}
@@ -86,15 +99,15 @@ const ShareDialog = ({ url, title, currentTime, onClose }: Props) => {
             className="form-control"
             readOnly
             value={link}
-            aria-label="Video link"
+            aria-label={t('video.videoLink')}
             onFocus={(e) => e.target.select()}
           />
           <button type="button" className="btn btn-primary" onClick={copy}>
-            {copied ? 'Copied' : 'Copy'}
+            {copied ? t('video.copied') : t('video.copy')}
           </button>
         </div>
         <p className="visually-hidden" role="status">
-          {copied ? 'Link copied to the clipboard' : ''}
+          {copied ? t('video.linkCopied') : ''}
         </p>
 
         {start > 0 && (
@@ -110,7 +123,7 @@ const ShareDialog = ({ url, title, currentTime, onClose }: Props) => {
               }}
             />
             <label htmlFor={`${titleId}-start`} className="form-check-label">
-              Start at {formatDuration(start)}
+              {t('video.startAt', { time: formatDuration(start) })}
             </label>
           </div>
         )}

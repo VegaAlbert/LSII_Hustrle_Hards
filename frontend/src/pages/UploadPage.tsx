@@ -2,6 +2,9 @@ import { useEffect, useId, useState, type DragEvent, type FormEvent } from 'reac
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { isUnauthorized, toApiError } from '../auth/authApi';
 import { useAuth } from '../auth/authContext';
+import { useTranslation } from '../i18n/i18nContext';
+import type { TranslateFn } from '../i18n/translate';
+import type { Language } from '../settings/settings';
 import { MAX_TAGS } from '../components/TagInput';
 import VideoMetadataFields from '../components/VideoMetadataFields';
 import { formatDuration } from '../utils/formatDuration';
@@ -22,10 +25,12 @@ import './UploadPage.css';
 // Index of one of the frames taken from the video, or the image chosen by the user
 type ThumbnailChoice = number | 'custom';
 
-function formatSize(bytes: number): string {
-  return bytes >= 1024 * 1024
-    ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-    : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+function formatSize(bytes: number, language: Language, t: TranslateFn): string {
+  if (bytes >= 1024 * 1024) {
+    const megabytes = new Intl.NumberFormat(language, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    return t('upload.sizeMb', { size: megabytes.format(bytes / (1024 * 1024)) });
+  }
+  return t('upload.sizeKb', { size: Math.max(1, Math.round(bytes / 1024)) });
 }
 
 /**
@@ -44,12 +49,13 @@ const UploadPage = () => {
 
 const UploadForm = () => {
   const navigate = useNavigate();
+  const { language } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
 
   const choose = (chosen: File | undefined) => {
     if (!chosen) return;
-    const error = checkVideoFile(chosen);
+    const error = checkVideoFile(chosen, language);
     setFileError(error);
     setFile(error ? null : chosen);
   };
@@ -76,14 +82,18 @@ const UploadForm = () => {
   );
 };
 
-const UploadHeader = () => (
-  <header className="upload-header">
-    <h1>Upload video</h1>
-    <p className="text-muted mb-0">Share a video with the ProTube community. MP4 or WebM, up to 100 MB.</p>
-  </header>
-);
+const UploadHeader = () => {
+  const { t } = useTranslation();
+  return (
+    <header className="upload-header">
+      <h1>{t('upload.title')}</h1>
+      <p className="text-muted mb-0">{t('upload.subtitle')}</p>
+    </header>
+  );
+};
 
 const Dropzone = ({ onFile, error }: { onFile: (file: File | undefined) => void; error: string | null }) => {
+  const { t } = useTranslation();
   const inputId = useId();
   const [dragging, setDragging] = useState(false);
 
@@ -113,15 +123,15 @@ const Dropzone = ({ onFile, error }: { onFile: (file: File | undefined) => void;
             />
           </svg>
         </span>
-        <strong>Drag and drop a video file to upload</strong>
-        <span className="text-muted">Your video stays private until you publish it.</span>
-        <span className="btn btn-primary mt-2">Select file</span>
+        <strong>{t('upload.dropTitle')}</strong>
+        <span className="text-muted">{t('upload.dropHint')}</span>
+        <span className="btn btn-primary mt-2">{t('upload.selectFile')}</span>
         <input
           id={inputId}
           type="file"
           className="visually-hidden"
           accept={ACCEPTED_VIDEO_TYPES.join(',')}
-          aria-label="Select video file"
+          aria-label={t('upload.selectFileLabel')}
           onChange={(event) => onFile(event.target.files?.[0])}
         />
       </label>
@@ -141,6 +151,7 @@ type FormProps = {
 };
 
 const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
+  const { t, language } = useTranslation();
   const previewUrl = useObjectUrl(file);
   const [info, setInfo] = useState<VideoFileInfo | null>(null);
   const [readFailed, setReadFailed] = useState(false);
@@ -180,7 +191,7 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
 
   const chooseCustomThumbnail = (chosen: File | undefined) => {
     if (!chosen) return;
-    const error = checkThumbnailFile(chosen);
+    const error = checkThumbnailFile(chosen, language);
     setErrors((current) => {
       const next = { ...current };
       delete next.thumbnail;
@@ -193,8 +204,8 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
   };
 
   const validate = (): FieldErrors => {
-    const found = validateMetadata(values);
-    if (!chosenThumbnail) found.thumbnail = 'Choose a thumbnail for your video';
+    const found = validateMetadata(values, language);
+    if (!chosenThumbnail) found.thumbnail = t('upload.chooseThumbnail');
     return found;
   };
 
@@ -226,10 +237,10 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
     } catch (error: unknown) {
       setProgress(null);
       if (isUnauthorized(error)) {
-        setSubmitError('Your session has expired. Log in again to publish your video.');
+        setSubmitError(t('upload.sessionExpiredPublish'));
         return;
       }
-      const apiError = toApiError(error);
+      const apiError = toApiError(error, language);
       setErrors(apiError.fieldErrors);
       setSubmitError(apiError.message);
     }
@@ -239,10 +250,12 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
     return (
       <div role="alert" className="upload-error-card">
         <p className="mb-2">
-          We could not read <strong>{file.name}</strong>. Try another MP4 or WebM video.
+          {t('upload.readFailedBefore')}
+          <strong>{file.name}</strong>
+          {t('upload.readFailedAfter')}
         </p>
         <button type="button" className="btn btn-primary" onClick={onReplace}>
-          Choose another file
+          {t('upload.chooseAnotherFile')}
         </button>
       </div>
     );
@@ -251,7 +264,7 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
   return (
     <form className="upload-layout" noValidate onSubmit={handleSubmit} aria-busy={uploading}>
       <div className="upload-main">
-        <h2 className="section-label">Details</h2>
+        <h2 className="section-label">{t('upload.details')}</h2>
 
         <VideoMetadataFields
           values={values}
@@ -259,14 +272,12 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
           errors={errors}
           afterDescription={
             <fieldset className="upload-field">
-              <legend className="form-label">Thumbnail</legend>
-              <p className="text-muted small mb-2">
-                Pick a frame from your video or upload an image (JPG, PNG or WebP, 2 MB max).
-              </p>
+              <legend className="form-label">{t('upload.thumbnail')}</legend>
+              <p className="text-muted small mb-2">{t('upload.thumbnailHint')}</p>
               <div className="thumbnail-options">
                 {info === null && (
                   <p role="status" className="text-muted small mb-0">
-                    Generating thumbnails...
+                    {t('upload.generatingThumbnails')}
                   </p>
                 )}
                 {info?.frames.map((frame, index) => (
@@ -274,7 +285,8 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
                     // The frames never change for a file, so their position is a stable key
                     key={index}
                     blob={frame}
-                    label={`Frame ${index + 1}`}
+                    label={t('upload.frame', { number: index + 1 })}
+                    ariaLabel={t('upload.useFrame', { number: index + 1 })}
                     selected={thumbnail === index}
                     onSelect={() => setThumbnail(index)}
                   />
@@ -282,19 +294,20 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
                 {customThumbnail && (
                   <ThumbnailOption
                     blob={customThumbnail}
-                    label="Your image"
+                    label={t('upload.yourImage')}
+                    ariaLabel={t('upload.useYourImage')}
                     selected={thumbnail === 'custom'}
                     onSelect={() => setThumbnail('custom')}
                   />
                 )}
                 <label className="thumbnail-upload">
                   <span aria-hidden="true">+</span>
-                  {customThumbnail ? 'Change image' : 'Upload image'}
+                  {customThumbnail ? t('upload.changeImage') : t('upload.uploadImage')}
                   <input
                     type="file"
                     className="visually-hidden"
                     accept={ACCEPTED_IMAGE_TYPES.join(',')}
-                    aria-label="Upload thumbnail image"
+                    aria-label={t('upload.uploadThumbnailLabel')}
                     onChange={(event) => chooseCustomThumbnail(event.target.files?.[0])}
                   />
                 </label>
@@ -307,19 +320,19 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
 
       <aside className="upload-aside">
         <div className="upload-preview">
-          {previewUrl && <video src={previewUrl} controls muted aria-label="Preview of your video" />}
+          {previewUrl && <video src={previewUrl} controls muted aria-label={t('upload.previewLabel')} />}
           <dl className="upload-file-facts">
             <div>
-              <dt>File name</dt>
+              <dt>{t('upload.fileName')}</dt>
               <dd>{file.name}</dd>
             </div>
             <div>
-              <dt>Size</dt>
-              <dd>{formatSize(file.size)}</dd>
+              <dt>{t('upload.size')}</dt>
+              <dd>{formatSize(file.size, language, t)}</dd>
             </div>
             {info && (
               <div>
-                <dt>Duration</dt>
+                <dt>{t('upload.duration')}</dt>
                 <dd>
                   {formatDuration(info.durationSeconds)}
                   {info.width && info.height ? ` · ${info.width}×${info.height}` : ''}
@@ -327,14 +340,14 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
               </div>
             )}
             <div>
-              <dt>Tags</dt>
+              <dt>{t('upload.tags')}</dt>
               <dd>
                 {values.tags.length}/{MAX_TAGS}
               </dd>
             </div>
           </dl>
           <button type="button" className="btn btn-outline-secondary btn-sm" disabled={uploading} onClick={onReplace}>
-            Choose another file
+            {t('upload.chooseAnotherFile')}
           </button>
         </div>
       </aside>
@@ -342,8 +355,8 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
       <footer className="upload-actions">
         {uploading ? (
           <div className="upload-progress">
-            <progress max={1} value={progress} aria-label="Upload progress" />
-            <span role="status">Uploading... {Math.round(progress * 100)}%</span>
+            <progress max={1} value={progress} aria-label={t('upload.progressLabel')} />
+            <span role="status">{t('upload.uploading', { percent: Math.round(progress * 100) })}</span>
           </div>
         ) : (
           submitError && (
@@ -353,7 +366,7 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
           )
         )}
         <button type="submit" className="btn btn-primary" disabled={uploading || info === null}>
-          {uploading ? 'Publishing...' : 'Publish'}
+          {uploading ? t('upload.publishing') : t('upload.publish')}
         </button>
       </footer>
     </form>
@@ -363,18 +376,20 @@ const VideoDetailsForm = ({ file, onReplace, onPublished }: FormProps) => {
 type ThumbnailOptionProps = {
   blob: Blob;
   label: string;
+  // Accessible name, e.g. "Use frame 1 as thumbnail"
+  ariaLabel: string;
   selected: boolean;
   onSelect: () => void;
 };
 
-const ThumbnailOption = ({ blob, label, selected, onSelect }: ThumbnailOptionProps) => {
+const ThumbnailOption = ({ blob, label, ariaLabel, selected, onSelect }: ThumbnailOptionProps) => {
   const url = useObjectUrl(blob);
   return (
     <button
       type="button"
       className={`thumbnail-option${selected ? ' is-selected' : ''}`}
       aria-pressed={selected}
-      aria-label={`Use ${label.toLowerCase()} as thumbnail`}
+      aria-label={ariaLabel}
       onClick={onSelect}
     >
       {url && <img src={url} alt="" />}

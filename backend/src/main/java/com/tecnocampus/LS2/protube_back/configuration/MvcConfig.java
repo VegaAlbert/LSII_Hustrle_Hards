@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.validation.Validator;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.config.annotation.*;
 
 import java.util.List;
@@ -24,6 +27,9 @@ public class MvcConfig implements WebMvcConfigurer {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private MessageSource messageSource;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -62,5 +68,16 @@ public class MvcConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE");
         registry.addMapping("/auth/**")
                 .allowedOriginPatterns("*");
+    }
+
+    /**
+     * i18n: validation messages such as {@code "{validation.title.required}"} are read from messages*.properties in
+     * the language of the request. Used for @Valid bodies and for constraints on @RequestParam values.
+     */
+    @Override
+    public Validator getValidator() {
+        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+        validator.setValidationMessageSource(messageSource);
+        return validator;
     }
 }

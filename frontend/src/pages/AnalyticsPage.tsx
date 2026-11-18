@@ -3,15 +3,30 @@ import { useAuth } from '../auth/authContext';
 import type { Analytics, DailyViews } from '../analytics/analyticsApi';
 import { useMyAnalytics } from '../analytics/useMyAnalytics';
 import SubscriberCount from '../components/SubscriberCount';
+import { useTranslation } from '../i18n/i18nContext';
+import type { Language } from '../settings/settings';
 import { toMediaUrl } from '../videos/videosApi';
 import './AnalyticsPage.css';
 
-const numberFormat = new Intl.NumberFormat('en-GB');
-const dateFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-// Days of the chart come as UTC dates (2026-11-17): format them in UTC so they do not move a day
-const dayFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+// British English for dates and numbers in English (10 Nov 2026), the language itself otherwise
+const locale = (language: Language) => (language === 'en' ? 'en-GB' : language);
 
-const formatDay = (day: string) => dayFormat.format(new Date(`${day}T00:00:00Z`));
+/**
+ * Number and date formats of the current language.
+ */
+const useFormats = () => {
+  const { language } = useTranslation();
+  const numberFormat = new Intl.NumberFormat(locale(language));
+  const dateFormat = new Intl.DateTimeFormat(locale(language), { day: 'numeric', month: 'short', year: 'numeric' });
+  // Days of the chart come as UTC dates (2026-11-17): format them in UTC so they do not move a day
+  const dayFormat = new Intl.DateTimeFormat(locale(language), { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  return {
+    formatNumber: (value: number) => numberFormat.format(value),
+    formatDate: (isoDate: string) => dateFormat.format(new Date(isoDate)),
+    formatDay: (day: string) => dayFormat.format(new Date(`${day}T00:00:00Z`)),
+  };
+};
+
 const percentage = (part: number, total: number) => (total === 0 ? 0 : Math.round((part / total) * 1000) / 10);
 
 /**
@@ -31,32 +46,33 @@ const AnalyticsPage = () => {
 
 const MyAnalytics = () => {
   const { analytics, status, retry } = useMyAnalytics();
+  const { t } = useTranslation();
 
   return (
     <section className="analytics-page text-start">
       <header className="analytics-header">
-        <h1>Analytics</h1>
-        <p className="text-muted mb-0">See how your videos are performing.</p>
+        <h1>{t('analytics.title')}</h1>
+        <p className="text-muted mb-0">{t('analytics.subtitle')}</p>
       </header>
 
       {status === 'loading' && (
         <p role="status" className="text-muted">
-          Loading analytics...
+          {t('analytics.loading')}
         </p>
       )}
       {status === 'unauthorized' && (
         <div role="alert" className="alert alert-warning d-flex align-items-center gap-3">
-          <span>Your session has expired. Log in again to see your analytics.</span>
+          <span>{t('analytics.sessionExpired')}</span>
           <Link to="/login" state={{ from: '/analytics' }} className="btn btn-primary btn-sm">
-            Log in
+            {t('analytics.logIn')}
           </Link>
         </div>
       )}
       {status === 'error' && (
         <div role="alert" className="alert alert-danger d-flex align-items-center gap-3">
-          <span>Could not load your analytics.</span>
+          <span>{t('analytics.loadError')}</span>
           <button type="button" className="btn btn-outline-danger btn-sm" onClick={retry}>
-            Retry
+            {t('analytics.retry')}
           </button>
         </div>
       )}
@@ -67,32 +83,37 @@ const MyAnalytics = () => {
   );
 };
 
-const EmptyAnalytics = () => (
-  <div className="analytics-empty">
-    <span className="analytics-empty-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="40" height="40">
-        <path fill="currentColor" d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z" />
-      </svg>
-    </span>
-    <h2>No analytics yet</h2>
-    <p className="text-muted">Upload your first video and its views, comments and likes will appear here.</p>
-    <Link to="/upload" className="btn btn-primary">
-      Upload a video
-    </Link>
-  </div>
-);
+const EmptyAnalytics = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="analytics-empty">
+      <span className="analytics-empty-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="40" height="40">
+          <path fill="currentColor" d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z" />
+        </svg>
+      </span>
+      <h2>{t('analytics.emptyTitle')}</h2>
+      <p className="text-muted">{t('analytics.emptyText')}</p>
+      <Link to="/upload" className="btn btn-primary">
+        {t('analytics.uploadVideo')}
+      </Link>
+    </div>
+  );
+};
 
 const AnalyticsDashboard = ({ analytics }: { analytics: Analytics }) => {
+  const { t } = useTranslation();
+  const { formatNumber, formatDate } = useFormats();
   const authenticatedShare = percentage(analytics.authenticatedViews, analytics.totalViews);
   const anonymousShare = analytics.totalViews === 0 ? 0 : Math.round((100 - authenticatedShare) * 10) / 10;
 
   return (
     <>
-      <ul className="analytics-cards" aria-label="Totals">
-        <StatCard label="Videos" value={analytics.totalVideos} />
-        <StatCard label="Total views" value={analytics.totalViews} accent="views" />
-        <StatCard label="Comments" value={analytics.totalComments} />
-        <StatCard label="Comment likes" value={analytics.totalCommentLikes} />
+      <ul className="analytics-cards" aria-label={t('analytics.totals')}>
+        <StatCard label={t('analytics.videos')} value={analytics.totalVideos} />
+        <StatCard label={t('analytics.totalViews')} value={analytics.totalViews} accent="views" />
+        <StatCard label={t('analytics.comments')} value={analytics.totalComments} />
+        <StatCard label={t('analytics.commentLikes')} value={analytics.totalCommentLikes} />
         {/* US-13: users subscribed to my channel */}
         <SubscriberCount />
       </ul>
@@ -100,16 +121,16 @@ const AnalyticsDashboard = ({ analytics }: { analytics: Analytics }) => {
       <div className="analytics-row">
         <section className="analytics-panel" aria-labelledby="audience-title">
           <h2 id="audience-title" className="section-label">
-            Audience
+            {t('analytics.audience')}
           </h2>
           <dl className="analytics-audience">
             <div>
-              <dt>Authenticated users</dt>
-              <dd className="is-authenticated">{numberFormat.format(analytics.authenticatedViews)}</dd>
+              <dt>{t('analytics.authenticatedUsers')}</dt>
+              <dd className="is-authenticated">{formatNumber(analytics.authenticatedViews)}</dd>
             </div>
             <div>
-              <dt>Anonymous users</dt>
-              <dd className="is-anonymous">{numberFormat.format(analytics.anonymousViews)}</dd>
+              <dt>{t('analytics.anonymousUsers')}</dt>
+              <dd className="is-anonymous">{formatNumber(analytics.anonymousViews)}</dd>
             </div>
           </dl>
           {analytics.totalViews > 0 ? (
@@ -119,11 +140,11 @@ const AnalyticsDashboard = ({ analytics }: { analytics: Analytics }) => {
                 <span className="is-anonymous" style={{ width: `${anonymousShare}%` }} />
               </div>
               <p className="analytics-split-legend mb-0">
-                Authenticated: {authenticatedShare}% · Anonymous: {anonymousShare}%
+                {t('analytics.split', { authenticated: authenticatedShare, anonymous: anonymousShare })}
               </p>
             </>
           ) : (
-            <p className="text-muted mb-0">Nobody has watched your videos yet.</p>
+            <p className="text-muted mb-0">{t('analytics.noViews')}</p>
           )}
         </section>
 
@@ -132,22 +153,22 @@ const AnalyticsDashboard = ({ analytics }: { analytics: Analytics }) => {
 
       <section className="analytics-panel" aria-labelledby="videos-title">
         <h2 id="videos-title" className="section-label">
-          Your videos
+          {t('analytics.yourVideos')}
         </h2>
         <div className="table-responsive">
           <table className="table analytics-table align-middle mb-0">
             <thead>
               <tr>
-                <th scope="col">Video</th>
-                <th scope="col">Published</th>
+                <th scope="col">{t('analytics.video')}</th>
+                <th scope="col">{t('analytics.published')}</th>
                 <th scope="col" className="text-end">
-                  Views
+                  {t('analytics.views')}
                 </th>
                 <th scope="col" className="text-end">
-                  Comments
+                  {t('analytics.comments')}
                 </th>
                 <th scope="col" className="text-end">
-                  Comment likes
+                  {t('analytics.commentLikes')}
                 </th>
               </tr>
             </thead>
@@ -161,11 +182,11 @@ const AnalyticsDashboard = ({ analytics }: { analytics: Analytics }) => {
                     </Link>
                   </td>
                   <td className="text-muted text-nowrap">
-                    <time dateTime={video.publishedAt}>{dateFormat.format(new Date(video.publishedAt))}</time>
+                    <time dateTime={video.publishedAt}>{formatDate(video.publishedAt)}</time>
                   </td>
-                  <td className="text-end">{numberFormat.format(video.views)}</td>
-                  <td className="text-end">{numberFormat.format(video.comments)}</td>
-                  <td className="text-end">{numberFormat.format(video.commentLikes)}</td>
+                  <td className="text-end">{formatNumber(video.views)}</td>
+                  <td className="text-end">{formatNumber(video.comments)}</td>
+                  <td className="text-end">{formatNumber(video.commentLikes)}</td>
                 </tr>
               ))}
             </tbody>
@@ -176,12 +197,15 @@ const AnalyticsDashboard = ({ analytics }: { analytics: Analytics }) => {
   );
 };
 
-const StatCard = ({ label, value, accent }: { label: string; value: number; accent?: 'views' }) => (
-  <li className="analytics-card">
-    <span className="analytics-card-label">{label}</span>
-    <strong className={`analytics-card-value${accent ? ` is-${accent}` : ''}`}>{numberFormat.format(value)}</strong>
-  </li>
-);
+const StatCard = ({ label, value, accent }: { label: string; value: number; accent?: 'views' }) => {
+  const { formatNumber } = useFormats();
+  return (
+    <li className="analytics-card">
+      <span className="analytics-card-label">{label}</span>
+      <strong className={`analytics-card-value${accent ? ` is-${accent}` : ''}`}>{formatNumber(value)}</strong>
+    </li>
+  );
+};
 
 /**
  * Bar chart of the views of the last days, drawn with CSS so no chart library is needed. Each bar has a hidden text
@@ -189,18 +213,20 @@ const StatCard = ({ label, value, accent }: { label: string; value: number; acce
  */
 const ViewsOverTime = ({ days }: { days: DailyViews[] }) => {
   const max = Math.max(1, ...days.map((day) => day.views));
+  const { t } = useTranslation();
+  const { formatDay } = useFormats();
 
   return (
     <section className="analytics-panel analytics-chart-panel" aria-labelledby="views-title">
       <h2 id="views-title" className="section-label">
-        Views in the last {days.length} days
+        {t('analytics.viewsInLastDays', { count: days.length })}
       </h2>
       <ol className="analytics-chart">
         {days.map((day) => (
-          <li key={day.date} title={`${formatDay(day.date)}: ${day.views} views`}>
+          <li key={day.date} title={t('analytics.dayViews', { day: formatDay(day.date), count: day.views })}>
             <span className="analytics-bar" style={{ height: `${(day.views / max) * 100}%` }} />
             <span className="visually-hidden">
-              {formatDay(day.date)}: {day.views} {day.views === 1 ? 'view' : 'views'}
+              {t('analytics.dayViews', { day: formatDay(day.date), count: day.views })}
             </span>
           </li>
         ))}

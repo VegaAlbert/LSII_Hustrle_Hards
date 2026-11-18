@@ -1,0 +1,58 @@
+import { defineMessages } from '../defineMessages';
+
+// Navbar, user menu, theme and language menus
+export const nav = defineMessages(
+  {
+    create: 'Create',
+    settings: 'Settings',
+    userMenu: 'User menu for {username}',
+    favourites: 'Favourites',
+    subscriptions: 'Subscriptions',
+    analytics: 'Analytics',
+    logout: 'Logout',
+    login: 'Log in',
+    theme: 'Theme',
+    themeCurrent: 'Theme: {theme}',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    themeSystem: 'System',
+    language: 'Language',
+    languageCurrent: 'Language: {language}',
+  },
+  {
+    es: {
+      create: 'Crear',
+      settings: 'Configuración',
+      userMenu: 'Menú de usuario de {username}',
+      favourites: 'Favoritos',
+      subscriptions: 'Suscripciones',
+      analytics: 'Estadísticas',
+      logout: 'Cerrar sesión',
+      login: 'Iniciar sesión',
+      theme: 'Tema',
+      themeCurrent: 'Tema: {theme}',
+      themeLight: 'Claro',
+      themeDark: 'Oscuro',
+      themeSystem: 'Sistema',
+      language: 'Idioma',
+      languageCurrent: 'Idioma: {language}',
+    },
+    ca: {
+      create: 'Crea',
+      settings: 'Configuració',
+      userMenu: "Menú d'usuari de {username}",
+      favourites: 'Preferits',
+      subscriptions: 'Subscripcions',
+      analytics: 'Estadístiques',
+      logout: 'Tanca la sessió',
+      login: 'Inicia la sessió',
+      theme: 'Tema',
+      themeCurrent: 'Tema: {theme}',
+      themeLight: 'Clar',
+      themeDark: 'Fosc',
+      themeSystem: 'Sistema',
+      language: 'Idioma',
+      languageCurrent: 'Idioma: {language}',
+    },
+  }
+);

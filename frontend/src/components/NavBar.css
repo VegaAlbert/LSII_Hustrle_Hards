@@ -140,6 +140,20 @@
   color: var(--pt-primary);
 }
 
+/* i18n: globe and the current language code (EN, ES, CA) */
+.pt-language-btn {
+  width: auto;
+  gap: 0.3rem;
+  padding: 0 0.6rem;
+  border-radius: var(--pt-radius-pill);
+}
+
+.pt-language-code {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
 .pt-nav-actions {
   display: flex;
   align-items: center;
@@ -203,6 +217,10 @@
 
   .pt-create-btn {
     padding: 0.45rem;
+  }
+
+  .pt-language-btn {
+    padding: 0 0.4rem;
   }
 
   /* Only the + icon is shown; the text stays as the accessible name of the button */

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import VideoGrid from '../VideoGrid';
 import { fetchVideos, type Page, type VideoSummary } from '../../videos/videosApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../videos/videosApi', () => ({
   ...jest.requireActual('../../videos/videosApi'),
@@ -155,6 +156,39 @@ describe('VideoGrid', () => {
       expect(screen.queryByRole('img', { name: 'Video 1' })).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument();
       expect(mockedFetchVideos).toHaveBeenLastCalledWith(0, 12, 'nine');
+    });
+  });
+
+  describe('in another language', () => {
+    afterEach(() => localStorage.clear());
+
+    it('shows the empty search and the load more button in Spanish', async () => {
+      localStorage.setItem('protube.language', 'es');
+      mockedFetchVideos.mockResolvedValueOnce(page([], 0, 0));
+
+      render(
+        <I18nProvider>
+          <VideoGrid query="gatos" />
+        </I18nProvider>,
+        { wrapper: MemoryRouter }
+      );
+
+      expect(await screen.findByText('Ningún vídeo coincide con «gatos».')).toBeInTheDocument();
+    });
+
+    it('shows the error and retry button in Catalan', async () => {
+      localStorage.setItem('protube.language', 'ca');
+      mockedFetchVideos.mockRejectedValueOnce(new Error('Network error'));
+
+      render(
+        <I18nProvider>
+          <VideoGrid />
+        </I18nProvider>,
+        { wrapper: MemoryRouter }
+      );
+
+      expect(await screen.findByRole('alert')).toHaveTextContent("No s'han pogut carregar els vídeos.");
+      expect(screen.getByRole('button', { name: 'Torna-ho a provar' })).toBeInTheDocument();
     });
   });
 });

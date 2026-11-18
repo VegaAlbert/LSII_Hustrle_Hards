@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import TagInput, { MAX_TAGS } from '../TagInput';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 const Controlled = ({ initial = [] as string[], error }: { initial?: string[]; error?: string }) => {
   const [tags, setTags] = useState(initial);
@@ -74,5 +75,18 @@ describe('TagInput', () => {
     render(<Controlled error="At most 15 tags" />);
 
     expect(screen.getByText('At most 15 tags')).toBeInTheDocument();
+  });
+
+  describe('in another language', () => {
+    afterEach(() => localStorage.clear());
+
+    it('shows the label, hint and remove buttons in Catalan', () => {
+      localStorage.setItem('protube.language', 'ca');
+      render(<Controlled initial={['platja']} />, { wrapper: I18nProvider });
+
+      expect(screen.getByLabelText('Etiquetes')).toHaveAttribute('placeholder', 'Afegeix una etiqueta i prem Retorn');
+      expect(screen.getByText('Les etiquetes ajuden a trobar el teu vídeo a les cerques.')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: "Treu l'etiqueta platja" })).toBeInTheDocument();
+    });
   });
 });

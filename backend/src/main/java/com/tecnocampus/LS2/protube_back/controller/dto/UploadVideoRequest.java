@@ -13,16 +13,16 @@ import java.util.List;
  * files. Duration and size are read by the browser from the file; tags may come with a leading {@code #}.
  */
 public record UploadVideoRequest(
-        @NotBlank(message = "Title is required")
-        @Size(max = 100, message = "Title must be at most 100 characters") String title,
-        @Size(max = 5000, message = "Description must be at most 5000 characters") String description,
-        @Size(max = 15, message = "At most 15 tags")
-        List<@Size(max = 30, message = "Each tag must be at most 30 characters") String> tags,
+        @NotBlank(message = "{validation.title.required}")
+        @Size(max = 100, message = "{validation.title.size}") String title,
+        @Size(max = 5000, message = "{validation.description.size}") String description,
+        @Size(max = 15, message = "{validation.tags.size}")
+        List<@Size(max = 30, message = "{validation.tag.size}") String> tags,
         VideoCategory category,
         boolean ageRestricted,
-        @Min(value = 0, message = "Duration must be 0 or greater") int durationSeconds,
-        @Min(value = 1, message = "Width must be positive") @Max(value = 7680, message = "Width is too large")
+        @Min(value = 0, message = "{validation.duration.min}") int durationSeconds,
+        @Min(value = 1, message = "{validation.width.min}") @Max(value = 7680, message = "{validation.width.max}")
         Integer width,
-        @Min(value = 1, message = "Height must be positive") @Max(value = 4320, message = "Height is too large")
+        @Min(value = 1, message = "{validation.height.min}") @Max(value = 4320, message = "{validation.height.max}")
         Integer height) {
 }

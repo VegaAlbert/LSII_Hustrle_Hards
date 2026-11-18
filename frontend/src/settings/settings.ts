@@ -1,6 +1,7 @@
 // User preferences shown in the settings page.
-// The theme is applied and saved on this device (ThemeProvider, dark mode). The rest are only kept in the page state
-// for now: applying and saving each one is still to be done.
+// The theme (ThemeProvider, dark mode) and the language (I18nProvider) are applied and saved on this device. The rest
+// are only kept in the page state for now: applying and saving each one is still to be done.
+// Labels shown to users live in src/i18n/messages; LANGUAGES keeps each language name in that language.
 
 export type Theme = 'light' | 'dark' | 'system';
 

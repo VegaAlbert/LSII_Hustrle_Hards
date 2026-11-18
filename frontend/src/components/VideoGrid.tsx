@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n/i18nContext';
 import { useVideoList } from '../videos/useVideoList';
 import VideoCard from './VideoCard';
 
@@ -13,17 +14,18 @@ type Props = {
  * US-04: home page list of videos, newest first, with a "Load more" button for the next pages.
  */
 const VideoGrid = ({ query = '' }: Props) => {
+  const { t } = useTranslation();
   const { videos, status, hasMore, loadMore, retry } = useVideoList(query);
 
   if (status === 'success' && videos.length === 0) {
-    return <p className="text-muted">{query ? `No videos match "${query}".` : 'No videos available yet.'}</p>;
+    return <p className="text-muted">{query ? t('videos.noResults', { query }) : t('videos.empty')}</p>;
   }
 
   return (
     <section>
       {videos.length > 0 && (
         <ul
-          aria-label={query ? `Results for "${query}"` : 'Videos'}
+          aria-label={query ? t('videos.resultsFor', { query }) : t('videos.listLabel')}
           className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4 list-unstyled video-grid"
         >
           {videos.map((video) => (
@@ -51,20 +53,20 @@ const VideoGrid = ({ query = '' }: Props) => {
       <div className="d-flex flex-column align-items-center gap-2 my-4">
         {status === 'loading' && (
           <p role="status" className={videos.length === 0 ? 'visually-hidden' : 'text-muted mb-0'}>
-            Loading videos...
+            {t('videos.loading')}
           </p>
         )}
         {status === 'error' && (
           <div role="alert" className="alert alert-danger d-flex align-items-center gap-3 mb-0">
-            <span>Could not load the videos.</span>
+            <span>{t('videos.loadError')}</span>
             <button type="button" className="btn btn-outline-danger btn-sm" onClick={retry}>
-              Retry
+              {t('videos.retry')}
             </button>
           </div>
         )}
         {status === 'success' && hasMore && (
           <button type="button" className="btn btn-primary" onClick={loadMore}>
-            Load more
+            {t('videos.loadMore')}
           </button>
         )}
       </div>
