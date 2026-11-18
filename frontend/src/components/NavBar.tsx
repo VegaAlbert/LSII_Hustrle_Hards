@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../auth/authContext';
+import { useTranslation } from '../i18n/i18nContext';
+import LanguageMenu from './LanguageMenu';
 import ThemeMenu from './ThemeMenu';
 import './NavBar.css';
 
@@ -29,6 +31,7 @@ const NavBar = ({
   showLogin = true,
 }: Props) => {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleFavourites = () => {
@@ -66,10 +69,17 @@ const NavBar = ({
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
             <path fill="currentColor" d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" />
           </svg>
-          <span className="pt-create-label">Create</span>
+          <span className="pt-create-label">{t('nav.create')}</span>
         </button>
+        <LanguageMenu />
         <ThemeMenu />
-        <button type="button" className="pt-icon-btn" aria-label="Settings" title="Settings" onClick={onSettings}>
+        <button
+          type="button"
+          className="pt-icon-btn"
+          aria-label={t('nav.settings')}
+          title={t('nav.settings')}
+          onClick={onSettings}
+        >
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
             <path
               fill="currentColor"
@@ -83,7 +93,7 @@ const NavBar = ({
             <button
               type="button"
               className="pt-avatar"
-              aria-label={`User menu for ${user.username}`}
+              aria-label={t('nav.userMenu', { username: user.username })}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((open) => !open)}
             >
@@ -98,25 +108,25 @@ const NavBar = ({
                 {onFavourites && (
                   <li>
                     <button type="button" className="pt-menu-item" onClick={handleFavourites}>
-                      Favourites
+                      {t('nav.favourites')}
                     </button>
                   </li>
                 )}
                 {onSubscriptions && (
                   <li>
                     <button type="button" className="pt-menu-item" onClick={handleSubscriptions}>
-                      Subscriptions
+                      {t('nav.subscriptions')}
                     </button>
                   </li>
                 )}
                 <li>
                   <button type="button" className="pt-menu-item" onClick={handleAnalytics}>
-                    Analytics
+                    {t('nav.analytics')}
                   </button>
                 </li>
                 <li>
                   <button type="button" className="pt-menu-item" onClick={handleLogout}>
-                    Logout
+                    {t('nav.logout')}
                   </button>
                 </li>
               </ul>
@@ -125,7 +135,7 @@ const NavBar = ({
         ) : (
           showLogin && (
             <button type="button" className="pt-login-btn" onClick={onLogin}>
-              Log in
+              {t('nav.login')}
             </button>
           )
         )}

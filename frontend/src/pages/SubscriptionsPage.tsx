@@ -1,6 +1,7 @@
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/authContext';
 import VideoCard from '../components/VideoCard';
+import { useTranslation } from '../i18n/i18nContext';
 import { useSubscriptionVideos } from '../subscriptions/useSubscriptionVideos';
 
 /**
@@ -20,26 +21,27 @@ const SubscriptionsPage = () => {
 // Separate component so the list is only requested for logged-in users (hooks cannot be called conditionally)
 const SubscriptionVideos = () => {
   const { videos, status, hasMore, loadMore, retry } = useSubscriptionVideos();
+  const { t } = useTranslation();
 
   return (
     <section aria-labelledby="subscriptions-title" className="text-start">
       <h1 id="subscriptions-title" className="section-title mb-4">
-        Subscriptions
+        {t('library.subscriptionsTitle')}
       </h1>
 
       {status === 'success' && videos.length === 0 && (
         <div className="favourites-empty">
-          <p className="mb-2">There are no videos from your subscriptions yet.</p>
-          <p className="mb-3">Use “Subscribe” on a video to follow the channel of its author.</p>
+          <p className="mb-2">{t('library.subscriptionsEmpty')}</p>
+          <p className="mb-3">{t('library.subscriptionsEmptyHint')}</p>
           <Link to="/" className="btn btn-primary btn-sm">
-            Browse videos
+            {t('library.browseVideos')}
           </Link>
         </div>
       )}
 
       {videos.length > 0 && (
         <ul
-          aria-label="Videos from your subscriptions"
+          aria-label={t('library.subscriptionsList')}
           className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4 list-unstyled video-grid"
         >
           {videos.map((video) => (
@@ -53,20 +55,20 @@ const SubscriptionVideos = () => {
       <div className="d-flex flex-column align-items-center gap-2 my-4">
         {status === 'loading' && (
           <p role="status" className="text-muted mb-0">
-            Loading subscriptions...
+            {t('library.subscriptionsLoading')}
           </p>
         )}
         {status === 'error' && (
           <div role="alert" className="alert alert-danger d-flex align-items-center gap-3 mb-0">
-            <span>Could not load your subscriptions.</span>
+            <span>{t('library.subscriptionsError')}</span>
             <button type="button" className="btn btn-outline-danger btn-sm" onClick={retry}>
-              Retry
+              {t('library.retry')}
             </button>
           </div>
         )}
         {status === 'success' && hasMore && (
           <button type="button" className="btn btn-primary" onClick={loadMore}>
-            Load more
+            {t('library.loadMore')}
           </button>
         )}
       </div>

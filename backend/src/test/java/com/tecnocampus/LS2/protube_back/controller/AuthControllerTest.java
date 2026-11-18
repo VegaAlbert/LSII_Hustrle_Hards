@@ -219,7 +219,8 @@ class AuthControllerTest {
 
     @Test
     void googleLoginWithInvalidCredentialIsRejected() throws Exception {
-        when(googleTokenVerifier.verify("bad")).thenThrow(new InvalidGoogleTokenException("Invalid Google credential"));
+        when(googleTokenVerifier.verify("bad")).thenThrow(
+                new InvalidGoogleTokenException("error.google.invalid", "Invalid Google credential"));
 
         mockMvc.perform(post("/api/auth/google")
                         .contentType(MediaType.APPLICATION_JSON)

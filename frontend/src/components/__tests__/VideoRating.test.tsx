@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import VideoRating from '../VideoRating';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 import { fetchRating, rateVideo } from '../../ratings/ratingsApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../ratings/ratingsApi', () => ({
   ...jest.requireActual('../../ratings/ratingsApi'),
@@ -29,23 +30,25 @@ const LoginPage = () => <p>Login page from {(useLocation().state as { from: stri
 
 const renderRating = (user: AuthContextValue['user'] = alice) =>
   render(
-    <AuthContext.Provider
-      value={{
-        user,
-        login: jest.fn(),
-        register: jest.fn(),
-        loginWithGoogle: jest.fn(),
-        logout: jest.fn(),
-        updateSession: jest.fn(),
-      }}
-    >
-      <MemoryRouter initialEntries={['/videos/5']}>
-        <Routes>
-          <Route path="/videos/:id" element={<VideoRating videoId={5} />} />
-          <Route path="/login" element={<LoginPage />} />
-        </Routes>
-      </MemoryRouter>
-    </AuthContext.Provider>
+    <I18nProvider>
+      <AuthContext.Provider
+        value={{
+          user,
+          login: jest.fn(),
+          register: jest.fn(),
+          loginWithGoogle: jest.fn(),
+          logout: jest.fn(),
+          updateSession: jest.fn(),
+        }}
+      >
+        <MemoryRouter initialEntries={['/videos/5']}>
+          <Routes>
+            <Route path="/videos/:id" element={<VideoRating videoId={5} />} />
+            <Route path="/login" element={<LoginPage />} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </I18nProvider>
   );
 
 const star = (stars: number) => screen.getByRole('radio', { name: stars === 1 ? '1 star' : `${stars} stars` });
@@ -193,5 +196,31 @@ describe('VideoRating', () => {
     await user.click(within(alert).getByRole('button', { name: 'Retry' }));
 
     expect(await screen.findByText('2.0/5')).toBeInTheDocument();
+  });
+
+  describe('in another language', () => {
+    afterEach(() => localStorage.clear());
+
+    it('shows the average and the stars in Spanish', async () => {
+      localStorage.setItem('protube.language', 'es');
+      mockedFetchRating.mockResolvedValueOnce({ average: 4.5, count: 1, myScore: null });
+
+      renderRating();
+
+      expect(await screen.findByText('4,5/5')).toBeInTheDocument();
+      expect(screen.getByText('(1 valoración)')).toBeInTheDocument();
+      expect(screen.getByText('Valora este vídeo')).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: '3 estrellas' })).toBeInTheDocument();
+    });
+
+    it('invites anonymous visitors to log in in Catalan', async () => {
+      localStorage.setItem('protube.language', 'ca');
+      mockedFetchRating.mockResolvedValueOnce({ average: null, count: 0, myScore: null });
+
+      renderRating(null);
+
+      expect(await screen.findByText('Encara no hi ha valoracions')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Inicia la sessió per valorar aquest vídeo' })).toBeInTheDocument();
+    });
   });
 });

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { isUnauthorized } from '../auth/authApi';
 import { useAuth } from '../auth/authContext';
+import { useTranslation } from '../i18n/i18nContext';
 import { fetchFavouriteState, setFavourite } from '../favourites/favouritesApi';
 
 type Props = {
@@ -26,6 +27,7 @@ const HeartIcon = ({ filled }: { filled: boolean }) => (
  */
 const FavouriteButton = ({ videoId }: Props) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [favourite, setFavouriteState] = useState(false);
@@ -67,11 +69,7 @@ const FavouriteButton = ({ videoId }: Props) => {
       const state = await setFavourite(videoId, !favourite);
       setFavouriteState(state.favourite);
     } catch (err: unknown) {
-      setError(
-        isUnauthorized(err)
-          ? 'Your session has expired. Log in again to save favourites.'
-          : 'Could not update your favourites.'
-      );
+      setError(isUnauthorized(err) ? t('video.favouriteSessionExpired') : t('video.favouriteError'));
     } finally {
       setBusy(false);
     }
@@ -87,7 +85,7 @@ const FavouriteButton = ({ videoId }: Props) => {
         disabled={busy}
       >
         <HeartIcon filled={favourite} />
-        {favourite ? 'Saved' : 'Save to favourites'}
+        {favourite ? t('video.saved') : t('video.saveFavourite')}
       </button>
       {error && (
         <p role="alert" className="text-danger small mb-0 w-100 text-end">

@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../auth/authContext';
 import { toApiError } from '../auth/authApi';
+import { useTranslation } from '../i18n/i18nContext';
+import type { TranslateFn } from '../i18n/translate';
 import GoogleLoginButton from './GoogleLoginButton';
 import './LoginPage.css';
 
@@ -11,30 +13,30 @@ const USERNAME_PATTERN = /^[A-Za-z0-9_.-]+$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Same rules as RegisterRequest in the backend, checked here to give instant feedback
-function validate(mode: Mode, username: string, email: string, password: string): FieldErrors {
+function validate(mode: Mode, username: string, email: string, password: string, t: TranslateFn): FieldErrors {
   const errors: FieldErrors = {};
   const trimmedUsername = username.trim();
 
   if (!trimmedUsername) {
-    errors.username = 'Username is required';
+    errors.username = t('auth.usernameRequired');
   } else if (mode === 'register' && (trimmedUsername.length < 3 || trimmedUsername.length > 30)) {
-    errors.username = 'Username must be between 3 and 30 characters';
+    errors.username = t('auth.usernameLength');
   } else if (mode === 'register' && !USERNAME_PATTERN.test(trimmedUsername)) {
-    errors.username = "Username can only contain letters, numbers, '.', '_' and '-'";
+    errors.username = t('auth.usernamePattern');
   }
 
   if (mode === 'register') {
     if (!email.trim()) {
-      errors.email = 'Email is required';
+      errors.email = t('auth.emailRequired');
     } else if (!EMAIL_PATTERN.test(email.trim())) {
-      errors.email = 'Email is not valid';
+      errors.email = t('auth.emailInvalid');
     }
   }
 
   if (!password) {
-    errors.password = 'Password is required';
+    errors.password = t('auth.passwordRequired');
   } else if (mode === 'register' && (password.length < 8 || password.length > 72)) {
-    errors.password = 'Password must be between 8 and 72 characters';
+    errors.password = t('auth.passwordLength');
   }
 
   return errors;
@@ -47,6 +49,7 @@ type Props = {
 
 const LoginPage = ({ onSuccess }: Props) => {
   const { login, register, loginWithGoogle } = useAuth();
+  const { t, language } = useTranslation();
   const [mode, setMode] = useState<Mode>('login');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -68,7 +71,7 @@ const LoginPage = ({ onSuccess }: Props) => {
     event.preventDefault();
     setFormError(null);
 
-    const errors = validate(mode, username, email, password);
+    const errors = validate(mode, username, email, password, t);
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -81,7 +84,7 @@ const LoginPage = ({ onSuccess }: Props) => {
       }
       onSuccess();
     } catch (error) {
-      const apiError = toApiError(error);
+      const apiError = toApiError(error, language);
       setFieldErrors(apiError.fieldErrors);
       setFormError(apiError.message);
     } finally {
@@ -97,7 +100,7 @@ const LoginPage = ({ onSuccess }: Props) => {
       await loginWithGoogle(credential);
       onSuccess();
     } catch (error) {
-      setFormError(toApiError(error).message);
+      setFormError(toApiError(error, language).message);
     } finally {
       setSubmitting(false);
     }
@@ -110,12 +113,12 @@ const LoginPage = ({ onSuccess }: Props) => {
       <aside className="auth-brand">
         <div className="auth-brand-content">
           <img src="/protube-logo.svg" className="auth-brand-logo" alt="" />
-          <h2>Your videos, your community.</h2>
-          <p>Join ProTube to upload your own videos and talk about them with other students.</p>
+          <h2>{t('auth.brandTitle')}</h2>
+          <p>{t('auth.brandText')}</p>
           <ul className="auth-features">
-            <li>Watch videos from the whole community</li>
-            <li>Upload and share your own content</li>
-            <li>Comment and join the conversation</li>
+            <li>{t('auth.featureWatch')}</li>
+            <li>{t('auth.featureUpload')}</li>
+            <li>{t('auth.featureComment')}</li>
           </ul>
         </div>
       </aside>
@@ -123,10 +126,8 @@ const LoginPage = ({ onSuccess }: Props) => {
       <main className="auth-form-panel">
         <div className="auth-card">
           <img src="/protube-logo.svg" className="auth-card-logo" alt="ProTube" />
-          <h1>{isRegister ? 'Create account' : 'Log in'}</h1>
-          <p className="auth-subtitle">
-            {isRegister ? 'It only takes a minute to get started.' : 'Welcome back! Please enter your details.'}
-          </p>
+          <h1>{isRegister ? t('auth.createAccountTitle') : t('auth.loginTitle')}</h1>
+          <p className="auth-subtitle">{isRegister ? t('auth.registerSubtitle') : t('auth.loginSubtitle')}</p>
 
           {formError && (
             <div className="alert alert-danger" role="alert">
@@ -142,9 +143,9 @@ const LoginPage = ({ onSuccess }: Props) => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoComplete="username"
-                placeholder="Username"
+                placeholder={t('auth.username')}
               />
-              <label htmlFor="username">Username</label>
+              <label htmlFor="username">{t('auth.username')}</label>
               <div className="invalid-feedback">{fieldErrors.username}</div>
             </div>
 
@@ -157,9 +158,9 @@ const LoginPage = ({ onSuccess }: Props) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   autoComplete="email"
-                  placeholder="Email"
+                  placeholder={t('auth.email')}
                 />
-                <label htmlFor="email">Email</label>
+                <label htmlFor="email">{t('auth.email')}</label>
                 <div className="invalid-feedback">{fieldErrors.email}</div>
               </div>
             )}
@@ -172,34 +173,34 @@ const LoginPage = ({ onSuccess }: Props) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete={isRegister ? 'new-password' : 'current-password'}
-                placeholder="Password"
+                placeholder={t('auth.password')}
               />
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">{t('auth.password')}</label>
               <button
                 type="button"
                 className="auth-password-toggle"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                 aria-pressed={showPassword}
                 onClick={() => setShowPassword((shown) => !shown)}
               >
-                {showPassword ? 'Hide' : 'Show'}
+                {showPassword ? t('auth.hide') : t('auth.show')}
               </button>
               <div className="invalid-feedback">{fieldErrors.password}</div>
-              {isRegister && !fieldErrors.password && <div className="auth-hint">At least 8 characters.</div>}
+              {isRegister && !fieldErrors.password && <div className="auth-hint">{t('auth.passwordHint')}</div>}
             </div>
 
             <button type="submit" className="auth-submit" disabled={submitting}>
               {submitting && <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" />}
-              {isRegister ? 'Register' : 'Login'}
+              {isRegister ? t('auth.registerButton') : t('auth.loginButton')}
             </button>
           </form>
 
           <GoogleLoginButton onCredential={handleGoogleCredential} onError={setFormError} />
 
           <p className="auth-switch">
-            {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
+            {isRegister ? t('auth.haveAccount') : t('auth.noAccount')}{' '}
             <button type="button" className="btn btn-link p-0 align-baseline" onClick={switchMode}>
-              {isRegister ? 'Log in' : 'Register'}
+              {isRegister ? t('auth.switchToLogin') : t('auth.switchToRegister')}
             </button>
           </p>
         </div>

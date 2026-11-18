@@ -1,48 +1,15 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { expect, test, type APIRequestContext } from '@playwright/test';
-import { BACKEND_URL } from '../env';
-import { loginAsNewUser, newUser, userMenu } from './support';
-
-const FIXTURES = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'fixtures');
+import { loginAsNewUser, newUser, registerNewUser, uploadVideoAs, userMenu } from './support';
 
 /**
  * Registers a new user (the owner of a channel) and uploads a video as that user through the API, as the subject of
  * these tests is subscribing, not uploading. Returns the username and the id and title of the video.
  */
 async function channelWithAVideo(request: APIRequestContext) {
-  const owner = newUser('channel');
-  const registered = await request.post(`${BACKEND_URL}/api/auth/register`, { data: owner });
-  expect(registered.status(), await registered.text()).toBe(201);
-  const { token } = await registered.json();
+  const owner = await registerNewUser(request, 'channel');
   const title = `E2E channel video ${Date.now()}`;
-
-  const uploaded = await request.post(`${BACKEND_URL}/api/videos`, {
-    headers: { Authorization: `Bearer ${token}` },
-    multipart: {
-      metadata: {
-        name: 'metadata.json',
-        mimeType: 'application/json',
-        buffer: Buffer.from(
-          JSON.stringify({ title, description: '', tags: [], category: null, ageRestricted: false, durationSeconds: 1 })
-        ),
-      },
-      video: {
-        name: 'upload-sample.mp4',
-        mimeType: 'video/mp4',
-        buffer: fs.readFileSync(path.join(FIXTURES, 'upload-sample.mp4')),
-      },
-      thumbnail: {
-        name: 'thumbnail.webp',
-        mimeType: 'image/webp',
-        buffer: fs.readFileSync(path.join(FIXTURES, 'store', 'e2e-city-night.webp')),
-      },
-    },
-  });
-  expect(uploaded.status(), await uploaded.text()).toBe(201);
-  const { id } = await uploaded.json();
-  return { channel: owner.username, videoId: id as number, title };
+  const videoId = await uploadVideoAs(request, owner, title);
+  return { channel: owner.username, videoId, title };
 }
 
 test.describe('Subscribe to a channel', () => {

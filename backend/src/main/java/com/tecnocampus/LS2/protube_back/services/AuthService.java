@@ -42,11 +42,11 @@ public class AuthService {
         String email = request.email().trim().toLowerCase(Locale.ROOT);
 
         if (userRepository.existsByUsername(username)) {
-            throw new UserAlreadyExistsException("username", "Username is already taken");
+            throw new UserAlreadyExistsException("username", "error.username.taken", "Username is already taken");
         }
         // US-01: one account per email, whether it was created with this form or with Google
         if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new UserAlreadyExistsException("email", "Email is already registered");
+            throw new UserAlreadyExistsException("email", "error.email.taken", "Email is already registered");
         }
 
         User user = userRepository.save(new User(username, email, passwordEncoder.encode(request.password())));
@@ -92,7 +92,8 @@ public class AuthService {
     private User link(User user, GoogleAccount account) {
         if (user.getGoogleId() != null) {
             // The email now belongs to another Google account than the one linked before
-            throw new UserAlreadyExistsException("email", "Email is already registered with another Google account");
+            throw new UserAlreadyExistsException("email", "error.email.otherGoogleAccount",
+                    "Email is already registered with another Google account");
         }
         user.linkGoogleAccount(account.subject());
         return user;

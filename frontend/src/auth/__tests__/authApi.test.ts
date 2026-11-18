@@ -64,5 +64,12 @@ describe('authApi', () => {
     it('explains when the server cannot be reached', () => {
       expect(toApiError(new Error('Network Error')).message).toMatch(/could not connect/i);
     });
+
+    it('writes its own messages in the language asked for', () => {
+      expect(toApiError(new Error('Network Error'), 'es').message).toBe(
+        'No se ha podido conectar con el servidor. Inténtalo de nuevo más tarde.'
+      );
+      expect(toApiError({ response: { data: undefined } }, 'ca').message).toBe('Error inesperat. Torna-ho a provar.');
+    });
   });
 });

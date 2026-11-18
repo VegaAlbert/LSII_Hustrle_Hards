@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import CommentList from '../CommentList';
 import { AuthContext } from '../../auth/authContext';
 import type { VideoComment } from '../../videos/videosApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 const comment = (
   id: number,
@@ -36,7 +37,8 @@ const renderList = (comments: VideoComment[], form?: ReactNode) =>
       <MemoryRouter>
         <CommentList videoId={5} comments={comments} form={form} onReplyAdded={jest.fn()} onLikeChanged={jest.fn()} />
       </MemoryRouter>
-    </AuthContext.Provider>
+    </AuthContext.Provider>,
+    { wrapper: I18nProvider }
   );
 
 describe('CommentList', () => {
@@ -94,5 +96,24 @@ describe('CommentList', () => {
     renderList([comment(1, 0)], <p>Comment form</p>);
 
     expect(screen.getByText('Comment form')).toBeInTheDocument();
+  });
+
+  describe('in another language', () => {
+    afterEach(() => localStorage.clear());
+
+    it('shows the list and the likes in Catalan', () => {
+      localStorage.setItem('protube.language', 'ca');
+      renderList([comment(1, 3), comment(2, 1)]);
+
+      expect(screen.getByRole('heading', { name: 'Comentaris 2' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: "M'agrada el comentari de @user1, 3 m'agrada" })).toBeInTheDocument();
+    });
+
+    it('shows the empty state in Spanish', () => {
+      localStorage.setItem('protube.language', 'es');
+      renderList([]);
+
+      expect(screen.getByText('Todavía no hay comentarios.')).toBeInTheDocument();
+    });
   });
 });

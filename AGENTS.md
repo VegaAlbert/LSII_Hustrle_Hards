@@ -26,7 +26,8 @@ The Maven wrapper is not committed: use `mvn` locally (CI generates `./mvnw`).
   on SonarCloud once the `SONAR_TOKEN` secret exists (see DEVELOPMENT.md).
 
 Before opening a PR, run what CI runs (`.github/workflows/main.yml`): frontend `npm ci`, `npm run build`,
-`npm run test`, `npm run lint`; backend `mvn clean verify -Pcoverage`; e2e `npm run typecheck`, `npm test`.
+`npm run test`, `npm run lint`, `npx prettier --check .`; backend `mvn clean verify -Pcoverage`; e2e
+`npm run typecheck`, `npm test`.
 
 ## Environment
 

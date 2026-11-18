@@ -209,6 +209,34 @@ class VideoStoreImporterTest {
     }
 
     @Test
+    void skipsJsonWithoutTimestamp() throws IOException {
+        Files.writeString(store.resolve("3.json"), """
+                {"id": "3", "title": "No date"}
+                """);
+        Files.writeString(store.resolve("3.mp4"), "video");
+        Files.writeString(store.resolve("3.webp"), "image");
+
+        assertEquals(0, importer.importFrom(store));
+        verify(videoRepository, never()).save(any());
+    }
+
+    @Test
+    void importsAVideoWithoutMetaAndNoComments() throws IOException {
+        Files.writeString(store.resolve("4.json"), """
+                {"id": "4", "title": "Bare video", "timestamp": 1700000000}
+                """);
+        Files.writeString(store.resolve("4.mp4"), "video");
+        Files.writeString(store.resolve("4.webp"), "image");
+        when(videoRepository.save(any(Video.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        assertEquals(1, importer.importFrom(store));
+        ArgumentCaptor<Video> saved = ArgumentCaptor.forClass(Video.class);
+        verify(videoRepository).save(saved.capture());
+        assertEquals("Bare video", saved.getValue().getTitle());
+        assertEquals(0, saved.getValue().getComments().size());
+    }
+
+    @Test
     void importsNothingWhenTheStoreDoesNotExist() {
         assertEquals(0, importer.importFrom(store.resolve("missing")));
         verify(videoRepository, never()).save(any());

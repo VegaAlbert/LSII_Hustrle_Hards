@@ -12,9 +12,9 @@ import java.math.BigDecimal;
  * manipulated value such as 4.5 is rejected with a message instead of being silently truncated to 4.
  */
 public record RateVideoRequest(
-        @NotNull(message = "Score is required")
-        @DecimalMin(value = "1", message = "Score must be between 1 and 5")
-        @DecimalMax(value = "5", message = "Score must be between 1 and 5")
-        @Digits(integer = 1, fraction = 0, message = "Score must be a whole number of stars")
+        @NotNull(message = "{validation.score.required}")
+        @DecimalMin(value = "1", message = "{validation.score.range}")
+        @DecimalMax(value = "5", message = "{validation.score.range}")
+        @Digits(integer = 1, fraction = 0, message = "{validation.score.whole}")
         BigDecimal score) {
 }

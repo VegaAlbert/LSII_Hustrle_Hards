@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { translate } from '../i18n/translate';
+import type { Language } from '../settings/settings';
 import { getEnv } from '../utils/Env';
 import type { Page, VideoSummary } from '../videos/videosApi';
 
@@ -52,8 +54,8 @@ export async function fetchSubscriberCount(): Promise<number> {
 }
 
 /**
- * "1 subscriber", "3 subscribers".
+ * "1 subscriber", "3 subscribers" in a language, e.g. "3 suscriptores" / "3 subscriptors".
  */
-export function formatSubscribers(count: number): string {
-  return `${count} ${count === 1 ? 'subscriber' : 'subscribers'}`;
+export function formatSubscribers(count: number, language: Language = 'en'): string {
+  return translate(language, 'video.subscribers', { count });
 }

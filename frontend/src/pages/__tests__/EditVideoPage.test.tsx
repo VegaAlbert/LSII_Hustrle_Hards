@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import EditVideoPage from '../EditVideoPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 import { fetchVideo, isNotFound, updateVideo, type VideoDetail } from '../../videos/videosApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../videos/videosApi', () => ({
   ...jest.requireActual('../../videos/videosApi'),
@@ -68,7 +69,8 @@ const renderAt = (path: string, user: AuthContextValue['user'] = alice) =>
           <Route path="/login" element={<LoginPage />} />
         </Routes>
       </MemoryRouter>
-    </AuthContext.Provider>
+    </AuthContext.Provider>,
+    { wrapper: I18nProvider }
   );
 
 describe('EditVideoPage', () => {
@@ -213,5 +215,33 @@ describe('EditVideoPage', () => {
     await user.click(await screen.findByRole('button', { name: 'Retry' }));
 
     expect(await screen.findByLabelText('Title (required)')).toHaveValue('Summer in Girona');
+  });
+
+  describe('in another language', () => {
+    afterEach(() => localStorage.clear());
+
+    it('shows the form and the date in Spanish', async () => {
+      localStorage.setItem('protube.language', 'es');
+      mockedFetchVideo.mockResolvedValue(video);
+      renderAt('/videos/7/edit');
+
+      expect(await screen.findByRole('heading', { name: 'Editar vídeo' })).toBeInTheDocument();
+      expect(screen.getByLabelText('Título (obligatorio)')).toHaveValue('Summer in Girona');
+      expect(screen.getByText('5 de noviembre de 2026')).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Categoría' })).toHaveDisplayValue('Viajes y eventos');
+    });
+
+    it('validates the title in Catalan', async () => {
+      const user = userEvent.setup();
+      localStorage.setItem('protube.language', 'ca');
+      mockedFetchVideo.mockResolvedValue(video);
+      renderAt('/videos/7/edit');
+
+      await user.clear(await screen.findByLabelText('Títol (obligatori)'));
+      await user.click(screen.getByRole('button', { name: 'Desa' }));
+
+      expect(screen.getByText('El títol és obligatori')).toBeInTheDocument();
+      expect(mockedUpdateVideo).not.toHaveBeenCalled();
+    });
   });
 });

@@ -5,6 +5,7 @@ import FavouritesPage from '../FavouritesPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 import { fetchFavourites } from '../../favourites/favouritesApi';
 import type { VideoSummary } from '../../videos/videosApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../favourites/favouritesApi');
 const mockedFetchFavourites = fetchFavourites as jest.MockedFunction<typeof fetchFavourites>;
@@ -38,24 +39,26 @@ const LoginStub = () => {
 
 const renderPage = (user: AuthContextValue['user']) =>
   render(
-    <AuthContext.Provider
-      value={{
-        user,
-        login: jest.fn(),
-        register: jest.fn(),
-        loginWithGoogle: jest.fn(),
-        logout: jest.fn(),
-        updateSession: jest.fn(),
-      }}
-    >
-      <MemoryRouter initialEntries={['/favourites']}>
-        <Routes>
-          <Route path="/favourites" element={<FavouritesPage />} />
-          <Route path="/login" element={<LoginStub />} />
-          <Route path="/" element={<p>Home page</p>} />
-        </Routes>
-      </MemoryRouter>
-    </AuthContext.Provider>
+    <I18nProvider>
+      <AuthContext.Provider
+        value={{
+          user,
+          login: jest.fn(),
+          register: jest.fn(),
+          loginWithGoogle: jest.fn(),
+          logout: jest.fn(),
+          updateSession: jest.fn(),
+        }}
+      >
+        <MemoryRouter initialEntries={['/favourites']}>
+          <Routes>
+            <Route path="/favourites" element={<FavouritesPage />} />
+            <Route path="/login" element={<LoginStub />} />
+            <Route path="/" element={<p>Home page</p>} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </I18nProvider>
   );
 
 describe('FavouritesPage', () => {
@@ -118,5 +121,16 @@ describe('FavouritesPage', () => {
 
     expect(await screen.findByText('Video 1')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+  it('shows the page in Catalan', async () => {
+    localStorage.setItem('protube.language', 'ca');
+    mockedFetchFavourites.mockResolvedValueOnce(page([], 0, 0));
+
+    renderPage(alice);
+
+    expect(await screen.findByText('Encara no tens cap vídeo preferit.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Preferits' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Explora vídeos' })).toBeInTheDocument();
+    localStorage.clear();
   });
 });

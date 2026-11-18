@@ -5,6 +5,7 @@ import { AxiosError, type AxiosResponse } from 'axios';
 import SubscribeButton from '../SubscribeButton';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 import { fetchSubscription, setSubscription } from '../../subscriptions/subscriptionsApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../subscriptions/subscriptionsApi', () => ({
   ...jest.requireActual('../../subscriptions/subscriptionsApi'),
@@ -30,23 +31,25 @@ const httpError = (status: number) =>
 
 const renderButton = (user: AuthContextValue['user'], channel = 'bob') =>
   render(
-    <AuthContext.Provider
-      value={{
-        user,
-        login: jest.fn(),
-        register: jest.fn(),
-        loginWithGoogle: jest.fn(),
-        logout: jest.fn(),
-        updateSession: jest.fn(),
-      }}
-    >
-      <MemoryRouter initialEntries={['/videos/5?t=30']}>
-        <Routes>
-          <Route path="/videos/:id" element={<SubscribeButton channel={channel} />} />
-          <Route path="/login" element={<LoginStub />} />
-        </Routes>
-      </MemoryRouter>
-    </AuthContext.Provider>
+    <I18nProvider>
+      <AuthContext.Provider
+        value={{
+          user,
+          login: jest.fn(),
+          register: jest.fn(),
+          loginWithGoogle: jest.fn(),
+          logout: jest.fn(),
+          updateSession: jest.fn(),
+        }}
+      >
+        <MemoryRouter initialEntries={['/videos/5?t=30']}>
+          <Routes>
+            <Route path="/videos/:id" element={<SubscribeButton channel={channel} />} />
+            <Route path="/login" element={<LoginStub />} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </I18nProvider>
   );
 
 // The button once the state has been read (it is disabled until then)
@@ -159,5 +162,16 @@ describe('SubscribeButton', () => {
 
     expect(screen.getByText('Login page, back to /videos/5?t=30')).toBeInTheDocument();
     expect(mockedSetSubscription).not.toHaveBeenCalled();
+  });
+
+  it('shows the subscribers and the button in Spanish', async () => {
+    localStorage.setItem('protube.language', 'es');
+    mockedFetchSubscription.mockResolvedValueOnce({ channel: 'bob', subscribed: false, subscribers: 1 });
+
+    renderButton(alice);
+
+    expect(await readyButton('Suscribirse')).toBeInTheDocument();
+    expect(screen.getByText('1 suscriptor')).toBeInTheDocument();
+    localStorage.clear();
   });
 });

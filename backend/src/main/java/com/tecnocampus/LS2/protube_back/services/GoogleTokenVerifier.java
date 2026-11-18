@@ -67,21 +67,22 @@ public class GoogleTokenVerifier {
 
     public GoogleAccount verify(String idToken) {
         if (decoder == null) {
-            throw new InvalidGoogleTokenException("Google login is not available");
+            throw new InvalidGoogleTokenException("error.google.unavailable", "Google login is not available");
         }
         Jwt jwt;
         try {
             jwt = decoder.decode(idToken);
         } catch (JwtException e) {
-            throw new InvalidGoogleTokenException("Invalid Google credential");
+            throw new InvalidGoogleTokenException("error.google.invalid", "Invalid Google credential");
         }
 
         String email = jwt.getClaimAsString("email");
         if (email == null || !Boolean.TRUE.equals(jwt.getClaimAsBoolean("email_verified"))) {
-            throw new InvalidGoogleTokenException("Your Google account has no verified email");
+            throw new InvalidGoogleTokenException("error.google.unverified",
+                    "Your Google account has no verified email");
         }
         if (jwt.getSubject() == null) {
-            throw new InvalidGoogleTokenException("Invalid Google credential");
+            throw new InvalidGoogleTokenException("error.google.invalid", "Invalid Google credential");
         }
         return new GoogleAccount(jwt.getSubject(), email.toLowerCase(Locale.ROOT), jwt.getClaimAsString("name"));
     }

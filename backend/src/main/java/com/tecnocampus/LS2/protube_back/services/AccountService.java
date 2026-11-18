@@ -45,7 +45,7 @@ public class AccountService {
 
         if (!username.equals(user.getUsername())) {
             if (userRepository.existsByUsername(username)) {
-                throw new UserAlreadyExistsException("username", "Username is already taken");
+                throw new UserAlreadyExistsException("username", "error.username.taken", "Username is already taken");
             }
             user.changeUsername(username);
             // Uploaded videos and comments show the username as author
@@ -63,7 +63,7 @@ public class AccountService {
         if (!email.equalsIgnoreCase(user.getEmail())) {
             // US-01: an email belongs to one account only
             if (userRepository.existsByEmailIgnoreCase(email)) {
-                throw new UserAlreadyExistsException("email", "Email is already registered");
+                throw new UserAlreadyExistsException("email", "error.email.taken", "Email is already registered");
             }
             user.changeEmail(email);
         }
@@ -77,10 +77,12 @@ public class AccountService {
         if (user.isPasswordSet()) {
             String current = request.currentPassword();
             if (current == null || current.isEmpty()) {
-                throw new InvalidAccountChangeException("currentPassword", "Current password is required");
+                throw new InvalidAccountChangeException("currentPassword", "error.account.currentPasswordRequired",
+                        "Current password is required");
             }
             if (!passwordEncoder.matches(current, user.getPasswordHash())) {
-                throw new InvalidAccountChangeException("currentPassword", "Current password is incorrect");
+                throw new InvalidAccountChangeException("currentPassword", "error.account.currentPasswordIncorrect",
+                        "Current password is incorrect");
             }
         }
         user.changePassword(passwordEncoder.encode(request.newPassword()));

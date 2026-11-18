@@ -1,4 +1,5 @@
 import { useId, useState, type ReactNode } from 'react';
+import { useTranslation } from '../i18n/i18nContext';
 
 type Props = {
   text: string;
@@ -14,6 +15,7 @@ const MAX_LINES = 4;
  * Long text that starts collapsed with a "Show more" button, e.g. a video description.
  */
 const ExpandableText = ({ text, render = (value) => value }: Props) => {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const id = useId();
   const isLong = text.length > MAX_CHARS || text.split('\n').length > MAX_LINES;
@@ -32,7 +34,7 @@ const ExpandableText = ({ text, render = (value) => value }: Props) => {
           aria-controls={id}
           onClick={() => setExpanded((current) => !current)}
         >
-          {expanded ? 'Show less' : 'Show more'}
+          {expanded ? t('video.showLess') : t('video.showMore')}
         </button>
       )}
     </>

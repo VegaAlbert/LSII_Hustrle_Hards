@@ -6,9 +6,9 @@ import jakarta.validation.constraints.Size;
 
 // Same rules as RegisterRequest
 public record ChangeUsernameRequest(
-        @NotBlank(message = "Username is required")
-        @Size(min = 3, max = 30, message = "Username must be between 3 and 30 characters")
-        @Pattern(regexp = "^[A-Za-z0-9_.-]*$", message = "Username can only contain letters, numbers, '.', '_' and '-'")
+        @NotBlank(message = "{validation.username.required}")
+        @Size(min = 3, max = 30, message = "{validation.username.size}")
+        @Pattern(regexp = "^[A-Za-z0-9_.-]*$", message = "{validation.username.pattern}")
         String username
 ) {
 }

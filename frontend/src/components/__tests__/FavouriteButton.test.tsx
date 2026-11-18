@@ -5,6 +5,7 @@ import { AxiosError, type AxiosResponse } from 'axios';
 import FavouriteButton from '../FavouriteButton';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 import { fetchFavouriteState, setFavourite } from '../../favourites/favouritesApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../favourites/favouritesApi');
 const mockedFetchState = fetchFavouriteState as jest.MockedFunction<typeof fetchFavouriteState>;
@@ -26,23 +27,25 @@ const httpError = (status: number) =>
 
 const renderButton = (user: AuthContextValue['user']) =>
   render(
-    <AuthContext.Provider
-      value={{
-        user,
-        login: jest.fn(),
-        register: jest.fn(),
-        loginWithGoogle: jest.fn(),
-        logout: jest.fn(),
-        updateSession: jest.fn(),
-      }}
-    >
-      <MemoryRouter initialEntries={['/videos/5?t=30']}>
-        <Routes>
-          <Route path="/videos/:id" element={<FavouriteButton videoId={5} />} />
-          <Route path="/login" element={<LoginStub />} />
-        </Routes>
-      </MemoryRouter>
-    </AuthContext.Provider>
+    <I18nProvider>
+      <AuthContext.Provider
+        value={{
+          user,
+          login: jest.fn(),
+          register: jest.fn(),
+          loginWithGoogle: jest.fn(),
+          logout: jest.fn(),
+          updateSession: jest.fn(),
+        }}
+      >
+        <MemoryRouter initialEntries={['/videos/5?t=30']}>
+          <Routes>
+            <Route path="/videos/:id" element={<FavouriteButton videoId={5} />} />
+            <Route path="/login" element={<LoginStub />} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </I18nProvider>
   );
 
 // The button once the saved state has been read (it is disabled until then)
@@ -144,5 +147,15 @@ describe('FavouriteButton', () => {
     expect(screen.getByText('Login page, back to /videos/5?t=30')).toBeInTheDocument();
     expect(mockedFetchState).not.toHaveBeenCalled();
     expect(mockedSetFavourite).not.toHaveBeenCalled();
+  });
+
+  it('is named in Catalan', async () => {
+    localStorage.setItem('protube.language', 'ca');
+    mockedFetchState.mockResolvedValueOnce({ videoId: 5, favourite: true });
+
+    renderButton(alice);
+
+    expect(await readyButton('Desat')).toHaveAttribute('aria-pressed', 'true');
+    localStorage.clear();
   });
 });

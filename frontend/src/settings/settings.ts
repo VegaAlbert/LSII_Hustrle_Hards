@@ -1,7 +1,8 @@
 // User preferences shown in the settings page.
-// The theme (ThemeProvider) and the preferences of preferences.ts (text size and playback) are applied and saved on
-// this device. Language and privacy are only kept in the page state for now: applying and saving them is still to
-// be done.
+// The theme (ThemeProvider, dark mode), the language (I18nProvider) and the preferences of preferences.ts (text size
+// and playback) are applied and saved on this device. Privacy is only kept in the page state for now: applying and
+// saving it is still to be done.
+// Labels shown to users live in src/i18n/messages; LANGUAGES keeps each language name in that language.
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -21,13 +22,11 @@ export const TEXT_SIZES: { value: TextSize; label: string }[] = [
 
 // Not saved yet (see the note above)
 export type PendingSettings = {
-  language: Language;
   publicProfile: boolean;
   watchHistory: boolean;
 };
 
 export const DEFAULT_PENDING_SETTINGS: PendingSettings = {
-  language: 'en',
   publicProfile: true,
   watchHistory: true,
 };

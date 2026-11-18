@@ -111,14 +111,17 @@ public class AccountDeletionService {
         if (user.isPasswordSet()) {
             String password = request.password();
             if (password == null || password.isEmpty()) {
-                throw new InvalidAccountChangeException("password", "Password is required");
+                throw new InvalidAccountChangeException("password", "error.account.passwordRequired",
+                        "Password is required");
             }
             if (!passwordEncoder.matches(password, user.getPasswordHash())) {
-                throw new InvalidAccountChangeException("password", "Password is incorrect");
+                throw new InvalidAccountChangeException("password", "error.account.passwordIncorrect",
+                        "Password is incorrect");
             }
         } else if (request.confirmation() == null || !request.confirmation().trim().equals(user.getUsername())) {
             // Google accounts without a password confirm by typing their username
-            throw new InvalidAccountChangeException("confirmation", "Type your username to confirm");
+            throw new InvalidAccountChangeException("confirmation", "error.account.confirmUsername",
+                    "Type your username to confirm");
         }
     }
 

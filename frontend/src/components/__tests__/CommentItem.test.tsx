@@ -5,6 +5,7 @@ import { AxiosError, type AxiosResponse } from 'axios';
 import CommentItem from '../CommentItem';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
 import { postReply, setCommentLike, type VideoComment } from '../../videos/videosApi';
+import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../videos/videosApi', () => ({
   ...jest.requireActual('../../videos/videosApi'),
@@ -66,7 +67,8 @@ const renderItem = (user: AuthContextValue['user'], comment = bobComment()) => {
           <Route path="/login" element={<LoginStub />} />
         </Routes>
       </MemoryRouter>
-    </AuthContext.Provider>
+    </AuthContext.Provider>,
+    { wrapper: I18nProvider }
   );
   return { onReplyAdded, onLikeChanged };
 };
@@ -185,5 +187,28 @@ describe('CommentItem', () => {
     expect(screen.getByText('Agree')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Like comment by @alice, 1 like' })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Reply to/ })).toHaveLength(1);
+  });
+
+  describe('in another language', () => {
+    afterEach(() => localStorage.clear());
+
+    it('shows the like and reply buttons in Spanish', () => {
+      localStorage.setItem('protube.language', 'es');
+      renderItem(alice, bobComment({ likeCount: 1 }));
+
+      expect(screen.getByRole('button', { name: 'Me gusta el comentario de @bob, 1 me gusta' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Responder a @bob' })).toHaveTextContent('Responder');
+    });
+
+    it('shows the like error in Catalan', async () => {
+      const user = userEvent.setup();
+      localStorage.setItem('protube.language', 'ca');
+      mockedSetCommentLike.mockRejectedValue(httpError(500));
+      renderItem(alice);
+
+      await user.click(screen.getByRole('button', { name: /M'agrada el comentari de @bob/ }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent("No s'ha pogut actualitzar el m'agrada.");
+    });
   });
 });

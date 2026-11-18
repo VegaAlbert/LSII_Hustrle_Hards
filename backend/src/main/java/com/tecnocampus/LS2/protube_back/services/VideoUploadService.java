@@ -58,11 +58,12 @@ public class VideoUploadService {
     public VideoDetailResponse upload(String username, UploadVideoRequest request, MultipartFile videoFile,
                                       MultipartFile thumbnailFile) {
         String videoExtension = extensionOf(videoFile, VIDEO_TYPES, "video",
-                "The video must be an MP4 or WebM file");
+                "error.upload.video.type", "The video must be an MP4 or WebM file");
         String thumbnailExtension = extensionOf(thumbnailFile, IMAGE_TYPES, "thumbnail",
-                "The thumbnail must be a JPG, PNG or WebP image");
+                "error.upload.thumbnail.type", "The thumbnail must be a JPG, PNG or WebP image");
         if (thumbnailFile.getSize() > MAX_THUMBNAIL_BYTES) {
-            throw new InvalidUploadException("thumbnail", "The thumbnail must be at most 2 MB");
+            throw new InvalidUploadException("thumbnail", "error.upload.thumbnail.size",
+                    "The thumbnail must be at most 2 MB");
         }
         User uploader = userRepository.findByUsername(username).orElseThrow(InvalidCredentialsException::new);
 
@@ -93,14 +94,15 @@ public class VideoUploadService {
     }
 
     private static String extensionOf(MultipartFile file, Map<String, String> allowedTypes, String field,
-                                      String message) {
+                                      String messageKey, String message) {
         if (file == null || file.isEmpty()) {
-            throw new InvalidUploadException(field, "The " + field + " file is required");
+            throw new InvalidUploadException(field, "error.upload." + field + ".required",
+                    "The " + field + " file is required");
         }
         String contentType = file.getContentType() == null ? "" : file.getContentType().toLowerCase(Locale.ROOT);
         String extension = allowedTypes.get(contentType);
         if (extension == null) {
-            throw new InvalidUploadException(field, message);
+            throw new InvalidUploadException(field, messageKey, message);
         }
         return extension;
     }

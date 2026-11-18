@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import VideoDetailPage from '../VideoDetailPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
+import { I18nProvider } from '../../i18n/I18nProvider';
 import {
   fetchVideo,
   isNotFound,
@@ -82,23 +83,25 @@ const alice = { id: 1, username: 'alice', email: 'alice@example.com' };
 
 const renderAt = (path: string, user: AuthContextValue['user'] = null) =>
   render(
-    <AuthContext.Provider
-      value={{
-        user,
-        login: jest.fn(),
-        register: jest.fn(),
-        loginWithGoogle: jest.fn(),
-        logout: jest.fn(),
-        updateSession: jest.fn(),
-      }}
-    >
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route path="/videos/:id" element={<VideoDetailPage />} />
-          <Route path="/login" element={<p>Login page</p>} />
-        </Routes>
-      </MemoryRouter>
-    </AuthContext.Provider>
+    <I18nProvider>
+      <AuthContext.Provider
+        value={{
+          user,
+          login: jest.fn(),
+          register: jest.fn(),
+          loginWithGoogle: jest.fn(),
+          logout: jest.fn(),
+          updateSession: jest.fn(),
+        }}
+      >
+        <MemoryRouter initialEntries={[path]}>
+          <Routes>
+            <Route path="/videos/:id" element={<VideoDetailPage />} />
+            <Route path="/login" element={<p>Login page</p>} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </I18nProvider>
   );
 
 describe('VideoDetailPage', () => {
@@ -433,5 +436,43 @@ describe('VideoDetailPage', () => {
 
     expect(await screen.findByRole('button', { name: 'Share' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Subscribe' })).not.toBeInTheDocument();
+  });
+
+  describe('in another language', () => {
+    afterEach(() => localStorage.clear());
+
+    it('shows the information of the video in Spanish', async () => {
+      localStorage.setItem('protube.language', 'es');
+      mockedFetchVideo.mockResolvedValueOnce({ ...video, category: 'MUSIC', tags: ['funk'] });
+
+      renderAt('/videos/5');
+
+      expect(await screen.findByLabelText('Reproductor de vídeo: Uptown Funk')).toBeInTheDocument();
+      expect(screen.getByText('19 de noviembre de 2014')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Sobre este vídeo' })).toBeInTheDocument();
+      expect(screen.getByText('Música')).toBeInTheDocument();
+      expect(screen.getByRole('list', { name: 'Etiquetas' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Compartir' })).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'Guardar en favoritos' })).toBeInTheDocument();
+    });
+
+    it('shows the not-found state in Catalan', () => {
+      localStorage.setItem('protube.language', 'ca');
+
+      renderAt('/videos/abc');
+
+      expect(screen.getByRole('heading', { name: "No s'ha trobat el vídeo" })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: "Torna a l'inici" })).toBeInTheDocument();
+    });
+
+    it('asks to confirm the age in Catalan', async () => {
+      localStorage.setItem('protube.language', 'ca');
+      mockedFetchVideo.mockResolvedValueOnce({ ...video, ageRestricted: true });
+
+      renderAt('/videos/5', alice);
+
+      expect(await screen.findByRole('region', { name: "Vídeo amb restricció d'edat" })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Tinc més de 18 anys, reprodueix el vídeo' })).toBeInTheDocument();
+    });
   });
 });

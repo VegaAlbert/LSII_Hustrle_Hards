@@ -1,3 +1,6 @@
+import { translate } from '../i18n/translate';
+import type { Language } from '../settings/settings';
+
 // Formats every browser can play, same list as VideoUploadService in the backend
 export const ACCEPTED_VIDEO_TYPES = ['video/mp4', 'video/webm'];
 export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -13,17 +16,17 @@ export type VideoFileInfo = {
 };
 
 /**
- * Error message for a video the backend would reject, or null if it can be uploaded.
+ * Error message, in the given language, for a video the backend would reject, or null if it can be uploaded.
  */
-export function checkVideoFile(file: File): string | null {
-  if (!ACCEPTED_VIDEO_TYPES.includes(file.type)) return 'Choose an MP4 or WebM video.';
-  if (file.size > MAX_VIDEO_BYTES) return 'The video must be at most 100 MB.';
+export function checkVideoFile(file: File, language: Language = 'en'): string | null {
+  if (!ACCEPTED_VIDEO_TYPES.includes(file.type)) return translate(language, 'upload.invalidVideoType');
+  if (file.size > MAX_VIDEO_BYTES) return translate(language, 'upload.videoTooLarge');
   return null;
 }
 
-export function checkThumbnailFile(file: File): string | null {
-  if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) return 'Choose a JPG, PNG or WebP image.';
-  if (file.size > MAX_THUMBNAIL_BYTES) return 'The thumbnail must be at most 2 MB.';
+export function checkThumbnailFile(file: File, language: Language = 'en'): string | null {
+  if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) return translate(language, 'upload.invalidImageType');
+  if (file.size > MAX_THUMBNAIL_BYTES) return translate(language, 'upload.thumbnailTooLarge');
   return null;
 }
 

@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 
 // Same rules as RegisterRequest
 public record ChangeEmailRequest(
-        @NotBlank(message = "Email is required")
-        @Email(message = "Email is not valid")
+        @NotBlank(message = "{validation.email.required}")
+        @Email(message = "{validation.email.invalid}")
         String email
 ) {
 }

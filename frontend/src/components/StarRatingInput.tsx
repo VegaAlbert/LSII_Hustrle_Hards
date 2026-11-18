@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from '../i18n/i18nContext';
 import { MAX_SCORE, MIN_SCORE } from '../ratings/ratingsApi';
 
 type Props = {
@@ -15,6 +16,7 @@ const SCORES = Array.from({ length: MAX_SCORE - MIN_SCORE + 1 }, (_, index) => M
  */
 const StarRatingInput = ({ value, onRate, disabled = false }: Props) => {
   // Star under the mouse or focused, shown instead of the saved value while it lasts
+  const { t } = useTranslation();
   const [preview, setPreview] = useState<number | null>(null);
   const shown = preview ?? value ?? 0;
 
@@ -22,7 +24,7 @@ const StarRatingInput = ({ value, onRate, disabled = false }: Props) => {
     <div
       className="star-input"
       role="radiogroup"
-      aria-label="Your rating"
+      aria-label={t('video.yourRating')}
       onMouseLeave={() => setPreview(null)}
       aria-disabled={disabled}
     >
@@ -32,7 +34,7 @@ const StarRatingInput = ({ value, onRate, disabled = false }: Props) => {
           type="button"
           role="radio"
           aria-checked={value === score}
-          aria-label={`${score} ${score === 1 ? 'star' : 'stars'}`}
+          aria-label={t('video.stars', { count: score })}
           className={`star-input-star${score <= shown ? ' is-on' : ''}`}
           disabled={disabled}
           onMouseEnter={() => setPreview(score)}

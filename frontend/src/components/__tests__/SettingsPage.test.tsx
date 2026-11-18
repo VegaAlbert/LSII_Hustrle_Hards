@@ -1,8 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import SettingsPage from '../SettingsPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
+import { I18nProvider } from '../../i18n/I18nProvider';
+import { LANGUAGE_STORAGE_KEY } from '../../i18n/languagePreference';
 import { PREFERENCES_STORAGE_KEY } from '../../settings/preferences';
 import { ThemeProvider } from '../../theme/ThemeProvider';
 import { THEME_STORAGE_KEY } from '../../theme/themePreference';
@@ -25,11 +27,13 @@ const renderSettings = (user: AuthContextValue['user'] = null) => {
   };
   render(
     <ThemeProvider>
-      <AuthContext.Provider value={auth}>
-        <MemoryRouter>
-          <SettingsPage />
-        </MemoryRouter>
-      </AuthContext.Provider>
+      <I18nProvider>
+        <AuthContext.Provider value={auth}>
+          <MemoryRouter>
+            <SettingsPage />
+          </MemoryRouter>
+        </AuthContext.Provider>
+      </I18nProvider>
     </ThemeProvider>
   );
 };
@@ -48,8 +52,8 @@ describe('SettingsPage', () => {
     for (const title of ['Appearance', 'Language', 'Playback', 'Privacy']) {
       expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
     }
-    expect(screen.getByRole('note')).toHaveTextContent('Theme, text size and playback changes apply at once');
-    expect(screen.getByRole('note')).toHaveTextContent('Language and privacy are not saved yet');
+    expect(screen.getByRole('note')).toHaveTextContent('Theme, language, text size and playback changes apply at once');
+    expect(screen.getByRole('note')).toHaveTextContent('Privacy settings are not saved yet');
   });
 
   it('has no notifications, default quality nor save button', () => {
@@ -134,13 +138,11 @@ describe('SettingsPage', () => {
 
     await user.click(screen.getByRole('radio', { name: 'Dark' }));
     await user.click(screen.getByRole('radio', { name: 'Large' }));
-    await user.selectOptions(screen.getByLabelText('Interface language'), 'es');
     await user.click(screen.getByLabelText('Autoplay'));
     await user.selectOptions(screen.getByLabelText('Playback speed'), '0.5');
     await user.click(screen.getByLabelText('Public profile'));
     await user.click(screen.getByLabelText('Watch history'));
 
-    expect(screen.getByLabelText('Interface language')).toHaveValue('es');
     expect(screen.getByLabelText('Public profile')).not.toBeChecked();
 
     await user.click(screen.getByRole('button', { name: 'Reset to defaults' }));
@@ -149,11 +151,38 @@ describe('SettingsPage', () => {
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('system');
     expect(screen.getByRole('radio', { name: 'Medium' })).toBeChecked();
     expect(document.documentElement).toHaveAttribute('data-text-size', 'medium');
-    expect(screen.getByLabelText('Interface language')).toHaveValue('en');
     expect(screen.getByLabelText('Autoplay')).toBeChecked();
     expect(screen.getByLabelText('Playback speed')).toHaveValue('1');
     expect(screen.getByLabelText('Public profile')).toBeChecked();
     expect(screen.getByLabelText('Watch history')).toBeChecked();
     expect(savedPreferences()).toEqual({ textSize: 'medium', autoplay: true, playbackSpeed: 1 });
+  });
+
+  it('switches the whole page to the language chosen and saves it on this device', () => {
+    renderSettings();
+    expect(screen.getByLabelText('Interface language')).toHaveValue('en');
+
+    fireEvent.change(screen.getByLabelText('Interface language'), { target: { value: 'ca' } });
+
+    expect(screen.getByRole('heading', { name: 'Configuració' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Idioma de la interfície')).toHaveValue('ca');
+    expect(screen.getByRole('radio', { name: 'Sistema' })).toBeChecked();
+    expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe('ca');
+    expect(document.documentElement).toHaveAttribute('lang', 'ca');
+  });
+
+  it('shows the language saved in a previous visit and resets it to English', () => {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, 'es');
+
+    renderSettings();
+
+    expect(screen.getByRole('heading', { name: 'Apariencia' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Idioma de la interfaz')).toHaveValue('es');
+    expect(screen.getByRole('option', { name: 'Català' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Restablecer valores predeterminados' }));
+
+    expect(screen.getByLabelText('Interface language')).toHaveValue('en');
+    expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe('en');
   });
 });
