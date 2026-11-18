@@ -59,5 +59,35 @@ services:
     ports:
       - "${PROTUBE_FRONTEND_PORT:-80}:80"
 
+  # Code quality (optional): only started with `--profile sonar`, see DEVELOPMENT.md "Code quality (SonarQube)"
+  sonarqube:
+    image: sonarqube:community
+    container_name: protube_sonarqube
+    profiles: [sonar]
+    environment:
+      # Single-node Elasticsearch on a dev machine: skip the production kernel checks
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    ports:
+      - "${PROTUBE_SONAR_PORT:-9000}:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+  # One-off scan of the repo: `docker compose --profile sonar run --rm sonar-scanner` (reads sonar-project.properties)
+  sonar-scanner:
+    image: sonarsource/sonar-scanner-cli
+    profiles: [sonar]
+    depends_on:
+      - sonarqube
+    environment:
+      SONAR_HOST_URL: http://sonarqube:9000
+      SONAR_TOKEN: ${SONAR_TOKEN:-}
+    volumes:
+      - .:/usr/src
+
 volumes:
   postgres_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:

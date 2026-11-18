@@ -176,10 +176,44 @@ ports are reused; stop them for a clean database. Change ports or the Maven comm
 1. Frontend: `npm ci` → `npm run build` → `npm run test` → `npm run lint`
 2. Backend: `./mvnw clean verify -Pcoverage`
 3. Uploads both coverage reports as build artifacts.
-4. E2E job: `npm ci` (frontend and `e2e/`), installs Chromium, `npm run typecheck` and `npm test` in `e2e/`, and
+4. SonarCloud analysis (code smells, bugs, coverage) with those reports. Skipped while the `SONAR_TOKEN` secret is
+   not configured; see "Code quality (SonarQube)" below.
+5. E2E job: `npm ci` (frontend and `e2e/`), installs Chromium, `npm run typecheck` and `npm test` in `e2e/`, and
    uploads the Playwright report.
 
 Before opening a PR, run the same steps locally so the pipeline stays green.
+
+### Code quality (SonarQube)
+
+`sonar-project.properties` analyses the backend and the frontend as a single project and imports their coverage
+(`backend/target/site/jacoco/jacoco.xml` and `frontend/coverage/lcov.info`), so **run the tests first**.
+
+**Locally**, with the SonarQube Community server of `compose.yaml` (profile `sonar`, not started by a plain
+`docker compose up`):
+
+```bash
+docker compose --profile sonar up -d sonarqube             # http://localhost:9000, wait until it is up
+(cd backend && mvn clean verify -Pcoverage)                # classes + JaCoCo report
+(cd frontend && npm run test)                              # lcov report
+SONAR_TOKEN=<your token> docker compose --profile sonar run --rm sonar-scanner
+docker compose --profile sonar stop sonarqube              # when you are done
+```
+
+The first time, log in at http://localhost:9000 with `admin` / `admin`, change the password and create a token in
+**My Account → Security**. Keep the token in your root `.env` (`SONAR_TOKEN=...`), never in the repo. Results:
+http://localhost:9000/dashboard?id=VegaAlbert_LSII_Hustrle_Hards. The data is kept in Docker volumes between runs.
+
+**In CI**, through [SonarCloud](https://sonarcloud.io) (free for public repositories). A repository admin sets it up
+once:
+
+1. Log in to SonarCloud with GitHub, import the organization and the repository (project key
+   `VegaAlbert_LSII_Hustrle_Hards`).
+2. In the SonarCloud project, **Administration → Analysis Method**: turn off *Automatic Analysis* (CI-based
+   analysis is needed to import the coverage).
+3. In GitHub, **Settings → Secrets and variables → Actions**: add the secret `SONAR_TOKEN` (a SonarCloud token) and
+   the variable `SONAR_ORGANIZATION` (the SonarCloud organization key).
+
+From then on the `build-and-test` job sends every PR and push to SonarCloud, and the result shows up on the PR.
 
 ## 5. Production mode
 
