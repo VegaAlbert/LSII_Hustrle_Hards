@@ -10,11 +10,16 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
 
     boolean existsBySubscriberIdAndChannel(Long subscriberId, String channel);
 
     long countByChannel(String channel);
+
+    // The channels a user follows, the most recently followed first
+    List<Subscription> findBySubscriberIdOrderBySubscribedAtDesc(Long subscriberId);
 
     // Returns how many rows were deleted (0 if the user was not subscribed)
     @Modifying

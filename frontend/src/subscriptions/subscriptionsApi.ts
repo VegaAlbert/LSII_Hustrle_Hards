@@ -40,6 +40,14 @@ export async function setSubscription(channel: string, subscribed: boolean): Pro
 }
 
 /**
+ * The channels the logged-in user is subscribed to, the most recently followed first.
+ */
+export async function fetchSubscribedChannels(): Promise<SubscriptionState[]> {
+  const response = await axios.get<SubscriptionState[]>(`${getEnv().API_BASE_URL}/subscriptions/channels`);
+  return response.data;
+}
+
+/**
  * One page of the videos of the channels the logged-in user is subscribed to, newest first.
  */
 export async function fetchSubscriptionVideos(page: number, size: number): Promise<Page<VideoSummary>> {

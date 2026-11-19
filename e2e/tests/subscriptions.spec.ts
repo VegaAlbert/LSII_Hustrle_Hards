@@ -14,7 +14,7 @@ async function channelWithAVideo(request: APIRequestContext) {
 
 test.describe('Subscribe to a channel', () => {
   test('a logged-in user subscribes, sees the videos of the channel and unsubscribes', async ({ page, request }) => {
-    const { videoId, title } = await channelWithAVideo(request);
+    const { channel, videoId, title } = await channelWithAVideo(request);
     const user = await loginAsNewUser(page, request);
 
     await page.goto(`/videos/${videoId}`);
@@ -29,19 +29,25 @@ test.describe('Subscribe to a channel', () => {
     await page.reload();
     await expect(page.getByRole('button', { name: 'Subscribed' })).toBeVisible();
 
-    // The video of the channel is listed on the subscriptions page
+    // The subscriptions page lists the channel (not the video) and, below, the latest videos of the channel
     await userMenu(page, user.username).click();
     await page.getByRole('button', { name: 'Subscriptions' }).click();
     await expect(page).toHaveURL(/\/subscriptions$/);
+    const channels = page.getByRole('list', {
+      name: 'Channels you are subscribed to',
+    });
+    await expect(channels.getByRole('listitem')).toHaveCount(1);
+    await expect(channels.getByText(channel, { exact: true })).toBeVisible();
+    await expect(channels.getByText(title)).toHaveCount(0);
     await expect(
       page.getByRole('list', { name: 'Videos from your subscriptions' }).getByRole('link', { name: title })
     ).toBeVisible();
 
-    // After unsubscribing the page is empty again
-    await page.goto(`/videos/${videoId}`);
-    await page.getByRole('button', { name: 'Subscribed' }).click();
-    await expect(page.getByRole('button', { name: 'Subscribe', exact: true })).toBeVisible();
-    await page.goto('/subscriptions');
+    // Unsubscribing from the list empties the page
+    await channels.getByRole('button', { name: 'Subscribed' }).click();
+    await expect(channels.getByRole('button', { name: 'Subscribe', exact: true })).toBeVisible();
+    await page.reload();
+    await expect(page.getByText('You are not subscribed to any channel yet.')).toBeVisible();
     await expect(page.getByText('There are no videos from your subscriptions yet.')).toBeVisible();
   });
 

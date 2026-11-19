@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {
+  fetchSubscribedChannels,
   fetchSubscriberCount,
   fetchSubscription,
   fetchSubscriptionVideos,
@@ -51,6 +52,14 @@ describe('subscriptionsApi', () => {
 
     await expect(fetchSubscriptionVideos(0, 12)).resolves.toEqual(page);
     expect(mockedAxios.get).toHaveBeenCalledWith('other/subscriptions/videos', { params: { page: 0, size: 12 } });
+  });
+
+  it('fetches the channels the logged-in user is subscribed to', async () => {
+    const channels = [{ channel: 'bob', subscribed: true, subscribers: 3 }];
+    mockedAxios.get.mockResolvedValueOnce({ data: channels });
+
+    await expect(fetchSubscribedChannels()).resolves.toEqual(channels);
+    expect(mockedAxios.get).toHaveBeenCalledWith('other/subscriptions/channels');
   });
 
   it('fetches the number of subscribers of the logged-in user', async () => {

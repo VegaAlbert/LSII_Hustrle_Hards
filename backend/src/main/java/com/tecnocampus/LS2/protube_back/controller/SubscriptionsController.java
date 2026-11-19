@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * US-13: subscriptions to channels. A channel is the author of videos and travels as the {@code name} query parameter,
  * because author names may hold spaces or slashes ("AC/DC") that do not fit in a path segment. Only reading the state
@@ -58,6 +60,14 @@ public class SubscriptionsController {
     public ResponseEntity<SubscriptionResponse> unsubscribe(@RequestParam String name,
                                                             Authentication authentication) {
         return ResponseEntity.ok(subscriptionService.unsubscribe(authentication.getName(), name));
+    }
+
+    /**
+     * Channels the user is subscribed to, the most recently followed first, with their number of subscribers.
+     */
+    @GetMapping("/channels")
+    public ResponseEntity<List<SubscriptionResponse>> getSubscribedChannels(Authentication authentication) {
+        return ResponseEntity.ok(subscriptionService.getSubscribedChannels(authentication.getName()));
     }
 
     /**

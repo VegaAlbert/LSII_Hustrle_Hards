@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -98,6 +99,20 @@ public class SubscriptionService {
         return PageResponse.from(subscriptionRepository.findVideosOfSubscribedChannels(subscriber.getId(),
                         PageRequest.of(page, size, VideoService.NEWEST_FIRST))
                 .map(VideoSummaryResponse::from));
+    }
+
+    /**
+     * The channels {@code username} is subscribed to, the most recently followed first, each with its number of
+     * subscribers.
+     *
+     * @throws InvalidCredentialsException if the user of the token no longer exists
+     */
+    @Transactional(readOnly = true)
+    public List<SubscriptionResponse> getSubscribedChannels(String username) {
+        User subscriber = findUser(username);
+        return subscriptionRepository.findBySubscriberIdOrderBySubscribedAtDesc(subscriber.getId()).stream()
+                .map(subscription -> response(subscription.getChannel(), true))
+                .toList();
     }
 
     /**

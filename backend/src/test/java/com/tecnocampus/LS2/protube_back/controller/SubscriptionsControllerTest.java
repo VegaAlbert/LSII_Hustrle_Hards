@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -196,6 +197,23 @@ class SubscriptionsControllerTest {
     }
 
     @Test
+    void listsTheSubscribedChannelsNotTheirVideos() throws Exception {
+        uploaded("Bob old", bob, "2020-01-01T00:00:00Z");
+        uploaded("Bob new", bob, "2024-01-01T00:00:00Z");
+        imported("Thunderstruck", "AC/DC", "2022-01-01T00:00:00Z");
+        mockMvc.perform(withToken(channel(put(CHANNEL), "bob"))).andExpect(status().isOk());
+        mockMvc.perform(withToken(channel(put(CHANNEL), "AC/DC"))).andExpect(status().isOk());
+        flushAndClear();
+
+        mockMvc.perform(withToken(get("/api/subscriptions/channels")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[*].channel", containsInAnyOrder("bob", "AC/DC")))
+                .andExpect(jsonPath("$[0].subscribed").value(true))
+                .andExpect(jsonPath("$[0].subscribers").value(1));
+    }
+
+    @Test
     void anEmptyListIsNotAnError() throws Exception {
         uploaded("Bob video", bob, "2024-01-01T00:00:00Z");
         flushAndClear();
@@ -235,6 +253,7 @@ class SubscriptionsControllerTest {
         mockMvc.perform(channel(put(CHANNEL), "bob")).andExpect(status().isUnauthorized());
         mockMvc.perform(channel(delete(CHANNEL), "bob")).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/subscriptions/videos")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/subscriptions/channels")).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/subscriptions/subscribers")).andExpect(status().isUnauthorized());
     }
 
