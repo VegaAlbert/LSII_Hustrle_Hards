@@ -189,6 +189,19 @@ class SubscriptionServiceTest {
     }
 
     @Test
+    void getSubscribedChannelsListsTheFollowedChannelsWithTheirSubscribers() {
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(alice));
+        when(subscriptionRepository.findBySubscriberIdOrderBySubscribedAtDesc(alice.getId())).thenReturn(List.of(
+                new Subscription(alice, BAND, Instant.parse("2024-02-01T00:00:00Z")),
+                new Subscription(alice, "bob", Instant.parse("2024-01-01T00:00:00Z"))));
+        when(subscriptionRepository.countByChannel(BAND)).thenReturn(3L);
+        when(subscriptionRepository.countByChannel("bob")).thenReturn(1L);
+
+        assertEquals(List.of(new SubscriptionResponse(BAND, true, 3), new SubscriptionResponse("bob", true, 1)),
+                subscriptionService.getSubscribedChannels("alice"));
+    }
+
+    @Test
     void countSubscribersCountsTheChannelNamedAfterTheUser() {
         when(userRepository.findByUsername("alice")).thenReturn(Optional.of(alice));
         when(subscriptionRepository.countByChannel("alice")).thenReturn(5L);

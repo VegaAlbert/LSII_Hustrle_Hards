@@ -3,12 +3,20 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import SubscriptionsPage from '../SubscriptionsPage';
 import { AuthContext, type AuthContextValue } from '../../auth/authContext';
-import { fetchSubscriptionVideos } from '../../subscriptions/subscriptionsApi';
+import {
+  fetchSubscribedChannels,
+  fetchSubscription,
+  fetchSubscriptionVideos,
+  setSubscription,
+} from '../../subscriptions/subscriptionsApi';
 import type { VideoSummary } from '../../videos/videosApi';
 import { I18nProvider } from '../../i18n/I18nProvider';
 
 jest.mock('../../subscriptions/subscriptionsApi');
 const mockedFetchVideos = fetchSubscriptionVideos as jest.MockedFunction<typeof fetchSubscriptionVideos>;
+const mockedFetchChannels = fetchSubscribedChannels as jest.MockedFunction<typeof fetchSubscribedChannels>;
+const mockedFetchSubscription = fetchSubscription as jest.MockedFunction<typeof fetchSubscription>;
+const mockedSetSubscription = setSubscription as jest.MockedFunction<typeof setSubscription>;
 
 const alice = { id: 1, username: 'alice', email: 'alice@example.com' };
 
@@ -64,6 +72,11 @@ const renderPage = (user: AuthContextValue['user']) =>
 describe('SubscriptionsPage', () => {
   beforeEach(() => {
     mockedFetchVideos.mockReset();
+    mockedFetchChannels.mockReset();
+    mockedFetchSubscription.mockReset();
+    mockedSetSubscription.mockReset();
+    mockedFetchChannels.mockResolvedValue([]);
+    mockedFetchSubscription.mockImplementation(async (channel) => ({ channel, subscribed: true, subscribers: 1 }));
   });
 
   it('sends anonymous visitors to log in and back here', () => {
@@ -71,6 +84,63 @@ describe('SubscriptionsPage', () => {
 
     expect(screen.getByText('Login page, back to /subscriptions')).toBeInTheDocument();
     expect(mockedFetchVideos).not.toHaveBeenCalled();
+    expect(mockedFetchChannels).not.toHaveBeenCalled();
+  });
+
+  it('lists the subscribed channels, not their videos', async () => {
+    mockedFetchChannels.mockResolvedValueOnce([
+      { channel: 'bob', subscribed: true, subscribers: 1 },
+      { channel: 'AC/DC', subscribed: true, subscribers: 3 },
+    ]);
+    mockedFetchVideos.mockResolvedValueOnce(page([video(1)], 0, 1));
+    renderPage(alice);
+
+    const list = await screen.findByRole('list', { name: 'Channels you are subscribed to' });
+    const items = within(list).getAllByRole('listitem');
+    expect(items).toHaveLength(2);
+    expect(within(items[0]).getByText('bob')).toBeInTheDocument();
+    expect(within(items[1]).getByText('AC/DC')).toBeInTheDocument();
+    expect(await within(items[0]).findByRole('button', { name: 'Subscribed' })).toBeInTheDocument();
+    expect(within(list).queryByText('Video 1')).not.toBeInTheDocument();
+  });
+
+  it('unsubscribes from a channel of the list', async () => {
+    const user = userEvent.setup();
+    mockedFetchChannels.mockResolvedValueOnce([{ channel: 'bob', subscribed: true, subscribers: 1 }]);
+    mockedFetchVideos.mockResolvedValueOnce(page([], 0, 0));
+    mockedSetSubscription.mockResolvedValueOnce({ channel: 'bob', subscribed: false, subscribers: 0 });
+    renderPage(alice);
+
+    await user.click(await screen.findByRole('button', { name: 'Subscribed' }));
+
+    expect(mockedSetSubscription).toHaveBeenCalledWith('bob', false);
+    expect(await screen.findByRole('button', { name: 'Subscribe' })).toBeInTheDocument();
+  });
+
+  it('shows an empty state when no channel is followed', async () => {
+    const user = userEvent.setup();
+    mockedFetchVideos.mockResolvedValueOnce(page([], 0, 0));
+    renderPage(alice);
+
+    expect(await screen.findByText('You are not subscribed to any channel yet.')).toBeInTheDocument();
+    await user.click(screen.getByRole('link', { name: 'Browse videos' }));
+    expect(screen.getByText('Home page')).toBeInTheDocument();
+  });
+
+  it('shows a channels error that can be retried', async () => {
+    const user = userEvent.setup();
+    mockedFetchChannels.mockReset();
+    mockedFetchChannels
+      .mockRejectedValueOnce(new Error('Network error'))
+      .mockResolvedValueOnce([{ channel: 'bob', subscribed: true, subscribers: 1 }]);
+    mockedFetchVideos.mockResolvedValueOnce(page([], 0, 0));
+    renderPage(alice);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not load your channels.');
+    await user.click(screen.getByRole('button', { name: 'Retry' }));
+
+    expect(await screen.findByText('bob')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('shows the videos of the subscribed channels', async () => {
@@ -78,7 +148,7 @@ describe('SubscriptionsPage', () => {
     renderPage(alice);
 
     expect(screen.getByRole('heading', { name: 'Subscriptions' })).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('Loading subscriptions...');
+    expect(screen.getByText('Loading subscriptions...')).toBeInTheDocument();
     const list = await screen.findByRole('list', { name: 'Videos from your subscriptions' });
     const items = within(list).getAllByRole('listitem');
     expect(items).toHaveLength(2);
@@ -87,15 +157,12 @@ describe('SubscriptionsPage', () => {
     expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument();
   });
 
-  it('shows an empty state with a link to browse videos', async () => {
-    const user = userEvent.setup();
+  it('says when the subscribed channels have no videos', async () => {
     mockedFetchVideos.mockResolvedValueOnce(page([], 0, 0));
     renderPage(alice);
 
     expect(await screen.findByText('There are no videos from your subscriptions yet.')).toBeInTheDocument();
     expect(screen.queryByRole('list', { name: 'Videos from your subscriptions' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('link', { name: 'Browse videos' }));
-    expect(screen.getByText('Home page')).toBeInTheDocument();
   });
 
   it('loads the next page', async () => {
@@ -130,7 +197,9 @@ describe('SubscriptionsPage', () => {
     renderPage(alice);
 
     expect(await screen.findByText('Todavía no hay vídeos de tus suscripciones.')).toBeInTheDocument();
+    expect(await screen.findByText('Todavía no estás suscrito a ningún canal.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Suscripciones' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Canales' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Explorar vídeos' })).toBeInTheDocument();
     localStorage.clear();
   });
