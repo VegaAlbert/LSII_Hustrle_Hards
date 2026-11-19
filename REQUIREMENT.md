@@ -9,7 +9,8 @@ Priority follows MoSCoW (Must have / Should have / Could have / Won't have this 
 
 ---
 
-## Epic 1 — Authentication
+## Epic 1 — Authentication (1)
+
 
 ### US-01: User registration
 
